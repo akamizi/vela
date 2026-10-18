@@ -1,0 +1,28 @@
+// Impostazioni di Sway gestite da Vela (default). Vela non modifica il config di Sway: scrive
+// ~/.config/vela/sway.d/vela.conf, che il config di Sway può includere (Impostazioni › Compositor).
+// Un valore null significa "non impostato": vale il comportamento predefinito di Sway.
+{
+  // Per schermo, con il nome di Sway: "eDP-1": { "mode": "1920x1080@60.000Hz", "scale": 1.0, "x": 0, "y": 0,
+  // "transform": "normal", "enabled": true }. Si imposta dal pannello (con conferma entro 15 secondi).
+  "outputs": {},
+  "input": {
+    "keyboard": {
+      "layout": null,       // es. "it" oppure "it,us"
+      "variant": null,
+      "options": null,      // es. "grp:alt_shift_toggle,caps:escape"
+      "repeatDelay": null,  // millisecondi
+      "repeatRate": null    // ripetizioni al secondo
+    },
+    "touchpad": {
+      "tap": null,            // "enabled" | "disabled"
+      "naturalScroll": null,  // "enabled" | "disabled"
+      "disableWhileTyping": null,
+      "accel": null           // -1.0 … 1.0
+    }
+  },
+  "wallpaper": {
+    "path": null,           // percorso di un'immagine
+    "mode": "fill",         // fill | fit | stretch | center | tile
+    "color": null           // colore di sfondo "#rrggbb" quando non c'è un'immagine
+  }
+}

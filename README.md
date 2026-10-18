@@ -108,6 +108,15 @@ La categoria **Meteo** imposta la città e le unità. "Città": Invio, scrivi il
 le coordinate e il nome finiscono in `settings.jsonc`. "Unità di misura": metriche (°C, predefinito) o
 imperiali (°F). Senza città il meteo resta spento. Canc sulla città ripristina.
 
+Con Sway come compositor compaiono anche **Schermi** (risoluzione e frequenza, scala, rotazione, posizione e
+accensione con più schermi: dopo ogni modifica hai 15 secondi per confermare, altrimenti si torna indietro),
+**Tastiera e touchpad** (layout, variante, opzioni, ripetizione; tocco, scorrimento naturale, disattiva mentre
+si scrive, velocità) e **Sfondo** (immagine con percorso assoluto e adattamento, oppure un colore). Tastiera,
+touchpad e sfondo si applicano subito con `swaymsg`; Canc torna al valore predefinito (lo stato attuale di Sway
+cambia al prossimo `swaymsg reload`). Vela scrive `~/.config/vela/sway.d/vela.conf`; perché valga anche dopo il
+login, il config di Sway deve includerlo: la categoria **Compositor** ha l'azione "Aggiungi la riga include"
+(chiede conferma e fa una copia `config.bak-vela-include`), oppure aggiungi tu `include ~/.config/vela/sway.d/*.conf`.
+
 La categoria **Compositor** mostra quali compositor ci sono (installato, in esecuzione, sessione attuale), se
 Vela ha un backend per quello attivo e quali categorie di impostazioni sono già disponibili o in arrivo
 (schermi, tastiera e touchpad, sfondo, scorciatoie, avvio automatico, regole, bordi). Oggi il backend è Sway.

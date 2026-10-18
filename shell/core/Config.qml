@@ -65,6 +65,11 @@ Singleton {
         settings: root.settingsData.theme || ({})
     }
 
+    readonly property ConfigLayer swayLayer: ConfigLayer {
+        name: "sway"; defaultsDir: root.defaultsDir; userDir: root.userDir
+        settings: root.settingsData.sway || ({})
+    }
+
     readonly property ConfigLayer menuLayer: ConfigLayer {
         name: "menu"; mode: "menu"; defaultsDir: root.defaultsDir; userDir: root.userDir
     }
@@ -72,5 +77,6 @@ Singleton {
     readonly property var menu: menuLayer.data
     readonly property var shell: shellLayer.data
     readonly property var theme: themeLayer.data
-    readonly property var warnings: shellLayer.warnings.concat(themeLayer.warnings, menuLayer.warnings)
+    readonly property var sway: swayLayer.data
+    readonly property var warnings: shellLayer.warnings.concat(themeLayer.warnings, menuLayer.warnings, swayLayer.warnings)
 }

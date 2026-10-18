@@ -21,8 +21,18 @@ PanelHost {
     readonly property int footerHeight: 28
     readonly property int maxRows: 14
 
-    property int tab: 0                       // 0 = Barra, 1 = Tema, 2 = Meteo, 3 = Compositor
-    readonly property var tabNames: ["Barra", "Tema", "Meteo", "Compositor"]
+    property int tab: 0                       // indice in `tabs`
+    // Le categorie del compositor compaiono solo se il compositor attivo ha un backend che le gestisce.
+    readonly property var tabs: {
+        var t = [{ id: "bar", label: "Barra" }, { id: "theme", label: "Tema" }, { id: "weather", label: "Meteo" }];
+        if (Compositors.activeHasBackend && SwayBackend.active) {
+            t.push({ id: "outputs", label: "Schermi" }, { id: "input", label: "Tastiera e touchpad" }, { id: "wallpaper", label: "Sfondo" });
+        }
+        t.push({ id: "compositor", label: "Compositor" });
+        return t;
+    }
+    readonly property var tabNames: tabs.map(function (t) { return t.label; })
+    readonly property string tabId: (tabs[tab] || tabs[0]).id
     property var editing: null                // riga in modifica (colore o testo)
     property bool confirmReset: false
     property string currentKey: ""
@@ -31,25 +41,37 @@ PanelHost {
     // --- righe ------------------------------------------------------------------------
     function fmt(v, dec) { return dec > 0 ? v.toFixed(dec) : String(Math.round(v)); }
 
-    function number(file, path, label, min, max, step, dec) {
-        var v = Settings.get(file, path);
+    // `fallback`: valore da cui partire quando l'impostazione non c'è (null = predefinito di Sway).
+    function number(file, path, label, min, max, step, dec, fallback) {
+        var v = Settings.get(file, path), unset = (v === null || v === undefined);
         return { kind: "number", file: file, path: path, label: label, min: min, max: max, step: step, dec: dec,
-                 value: v, text: fmt(v, dec), over: Settings.overridden(file, path), key: file + ":" + path };
+                 value: unset ? (fallback !== undefined ? fallback : min) : v, text: unset ? "predefinito" : fmt(v, dec),
+                 over: Settings.overridden(file, path), key: file + ":" + path };
+    }
+    // Righe che non scrivono in settings.jsonc ma chiamano `commit` (es. gli schermi, con conferma).
+    function numberC(key, label, min, max, step, dec, value, commit) {
+        return { kind: "number", label: label, min: min, max: max, step: step, dec: dec, value: value, text: fmt(value, dec),
+                 commit: commit, key: key };
+    }
+    function choiceC(key, label, options, value, commit) {
+        var t = String(value);
+        options.forEach(function (o) { if (o.v === value) t = o.t; });
+        return { kind: "choice", label: label, options: options, value: value, text: t, commit: commit, key: key };
     }
     function choice(file, path, label, options) {
-        var v = Settings.get(file, path), t = String(v);
+        var v = Settings.get(file, path), t = (v === null || v === undefined) ? "predefinito" : String(v);
         options.forEach(function (o) { if (o.v === v) t = o.t; });
         return { kind: "choice", file: file, path: path, label: label, options: options, value: v, text: t,
                  over: Settings.overridden(file, path), key: file + ":" + path };
     }
     function color(file, path, label) {
         var v = Settings.get(file, path);
-        return { kind: "color", file: file, path: path, label: label, value: v, text: v,
+        return { kind: "color", file: file, path: path, label: label, value: v || "#000000", text: v || "non impostato",
                  over: Settings.overridden(file, path), key: file + ":" + path };
     }
     function textRow(file, path, label) {
-        var v = Settings.get(file, path);
-        return { kind: "text", file: file, path: path, label: label, value: v, text: v,
+        var v = Settings.get(file, path), unset = (v === null || v === undefined || v === "");
+        return { kind: "text", file: file, path: path, label: label, value: unset ? "" : v, text: unset ? "predefinito" : v,
                  over: Settings.overridden(file, path), key: file + ":" + path };
     }
     function header(label) { return { kind: "header", label: label, key: "h:" + label }; }
@@ -117,6 +139,92 @@ PanelHost {
         return out;
     }
 
+    // --- schermi, tastiera, touchpad, sfondo (backend Sway) -------------------------------------
+    property var pendingConfirm: null     // {text, fn}: conferma generica (es. modifica del config di Sway)
+
+    function uniq(a) { var seen = {}, out = []; a.forEach(function (x) { if (!seen[x]) { seen[x] = true; out.push(x); } }); return out; }
+
+    function outputsRows() {
+        var out = [];
+        if (SwayBackend.pending) {
+            out.push(header("Conferma"));
+            out.push(info("Mantenere queste impostazioni?", "tra " + SwayBackend.countdown + " s si torna indietro", "warn"));
+            out.push({ kind: "action", label: "Mantieni", act: "keepOutputs", key: "a:keep" });
+            out.push({ kind: "action", label: "Ripristina ora", act: "revertOutputs", key: "a:revert" });
+        }
+        var outs = SwayBackend.outputs, activeCount = outs.filter(function (o) { return o.active; }).length;
+        outs.forEach(function (o) {
+            var n = o.name, k = "o:" + n + ":";
+            out.push(header(n + (o.label ? " — " + o.label : "")));
+            if (o.active) {
+                out.push(choiceC(k + "mode", "Risoluzione e frequenza", uniq(o.modes).map(function (m) { return { v: m, t: m }; }), o.mode,
+                                 function (v) { SwayBackend.setOutput(n, { mode: v }); }));
+                out.push(numberC(k + "scale", "Scala", 0.5, 3, 0.25, 2, o.scale, function (v) { SwayBackend.setOutput(n, { scale: v }); }));
+                out.push(choiceC(k + "transform", "Rotazione", [{ v: "normal", t: "normale" }, { v: "90", t: "90°" }, { v: "180", t: "180°" }, { v: "270", t: "270°" }],
+                                 o.transform, function (v) { SwayBackend.setOutput(n, { transform: v }); }));
+                if (outs.length > 1) {
+                    out.push(numberC(k + "x", "Posizione orizzontale", -10000, 20000, 10, 0, o.x, function (v) { SwayBackend.setOutput(n, { x: v }); }));
+                    out.push(numberC(k + "y", "Posizione verticale", -10000, 20000, 10, 0, o.y, function (v) { SwayBackend.setOutput(n, { y: v }); }));
+                }
+            }
+            // Con un solo schermo acceso non si può spegnere.
+            if (outs.length > 1 && (!o.active || activeCount > 1))
+                out.push(choiceC(k + "enabled", "Schermo", [{ v: true, t: "acceso" }, { v: false, t: "spento" }], o.active,
+                                 function (v) { SwayBackend.setOutput(n, { enabled: v }); }));
+        });
+        if (outs.length === 0) out.push(info("Schermi", "nessuno rilevato", "warn"));
+        if (SwayBackend.lastError !== "") out.push(info("Errore di Sway", SwayBackend.lastError, "warn"));
+        out.push(header("Scelte salvate"));
+        out.push({ kind: "action", label: "Dimentica le impostazioni salvate degli schermi", act: "resetTab", key: "a:resetTab" });
+        return out;
+    }
+
+    readonly property var onOff: [{ v: "enabled", t: "sì" }, { v: "disabled", t: "no" }]
+
+    function inputRows() {
+        var out = [header("Tastiera")];
+        out.push(textRow("sway", "input.keyboard.layout", "Layout (es. it oppure it,us)"));
+        out.push(textRow("sway", "input.keyboard.variant", "Variante"));
+        out.push(textRow("sway", "input.keyboard.options", "Opzioni (es. grp:alt_shift_toggle)"));
+        out.push(number("sway", "input.keyboard.repeatDelay", "Ritardo di ripetizione (ms)", 100, 1000, 50, 0, 600));
+        out.push(number("sway", "input.keyboard.repeatRate", "Ripetizioni al secondo", 5, 60, 1, 0, 25));
+        out.push(header("Touchpad"));
+        if (SwayBackend.hasTouchpad) {
+            out.push(choice("sway", "input.touchpad.tap", "Tocco per cliccare", onOff));
+            out.push(choice("sway", "input.touchpad.naturalScroll", "Scorrimento naturale", onOff));
+            out.push(choice("sway", "input.touchpad.disableWhileTyping", "Disattiva mentre si scrive", onOff));
+            out.push(number("sway", "input.touchpad.accel", "Velocità del puntatore", -1, 1, 0.1, 1, 0));
+        } else {
+            out.push(info("Touchpad", "nessuno rilevato"));
+        }
+        if (SwayBackend.lastError !== "") out.push(info("Errore di Sway", SwayBackend.lastError, "warn"));
+        out.push({ kind: "action", label: "Ripristina questa scheda", act: "resetTab", key: "a:resetTab" });
+        return out;
+    }
+
+    function wallpaperRows() {
+        var out = [header("Sfondo")];
+        out.push(textRow("sway", "wallpaper.path", "Immagine (percorso)"));
+        out.push(choice("sway", "wallpaper.mode", "Adattamento", [{ v: "fill", t: "riempi" }, { v: "fit", t: "adatta" }, { v: "stretch", t: "allunga" },
+                                                                 { v: "center", t: "centra" }, { v: "tile", t: "affianca" }]));
+        out.push(color("sway", "wallpaper.color", "Colore (senza immagine)"));
+        if (SwayBackend.lastError !== "") out.push(info("Errore di Sway", SwayBackend.lastError, "warn"));
+        out.push({ kind: "action", label: "Ripristina questa scheda", act: "resetTab", key: "a:resetTab" });
+        return out;
+    }
+
+    function persistenceRows() {
+        var out = [header("Persistenza al login (Sway)")];
+        out.push(info("File generato da Vela", SwayBackend.confPath));
+        if (SwayBackend.hasInclude) {
+            out.push(info("include nel config di Sway", "presente", "accent"));
+        } else {
+            out.push(info("include nel config di Sway", "mancante: gli schermi non si ricordano al login", "warn"));
+            out.push({ kind: "action", label: "Aggiungi la riga include al config di Sway (con copia di sicurezza)", act: "addInclude", key: "a:include" });
+        }
+        return out;
+    }
+
     function info(label, text, tone) { return { kind: "info", label: label, text: text, tone: tone || "", key: "i:" + label }; }
 
     function compositorRows() {
@@ -138,10 +246,21 @@ PanelHost {
         out.push(info("File di configurazione", a.config));
         if (Compositors.categories.length > 0) out.push(header("Categorie di impostazioni"));
         Compositors.categories.forEach(function (c) { out.push(info(c.label, c.available ? "disponibile" : "in arrivo", c.available ? "accent" : "")); });
+        if (a.id === "sway" && SwayBackend.active) out = out.concat(persistenceRows());
         return out;
     }
 
-    readonly property var rows: tab === 0 ? barRows() : tab === 1 ? themeRows() : tab === 2 ? weatherRows() : compositorRows()
+    readonly property var rows: {
+        switch (tabId) {
+        case "bar": return barRows();
+        case "theme": return themeRows();
+        case "weather": return weatherRows();
+        case "outputs": return outputsRows();
+        case "input": return inputRows();
+        case "wallpaper": return wallpaperRows();
+        default: return compositorRows();
+        }
+    }
     function selectable(r) { return r && r.kind !== "header" && r.kind !== "info"; }
     function current() { return rows[list.currentIndex] || null; }
 
@@ -169,7 +288,11 @@ PanelHost {
     }
     onRowsChanged: Qt.callLater(restoreSelection)
 
-    onTabChanged: { currentKey = ""; confirmReset = false; if (tab === 3) Compositors.refresh(); }
+    onTabChanged: {
+        currentKey = ""; confirmReset = false; pendingConfirm = null;
+        if (tabId === "compositor") Compositors.refresh();
+        if (tabId === "outputs" || tabId === "input" || tabId === "compositor") SwayBackend.refresh();
+    }
 
     // --- azioni -----------------------------------------------------------------------
     function round(v, dec) { var m = Math.pow(10, dec); return Math.round(v * m) / m; }
@@ -177,11 +300,13 @@ PanelHost {
     function step(r, dir) {
         if (r.kind === "number") {
             var v = Math.max(r.min, Math.min(r.max, round(r.value + dir * r.step, r.dec + 2)));
-            Settings.set(r.file, r.path, v);
+            if (r.commit) r.commit(v); else Settings.set(r.file, r.path, v);
         } else if (r.kind === "choice") {
-            var idx = 0;
+            var idx = -1;
             r.options.forEach(function (o, i) { if (o.v === r.value) idx = i; });
-            Settings.set(r.file, r.path, r.options[(idx + dir + r.options.length) % r.options.length].v);
+            if (idx < 0 && dir < 0) idx = 0;       // non impostato: ← porta all'ultima, → alla prima
+            var nv = r.options[(idx + dir + r.options.length) % r.options.length].v;
+            if (r.commit) r.commit(nv); else Settings.set(r.file, r.path, nv);
         } else if (r.kind === "module") {
             moveModule(r, dir);
         }
@@ -220,10 +345,14 @@ PanelHost {
     })
 
     function resetList() {
-        return tab === 0
-            ? [["shell", "bar.position"], ["shell", "bar.modules"], ["theme", "layout.barHeight"], ["theme", "layout.barRadius"], ["theme", "font.barSize"], ["theme", "barOpacity"]]
-            : tab === 2 ? [["shell", "weather.latitude"], ["shell", "weather.longitude"], ["shell", "weather.placeName"], ["shell", "weather.units"]]
-            : [["theme", "colors"], ["theme", "font.family"], ["theme", "font.size"], ["theme", "layout.radius"]];
+        switch (tabId) {
+        case "bar": return [["shell", "bar.position"], ["shell", "bar.modules"], ["theme", "layout.barHeight"], ["theme", "layout.barRadius"], ["theme", "font.barSize"], ["theme", "barOpacity"]];
+        case "weather": return [["shell", "weather.latitude"], ["shell", "weather.longitude"], ["shell", "weather.placeName"], ["shell", "weather.units"]];
+        case "outputs": return [["sway", "outputs"]];
+        case "input": return [["sway", "input"]];
+        case "wallpaper": return [["sway", "wallpaper"]];
+        default: return [["theme", "colors"], ["theme", "font.family"], ["theme", "font.size"], ["theme", "layout.radius"]];
+        }
     }
 
     function activate(r) {
@@ -240,6 +369,11 @@ PanelHost {
         else if (r.act === "presetLight") Settings.setMany("theme", light);
         else if (r.act === "resetModules") Settings.resetMany([["shell", "bar.modules"]]);
         else if (r.act === "resetTab") confirmReset = true;
+        else if (r.act === "keepOutputs") SwayBackend.confirm();
+        else if (r.act === "revertOutputs") SwayBackend.revert();
+        else if (r.act === "addInclude")
+            pendingConfirm = { text: "Aggiungere la riga include a " + SwayBackend.swayConfigPath + " (copia: config.bak-vela-include)? Invio = sì, Esc = no",
+                               fn: function () { SwayBackend.addInclude(); } };
     }
 
     function startEdit(r) {
@@ -255,6 +389,10 @@ PanelHost {
             if (/^[0-9a-fA-F]{6}$/.test(t)) t = "#" + t;
             if (!/^#[0-9a-fA-F]{6}$/.test(t)) { note = "Colore non valido: usare #rrggbb"; return; }
             t = t.toLowerCase();
+        } else if (r.file === "sway") {
+            if (t === "") { Settings.reset(r.file, r.path); cancelEdit(); return; }       // vuoto = predefinito
+            if (r.path === "wallpaper.path") t = t.replace(/^~\//, Quickshell.env("HOME") + "/");
+            if (!SwayBackend.safe(t)) { note = "Caratteri non ammessi (niente virgolette, $ o ;)"; return; }
         } else if (t === "") { note = "Valore vuoto"; return; }
         if (r.kind === "search") { Geocoding.search(t); cancelEdit(); return; }
         Settings.set(r.file, r.path, t);
@@ -270,7 +408,8 @@ PanelHost {
 
     onOpenChanged: {
         if (open) {
-            editing = null; confirmReset = false; note = "";
+            editing = null; confirmReset = false; pendingConfirm = null; note = "";
+            SwayBackend.refresh();
             for (var i = 0; i < rows.length; i++) if (selectable(rows[i])) { select(i); break; }
             keys.forceActiveFocus();
         }
@@ -295,6 +434,7 @@ PanelHost {
             var r = panel.current();
             if (event.key === Qt.Key_Escape) {
                 if (panel.confirmReset) panel.confirmReset = false;
+                else if (panel.pendingConfirm) panel.pendingConfirm = null;
                 else Runtime.closePanel();
             } else if (event.key === Qt.Key_Tab || event.key === Qt.Key_Backtab) {
                 panel.tab = (panel.tab + 1) % panel.tabNames.length;
@@ -312,6 +452,7 @@ PanelHost {
                 if (r) panel.step(r, -1);
             } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
                 if (panel.confirmReset) { Settings.resetMany(panel.resetList()); panel.confirmReset = false; }
+                else if (panel.pendingConfirm) { var pc = panel.pendingConfirm; panel.pendingConfirm = null; pc.fn(); }
                 else panel.activate(r);
             } else if (event.key === Qt.Key_Delete || event.key === Qt.Key_Backspace) {
                 panel.resetRow(r);
@@ -664,13 +805,14 @@ PanelHost {
                 anchors { left: parent.left; right: parent.right; leftMargin: Theme.padding; rightMargin: Theme.padding; verticalCenter: parent.verticalCenter }
                 elide: Text.ElideRight
                 font.pixelSize: Theme.fontSize - 2
-                color: panel.confirmReset || panel.note !== "" ? Theme.warning : Theme.dim
+                color: panel.confirmReset || panel.pendingConfirm || panel.note !== "" ? Theme.warning : Theme.dim
                 text: {
                     if (panel.note !== "") return panel.note;
                     if (panel.confirmReset) return "Ripristinare questa scheda? Invio = sì, Esc = no";
+                    if (panel.pendingConfirm) return panel.pendingConfirm.text;
                     if (panel.editing) return "Invio = applica · Esc = annulla";
                     var r = panel.current();
-                    if (panel.tab === 3) return "Informazioni sul compositor · Tab categoria · Esc chiudi";
+                    if (panel.tabId === "compositor" && !(panel.current() && panel.current().kind === "action")) return "Informazioni sul compositor · Tab categoria · Esc chiudi";
                     if (r && r.kind === "search") return "Invio = cerca una città · Canc ripristina · Tab categoria";
                     if (r && r.kind === "place") return "Invio = scegli questa città · Tab categoria";
                     if (r && r.kind === "module") return "←/→ zona · Maiusc+↑/↓ ordine · Canc ripristina · Tab scheda";
