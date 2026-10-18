@@ -1,0 +1,23 @@
+# Template xbps-src per Vela (da copiare in srcpkgs/vela/ di void-packages).
+# distfiles e checksum vanno impostati quando esiste una release pubblicata.
+pkgname=vela
+version=0.1.0
+revision=1
+build_style=gnu-makefile
+make_install_args="PREFIX=/usr"
+depends="quickshell sway font-inter nerd-fonts-symbols-ttf qt6-svg qt6-wayland"
+short_desc="Minimal desktop shell for Sway built on Quickshell"
+maintainer="Maurizio Cavalletti <maurizio@akabit.it>"
+license="EUPL-1.2"
+homepage="https://example.org/vela"            # TODO: indirizzo del progetto
+distfiles="${homepage}/archive/v${version}.tar.gz>vela-${version}.tar.gz"  # TODO: release reale
+checksum=0000000000000000000000000000000000000000000000000000000000000000  # TODO: sha256 reale
+
+# Dipendenze facoltative: senza, la voce relativa sparisce (vedi README).
+# NetworkManager (rete, VPN), bluez (Bluetooth), wireplumber (audio PipeWire), upower (batteria),
+# power-profiles-daemon (profilo energetico), brightnessctl (luminosità), gammastep (luce notturna),
+# curl (meteo), polkit.
+
+post_install() {
+	vlicense LICENSE
+}

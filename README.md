@@ -19,6 +19,30 @@ A riposo su un portatile con Sway e un solo schermo: circa 195 MB di RAM e meno 
 fissa di Qt/Quickshell è circa 170 MB. Tolti Waybar, `dunst` e `wob`, che Vela sostituisce, il consumo totale
 sale in RAM ma scende in CPU. Dettagli e motivazione in `DECISIONI.md` (D-010).
 
+## Installazione (pacchetto Void)
+
+Quando il pacchetto è nel repository: `xbps-install vela`. Installa il comando `/usr/bin/vela`, il QML e i
+default in `/usr/share/vela`, gli esempi di configurazione in `/usr/share/doc/vela`. Da sorgente:
+`make install PREFIX=/usr` (accetta `DESTDIR`). Il template xbps-src è in `packaging/void/vela/template`
+(da completare con indirizzo e checksum della release).
+
+Aggiungere a `~/.config/sway/config`:
+
+```
+exec vela                                           # avvia la shell (barra, menu, pannelli, OSD)
+bindsym $mod+Ctrl+m exec vela ipc call menu toggle  # menu completo
+bindsym $mod+Ctrl+a exec vela ipc call menu apps    # solo applicazioni
+bindsym XF86AudioRaiseVolume exec wpctl set-volume @DEFAULT_AUDIO_SINK@ 2%+
+bindsym XF86AudioLowerVolume exec wpctl set-volume @DEFAULT_AUDIO_SINK@ 2%-
+bindsym XF86AudioMute exec wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle
+bindsym XF86MonBrightnessUp exec brightnessctl set +5%
+bindsym XF86MonBrightnessDown exec brightnessctl set 5%-
+```
+
+Se in Sway `~/.local/bin` non è nel PATH si usa il percorso completo. Barra e notifiche di altri programmi
+(Waybar, dunst, mako, wob) vanno fermate: Vela le sostituisce (le notifiche integrate sono spente di default,
+vedi sotto).
+
 ## Prova in sviluppo
 
 ```sh

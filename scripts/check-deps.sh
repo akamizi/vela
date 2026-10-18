@@ -16,6 +16,9 @@ opt  bluetoothctl "bluetooth"
 opt  powerprofilesctl "profilo energetico"
 opt  gammastep "luce notturna"
 opt  swayidle "resta sveglio"
+echo "== Font"
+fc-list 2>/dev/null | grep -qi "Inter" && echo "ok    Inter" || echo "manca Inter (xbps-install font-inter)"
+fc-list 2>/dev/null | grep -qi "Symbols Nerd Font" && echo "ok    Symbols Nerd Font" || echo "manca Symbols Nerd Font (xbps-install nerd-fonts-symbols-ttf): senza, le icone non si vedono"
 echo "== Moduli Quickshell"
 for m in I3 Io Wayland Bluetooth Networking Services/Pipewire Services/UPower Services/SystemTray Services/Mpris Services/Notifications Services/Polkit; do mod "$m"; done
 exit $fail
