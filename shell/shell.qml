@@ -11,6 +11,8 @@ import "services"
 import "plugins/bar"
 import "plugins/menu"
 import "plugins/panels"
+import "plugins/osd"
+import "plugins/notifications"
 
 ShellRoot {
     Loader {
@@ -36,6 +38,16 @@ ShellRoot {
     Loader {
         active: Config.shell.panels.audio.enabled
         sourceComponent: AudioPanel {}
+    }
+
+    Loader {
+        active: Config.shell.osd.enabled
+        sourceComponent: Osd {}
+    }
+
+    Loader {
+        active: Config.shell.notifications.enabled
+        sourceComponent: Popups {}
     }
 
     // Comandi da scorciatoie Sway: `vela ipc call <target> <funzione>`, es. `vela ipc call bar toggle`.

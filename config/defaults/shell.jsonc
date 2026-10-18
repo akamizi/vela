@@ -57,6 +57,11 @@
   "battery": { "warning": 20, "critical": 10 },
   "audio": { "step": 0.02, "maxVolume": 1.0 },
   "brightness": { "step": 5 },
+  // OSD di volume e luminosità (sostituisce wob, D-012). Togliere wob dalla configurazione di Sway.
+  "osd": { "enabled": true, "timeout": 1500 },
+  // Server di notifiche integrato (sostituisce dunst, D-006). Un solo programma alla volta può possedere
+  // org.freedesktop.Notifications: attivarlo solo dopo aver fermato dunst/mako.
+  "notifications": { "enabled": false, "timeout": 6000, "maxVisible": 5 },
   "toggles": {
     // secondi tra un controllo e l'altro degli stati esterni (luce notturna, non disturbare, registrazione)
     "pollInterval": 5,

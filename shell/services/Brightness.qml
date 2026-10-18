@@ -5,6 +5,7 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Io
+import "../core"
 
 Singleton {
     id: root
@@ -47,7 +48,7 @@ Singleton {
     }
 
     Timer {
-        interval: 3000
+        interval: Config.shell.osd.enabled ? 500 : 3000     // con l'OSD serve una risposta pronta ai tasti
         running: root.available
         repeat: true
         onTriggered: root.read()

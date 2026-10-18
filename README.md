@@ -56,6 +56,14 @@ Esc = cancella il testo / torna indietro / chiude. Le voci con `confirm` chiedon
 Le voci si definiscono in `config/defaults/menu.jsonc`; l'override utente `~/.config/vela/menu.jsonc` si fonde **per id**
 (vedi i commenti nel file e `config/user.example/menu.jsonc`). Le azioni `exec` sono sempre array di argomenti.
 
+## OSD e notifiche
+
+L'OSD di volume e luminosità (`osd.enabled`) compare a ogni cambio e sostituisce `wob`. Il server di
+notifiche integrato (`notifications.enabled`, spento per default) sostituisce `dunst`: va attivato solo dopo
+aver fermato dunst/mako, perché un solo programma alla volta può possedere `org.freedesktop.Notifications`.
+Testo sempre semplice, clic = chiudi, le notifiche critiche restano finché non si chiudono.
+"Non disturbare" (`vela ipc call toggles dnd` o la voce nel menu) scarta quelle non critiche.
+
 ## Pannello audio
 
 Clic sull'icona del volume (clic destro = muto, rotellina = volume), menu Sistema › Audio o

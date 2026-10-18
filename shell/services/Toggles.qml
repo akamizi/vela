@@ -35,16 +35,23 @@ Singleton {
         refreshSoon.restart();
     }
 
-    // --- non disturbare (provvisorio: dunst, finché le notifiche non sono integrate, D-006) ---
+    // --- non disturbare: stato interno se il server di notifiche è di Vela, altrimenti dunst ---
+    Connections {
+        target: Notifications
+        enabled: Notifications.active
+        function onDndChanged() { root.dnd = Notifications.dnd; }
+    }
+    Component.onCompleted: if (Notifications.active) { dnd = Notifications.dnd; dndAvailable = true; }
     Process {
         id: dndCheck
-        command: ["dunstctl", "is-paused"]
+        command: Notifications.active ? ["true"] : ["dunstctl", "is-paused"]
         stdout: StdioCollector {
-            onStreamFinished: { root.dnd = text.trim() === "true"; root.dndAvailable = true; }
+            onStreamFinished: { if (!Notifications.active) { root.dnd = text.trim() === "true"; root.dndAvailable = true; } }
         }
     }
 
     function toggleDnd() {
+        if (Notifications.active) { Notifications.dnd = !Notifications.dnd; return; }
         if (!dndAvailable) return;
         Quickshell.execDetached(["dunstctl", "set-paused", "toggle"]);
         dnd = !dnd;
