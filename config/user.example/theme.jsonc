@@ -1,0 +1,5 @@
+// Copiare in ~/.config/vela/theme.jsonc. Basta indicare le chiavi da cambiare.
+{
+  "colors": { "accent": "#e5a50a" },
+  "layout": { "barHeight": 30 }
+}

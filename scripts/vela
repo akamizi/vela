@@ -1,0 +1,9 @@
+#!/bin/sh
+# Avvia Vela. Funziona dal repository e, una volta installato, da /usr/share/vela.
+here=$(dirname "$(readlink -f "$0")")
+if [ -f "$here/../shell/shell.qml" ]; then
+    root="$here/.."
+else
+    root=${VELA_ROOT:-/usr/share/vela}
+fi
+exec quickshell -p "$root/shell" "$@"

@@ -1,0 +1,29 @@
+// Tema (default). Tutti i componenti leggono da qui: nessun colore o dimensione nel codice.
+// Palette presa dalla barra attuale (elementary blueberry-dark, stile Omarchy).
+{
+  "colors": {
+    "background": "#1a1a1a",
+    "surface": "#1e1e1e",
+    "border": "#252525",
+    "foreground": "#e4e5e6",
+    "muted": "#7e8087",
+    "dim": "#4a4c52",
+    "accent": "#3689e6",
+    "warning": "#f5a623",
+    "error": "#c6262e"
+  },
+  "font": {
+    "family": "Inter",
+    "iconFamily": "Symbols Nerd Font Mono",
+    "size": 13,
+    "iconSize": 15
+  },
+  "layout": {
+    "barHeight": 26,
+    "radius": 0,
+    "spacing": 6,
+    "padding": 10
+  },
+  // Trasparenza dello sfondo della barra (0 = trasparente, 1 = opaco)
+  "barOpacity": 0.88
+}

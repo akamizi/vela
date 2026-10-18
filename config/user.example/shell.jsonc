@@ -1,0 +1,4 @@
+// Copiare in ~/.config/vela/shell.jsonc.
+{
+  "bar": { "position": "top" }
+}

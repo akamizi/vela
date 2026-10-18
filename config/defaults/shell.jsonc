@@ -1,0 +1,8 @@
+// Configurazione della shell (default). Gli override stanno in ~/.config/vela/shell.jsonc
+{
+  "bar": {
+    "enabled": true,
+    // "top" o "bottom"
+    "position": "bottom"
+  }
+}
