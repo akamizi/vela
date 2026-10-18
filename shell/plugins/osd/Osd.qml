@@ -60,7 +60,7 @@ PanelWindow {
         width: 300
         height: Theme.rowHeight + Theme.padding
         color: Theme.surface
-        border.color: Theme.border
+        border.color: Theme.softBorder
         border.width: 1
         radius: Theme.radius
 
@@ -74,18 +74,13 @@ PanelWindow {
                     : osd.muted ? Icons.volumeMuted : Icons.pick(Icons.volume, osd.value)
                 color: osd.muted ? Theme.muted : Theme.accent
             }
-            Rectangle {
+            PanelSlider {
                 anchors.verticalCenter: parent.verticalCenter
                 width: parent.width - icon.width - pct.width - parent.spacing * 2
-                height: 6
-                radius: 3
-                color: Theme.border
-                Rectangle {
-                    width: Math.min(1, osd.value) * parent.width
-                    height: parent.height
-                    radius: 3
-                    color: osd.muted ? Theme.muted : Theme.accent
-                }
+                value: osd.value
+                maxValue: 1
+                muted: osd.muted
+                interactive: false
             }
             BarText {
                 id: pct

@@ -57,7 +57,15 @@ PanelWindow {
                 color: Theme.surface
                 radius: Theme.radius
                 border.width: 1
-                border.color: critical ? Theme.error : Theme.border
+                border.color: critical ? Theme.error : Theme.softBorder
+
+                // barra laterale: colore dell'urgenza
+                Rectangle {
+                    width: 3
+                    height: parent.height - (Theme.radius > 0 ? Theme.radius : 0)
+                    anchors.verticalCenter: parent.verticalCenter
+                    color: card.critical ? Theme.error : Theme.accent
+                }
 
                 // Scade da sé, salvo le critiche. 0 = predefinito, -1 = a discrezione del server.
                 Timer {
@@ -88,6 +96,16 @@ PanelWindow {
                         spacing: Theme.gap
 
                         BarText {
+                            visible: card.n.appName !== ""
+                            width: parent.width
+                            text: card.n.appName.toUpperCase()
+                            color: Theme.dim
+                            font.pixelSize: Theme.fontSize - 2
+                            font.bold: true
+                            font.letterSpacing: 1.2
+                            elide: Text.ElideRight
+                        }
+                        BarText {
                             width: parent.width
                             text: card.n.summary
                             font.bold: true
@@ -109,14 +127,10 @@ PanelWindow {
                             spacing: Theme.spacing
                             Repeater {
                                 model: card.n.actions
-                                delegate: Rectangle {
+                                delegate: PanelActionButton {
                                     required property var modelData
-                                    height: Theme.rowHeight - 8
-                                    width: label.implicitWidth + Theme.padding * 2
-                                    radius: Theme.radius
-                                    color: Theme.border
-                                    BarText { id: label; anchors.centerIn: parent; text: parent.modelData.text }
-                                    TapHandler { onTapped: parent.modelData.invoke() }
+                                    text: modelData.text
+                                    onClicked: modelData.invoke()
                                 }
                             }
                         }

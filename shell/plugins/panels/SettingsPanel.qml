@@ -638,20 +638,18 @@ PanelHost {
                 anchors { left: parent.left; right: parent.right; top: parent.top; topMargin: Theme.rowHeight + Theme.padding }
                 Repeater {
                     model: panel.tabNames
-                    delegate: Rectangle {
+                    delegate: Item {
                         required property string modelData
                         required property int index
                         width: parent.width
                         height: Theme.rowHeight
-                        color: index === panel.tab ? Theme.border : "transparent"
-                        Rectangle { visible: index === panel.tab; width: 3; height: parent.height; color: Theme.accent }
-                        BarText {
-                            anchors { left: parent.left; leftMargin: Theme.padding; verticalCenter: parent.verticalCenter }
-                            text: modelData
-                            font.bold: index === panel.tab
-                            color: index === panel.tab ? Theme.foreground : Theme.muted
+                        PanelRow {
+                            anchors { fill: parent; leftMargin: Theme.spacing; rightMargin: Theme.spacing }
+                            selected: index === panel.tab
+                            title: modelData
+                            bold: index === panel.tab
+                            onClicked: panel.tab = index
                         }
-                        MouseArea { anchors.fill: parent; onClicked: panel.tab = parent.index }
                     }
                 }
             }
@@ -874,83 +872,47 @@ PanelHost {
             highlightMoveDuration: 0
             boundsBehavior: Flickable.StopAtBounds
 
-            delegate: Rectangle {
-                id: item
+            delegate: Item {
+                id: entry
                 required property var modelData
                 required property int index
                 readonly property var r: modelData
-                readonly property bool isHeader: r.kind === "header"
+                readonly property bool isHeader: modelData && modelData.kind === "header"
+                readonly property bool isInfo: modelData && modelData.kind === "info"
                 width: ListView.view.width
-                height: isHeader ? panel.sectionHeight : Theme.rowHeight
-                color: ListView.isCurrentItem && panel.selectable(r) ? Theme.border : "transparent"
+                height: isHeader ? 28 : Theme.rowHeight
 
-                BarText {
-                    visible: item.isHeader
-                    anchors { left: parent.left; leftMargin: Theme.padding; bottom: parent.bottom; bottomMargin: 2 }
-                    text: item.isHeader ? item.r.label.toUpperCase() : ""
-                    color: Theme.dim
-                    font.pixelSize: Theme.fontSize - 2
-                    font.letterSpacing: 1
-                }
+                PanelSectionHeader { visible: entry.isHeader; text: entry.isHeader ? entry.r.label : "" }
 
-                // impostazione (numero, scelta, colore, testo, elemento)
-                Item {
-                    visible: !item.isHeader
-                    anchors.fill: parent
-
-                    // punto: il valore è stato impostato dal pannello
+                Component {
+                    id: swatchComp
                     Rectangle {
-                        visible: !item.isHeader && item.r.over === true
-                        width: 5; height: 5; radius: 3
-                        color: Theme.accent
-                        anchors { left: parent.left; leftMargin: Theme.padding / 2 - 2; verticalCenter: parent.verticalCenter }
-                    }
-                    BarText {
-                        anchors { left: parent.left; leftMargin: Theme.padding; right: valueRow.left; rightMargin: Theme.spacing; verticalCenter: parent.verticalCenter }
-                        text: item.isHeader ? "" : (item.r.kind === "module" ? item.r.name : item.r.label)
-                        elide: Text.ElideRight
-                        color: item.r.kind === "action" ? Theme.accent : Theme.foreground
-                    }
-                    Row {
-                        id: valueRow
-                        anchors { right: parent.right; rightMargin: Theme.padding; verticalCenter: parent.verticalCenter }
-                        spacing: Theme.spacing
-                        Rectangle {
-                            visible: !item.isHeader && item.r.kind === "color"
-                            width: 14; height: 14
-                            radius: 2
-                            color: !item.isHeader && item.r.kind === "color" ? item.r.value : "transparent"
-                            border.color: Theme.dim
-                            anchors.verticalCenter: parent.verticalCenter
-                        }
-                        BarText {
-                            width: !item.isHeader && item.r.kind === "color" ? 64 : Math.min(implicitWidth, 420)
-                            elide: Text.ElideRight
-                            horizontalAlignment: Text.AlignRight
-                            text: item.isHeader || item.r.kind === "action" ? "" : (item.r.kind === "number" || item.r.kind === "choice" ? "‹ " + item.r.text + " ›" : item.r.text)
-                            color: item.isHeader ? Theme.muted
-                                 : item.r.kind === "module" && item.r.zone === "hidden" ? Theme.dim
-                                 : item.r.kind === "info" && item.r.tone === "accent" ? Theme.accent
-                                 : item.r.kind === "info" && item.r.tone === "warn" ? Theme.warning
-                                 : Theme.muted
-                        }
+                        width: 14; height: 14
+                        radius: 2
+                        color: entry.r && entry.r.kind === "color" ? entry.r.value : "transparent"
+                        border.color: Theme.dim
                     }
                 }
 
-                MouseArea {
-                    anchors.fill: parent
-                    enabled: panel.selectable(item.r)
-                    hoverEnabled: true
-                    // Seleziona solo se il mouse si muove davvero: quando l'anteprima sposta la scheda
-                    // sotto un puntatore fermo arriva un movimento sintetico che non va seguito.
-                    property point last: Qt.point(-1, -1)
-                    onPositionChanged: mouse => {
-                        var g = mapToGlobal(mouse.x, mouse.y);
-                        if (g.x === last.x && g.y === last.y) return;
-                        last = g;
-                        panel.select(item.index);
-                    }
-                    onClicked: { panel.select(item.index); panel.activate(item.r); }
+                // impostazione (numero, scelta, colore, testo, elemento, azione, informazione)
+                PanelRow {
+                    visible: !entry.isHeader
+                    enabled: !entry.isInfo
+                    anchors { fill: parent; leftMargin: Theme.spacing; rightMargin: Theme.spacing }
+                    hasCursor: ListView.isCurrentItem && panel.selectable(entry.r)
+                    selected: entry.r.over === true        // il valore è stato impostato dal pannello
+                    title: entry.isHeader ? "" : (entry.r.kind === "module" ? entry.r.name : entry.r.label)
+                    titleColor: entry.r.kind === "action" ? Theme.accent : Theme.foreground
+                    trailingText: entry.isHeader || entry.r.kind === "action" ? ""
+                        : (entry.r.kind === "number" || entry.r.kind === "choice" ? "‹ " + entry.r.text + " ›" : entry.r.text)
+                    trailingColor: entry.isHeader ? Theme.muted
+                        : entry.r.kind === "module" && entry.r.zone === "hidden" ? Theme.dim
+                        : entry.r.kind === "info" && entry.r.tone === "accent" ? Theme.accent
+                        : entry.r.kind === "info" && entry.r.tone === "warn" ? Theme.warning
+                        : Theme.muted
+                    trailing: entry.r.kind === "color" ? swatchComp : null
+                    onMoved: if (panel.selectable(entry.r)) panel.select(entry.index)
+                    onClicked: if (panel.selectable(entry.r)) { panel.select(entry.index); panel.activate(entry.r); }
                 }
             }
         }

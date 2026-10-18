@@ -1,6 +1,6 @@
 // Copyright (C) 2026 Maurizio Cavalletti — Licensed under the EUPL-1.2
-// Pannello rete: Wi-Fi (elenco, connessione, password per reti nuove), cavo e VPN.
-// Invio = connetti/disconnetti · Canc = dimentica la rete · Esc = indietro/chiude.
+// Pannello rete (D-023): intestazione con interruttore Wi-Fi, reti Wi-Fi, cavo e VPN.
+// Invio = connetti/disconnetti · Spazio = accendi/spegni il Wi-Fi · Canc = dimentica la rete · Esc = indietro/chiude.
 // Le credenziali non si salvano qui: la password passa a NetworkManager e il campo viene svuotato.
 import QtQuick
 import Quickshell
@@ -12,11 +12,10 @@ import "../../ui"
 PanelHost {
     id: panel
     name: "network"
+    cardWidth: Math.max(Theme.panelWidth, 400)
 
-    readonly property int headerHeight: Theme.rowHeight
-    readonly property int sectionHeight: 26
     readonly property int footerHeight: 28
-    readonly property int maxRows: 12
+    readonly property int maxListHeight: 12 * Theme.rowHeight
 
     property var prompt: null          // rete in attesa di password
     property var forgetting: null      // rete in attesa di conferma "dimentica"
@@ -30,10 +29,11 @@ PanelHost {
         var out = [];
         out.push({ kind: "header", label: "Wi-Fi", key: "h-wifi" });
         if (Wifi.available) {
-            out.push({ kind: "wifiswitch", key: "wifiswitch" });
             if (!Wifi.hardwareEnabled) {
                 out.push({ kind: "message", text: "Wi-Fi disattivato dall'hardware (interruttore o rfkill)", tone: "warn", key: "m-hw" });
-            } else if (Wifi.enabled) {
+            } else if (!Wifi.enabled) {
+                out.push({ kind: "message", text: "Wi-Fi spento: premi Spazio per accenderlo", tone: "dim", key: "m-off" });
+            } else {
                 var nets = Wifi.networks;
                 nets.forEach(function (e) { out.push({ kind: "wifi", e: e, key: "wifi:" + e.name }); });
                 if (nets.length === 0) out.push({ kind: "message", text: "Ricerca delle reti…", tone: "dim", key: "m-scan" });
@@ -57,30 +57,35 @@ PanelHost {
     }
     readonly property var rows: buildRows()
 
-    function selectable(r) { return r && (r.kind === "wifiswitch" || r.kind === "wifi" || r.kind === "vpn"); }
+    function selectable(r) { return r && (r.kind === "wifi" || r.kind === "vpn"); }
+    function current() { return rows[list.currentIndex] || null; }
 
+    function select(i) {
+        list.currentIndex = i;
+        if (i >= 0 && i < rows.length) { currentKey = rows[i].key; list.positionViewAtIndex(i, ListView.Contain); }
+    }
     function move(delta) {
         var n = rows.length;
         if (n === 0) return;
         var i = list.currentIndex;
         for (var step = 0; step < n; step++) {
             i = (i + delta + n) % n;
-            if (selectable(rows[i])) { list.currentIndex = i; return; }
+            if (selectable(rows[i])) { select(i); return; }
         }
     }
-
     // Con l'elenco che cambia (scansioni) la selezione resta sulla stessa voce.
-    onRowsChanged: {
+    function restoreSelection() {
         var idx = -1;
         for (var i = 0; i < rows.length; i++) if (rows[i].key === currentKey) { idx = i; break; }
         if (idx < 0) for (var j = 0; j < rows.length; j++) if (selectable(rows[j])) { idx = j; break; }
         list.currentIndex = idx;
+        if (idx >= 0) list.positionViewAtIndex(idx, ListView.Contain);
     }
+    onRowsChanged: Qt.callLater(restoreSelection)
 
     // --- azioni -----------------------------------------------------------------------
     function activate(r) {
         if (!r) return;
-        if (r.kind === "wifiswitch") { Wifi.setEnabled(!Wifi.enabled); return; }
         if (r.kind === "vpn") { Vpn.toggleOne(r.name); return; }
         if (r.kind !== "wifi") return;
         var e = r.e;
@@ -125,9 +130,10 @@ PanelHost {
 
     onOpenChanged: {
         if (open) {
-            prompt = null; forgetting = null; note = "";
+            prompt = null; forgetting = null; note = ""; currentKey = "";
             Wifi.clearError();
             Wifi.scan(true);
+            for (var i = 0; i < rows.length; i++) if (selectable(rows[i])) { select(i); break; }
             keys.forceActiveFocus();
         } else {
             Wifi.scan(false);
@@ -137,12 +143,15 @@ PanelHost {
     }
 
     // --- aspetto ------------------------------------------------------------------------
+    readonly property var net: NetworkStatus.summary
+    readonly property int vpnActive: Vpn.active.length
     property real listHeight: {
         var h = 0;
-        for (var i = 0; i < Math.min(rows.length, 40); i++) h += rows[i].kind === "header" ? sectionHeight : Theme.rowHeight;
-        return Math.min(h, maxRows * Theme.rowHeight + 2 * sectionHeight);
+        for (var i = 0; i < Math.min(rows.length, 60); i++) h += rows[i].kind === "header" ? 28 : Theme.rowHeight;
+        return Math.min(h + Theme.spacing, maxListHeight);
     }
-    contentHeight: headerHeight + 1 + (prompt ? Theme.rowHeight * 2 + Theme.padding : listHeight + Theme.padding) + footerHeight
+    readonly property real promptHeight: Theme.rowHeight * 2 + Theme.padding * 2
+    contentHeight: hero.implicitHeight + 1 + (prompt ? promptHeight : listHeight) + footerHeight
 
     FocusScope {
         id: keys
@@ -158,11 +167,13 @@ PanelHost {
                 panel.move(1);
             } else if (event.key === Qt.Key_Up || (ctrl && (event.key === Qt.Key_K || event.key === Qt.Key_P))) {
                 panel.move(-1);
+            } else if (event.key === Qt.Key_Space) {
+                if (Wifi.available) Wifi.setEnabled(!Wifi.enabled);
             } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
                 if (panel.forgetting) { Wifi.forget(panel.forgetting); panel.forgetting = null; }
-                else panel.activate(panel.rows[list.currentIndex]);
+                else panel.activate(panel.current());
             } else if (event.key === Qt.Key_Delete) {
-                var r = panel.rows[list.currentIndex];
+                var r = panel.current();
                 if (r && r.kind === "wifi" && r.e.known) panel.forgetting = r.e;
             } else {
                 return;
@@ -170,29 +181,29 @@ PanelHost {
             event.accepted = true;
         }
 
-        // Intestazione
-        Item {
-            id: head
-            width: parent.width
-            height: panel.headerHeight
-            BarText {
-                anchors { left: parent.left; leftMargin: Theme.padding; verticalCenter: parent.verticalCenter }
-                text: "Rete"
-                font.bold: true
-            }
-            BarText {
-                anchors { right: parent.right; rightMargin: Theme.padding; verticalCenter: parent.verticalCenter }
-                text: NetworkStatus.summary.kind === "none" ? "disconnesso" : NetworkStatus.summary.name || NetworkStatus.summary.device
-                color: Theme.muted
+        PanelHero {
+            id: hero
+            icon: panel.net.kind === "wifi" ? Icons.pick(Icons.wifi, panel.net.signal)
+                : panel.net.kind === "ethernet" ? Icons.ethernet : Icons.wifiOff
+            iconColor: panel.net.kind === "none" ? Theme.muted : Theme.accent
+            title: "Rete"
+            meta: panel.net.kind === "none" ? "disconnesso" : (panel.net.name || panel.net.device)
+            detail: panel.vpnActive > 0 ? "VPN" + (panel.vpnActive > 1 ? " ×" + panel.vpnActive : "") : ""
+            trailing: Component {
+                ToggleSwitch {
+                    visible: Wifi.available && Wifi.hardwareEnabled
+                    checked: Wifi.enabled
+                    onToggled: Wifi.setEnabled(!Wifi.enabled)
+                }
             }
         }
-        Rectangle { id: sepLine; anchors.top: head.bottom; width: parent.width; height: 1; color: Theme.border }
+        PanelSeparator { id: sep; anchors.top: hero.bottom }
 
         // Richiesta di password
         Item {
             visible: panel.prompt !== null
-            anchors { top: sepLine.bottom; left: parent.left; right: parent.right; margins: Theme.padding }
-            height: Theme.rowHeight * 2
+            anchors { top: sep.bottom; left: parent.left; right: parent.right; margins: Theme.padding }
+            height: panel.promptHeight - Theme.padding
             BarText {
                 id: promptLabel
                 width: parent.width
@@ -201,7 +212,7 @@ PanelHost {
                 color: Theme.muted
             }
             Rectangle {
-                anchors { top: promptLabel.bottom; topMargin: Theme.spacing / 2; left: parent.left; right: parent.right }
+                anchors { top: promptLabel.bottom; topMargin: Theme.spacing; left: parent.left; right: parent.right }
                 height: Theme.rowHeight - 4
                 color: Theme.background
                 border.color: Theme.accent
@@ -228,135 +239,91 @@ PanelHost {
             }
         }
 
-        // Elenco
         ListView {
             id: list
             visible: panel.prompt === null
-            anchors { top: sepLine.bottom; topMargin: Theme.padding / 2; left: parent.left; right: parent.right }
+            anchors { top: sep.bottom; left: parent.left; right: parent.right }
             height: panel.listHeight
+            topMargin: Theme.spacing / 2
             model: panel.rows
             clip: true
             currentIndex: -1
             highlightMoveDuration: 0
             boundsBehavior: Flickable.StopAtBounds
-            onCurrentIndexChanged: panel.currentKey = (currentIndex >= 0 && currentIndex < panel.rows.length) ? panel.rows[currentIndex].key : ""
 
-            delegate: Rectangle {
-                id: item
+            delegate: Item {
+                id: entry
                 required property var modelData
                 required property int index
                 readonly property var r: modelData
-                readonly property bool isHeader: r.kind === "header"
+                // Durante il ricalcolo dell'elenco un delegato può restare senza dati: tutto passa da qui.
+                readonly property var wifi: modelData && modelData.kind === "wifi" ? modelData.e : null
+                readonly property var vpn: modelData && modelData.kind === "vpn" ? modelData : null
+                readonly property var wired: modelData && modelData.kind === "wired" ? modelData.w : null
                 width: ListView.view.width
-                height: isHeader ? panel.sectionHeight : Theme.rowHeight
-                color: ListView.isCurrentItem && panel.selectable(r) ? Theme.border : "transparent"
+                height: r.kind === "header" ? 28 : Theme.rowHeight
 
-                // sezione
-                BarText {
-                    visible: item.isHeader
-                    anchors { left: parent.left; leftMargin: Theme.padding; bottom: parent.bottom; bottomMargin: 2 }
-                    text: item.isHeader ? item.r.label.toUpperCase() : ""
-                    color: Theme.dim
-                    font.pixelSize: Theme.fontSize - 2
-                    font.letterSpacing: 1
-                }
+                PanelSectionHeader { visible: entry.r.kind === "header"; text: entry.r.kind === "header" ? entry.r.label : "" }
 
-                // messaggio
                 BarText {
-                    visible: item.r.kind === "message"
+                    visible: entry.r.kind === "message"
                     anchors { left: parent.left; right: parent.right; leftMargin: Theme.padding; rightMargin: Theme.padding; verticalCenter: parent.verticalCenter }
-                    text: item.r.kind === "message" ? item.r.text : ""
-                    color: item.r.tone === "error" ? Theme.error : item.r.tone === "warn" ? Theme.warning : Theme.dim
+                    text: entry.r.kind === "message" ? entry.r.text : ""
+                    color: entry.r.tone === "error" ? Theme.error : entry.r.tone === "warn" ? Theme.warning : Theme.dim
                     elide: Text.ElideRight
                 }
 
-                // interruttore Wi-Fi
-                Item {
-                    visible: item.r.kind === "wifiswitch"
-                    anchors.fill: parent
-                    BarText { anchors { left: parent.left; leftMargin: Theme.padding; verticalCenter: parent.verticalCenter } text: "Wi-Fi" }
-                    BarText {
-                        anchors { right: parent.right; rightMargin: Theme.padding; verticalCenter: parent.verticalCenter }
-                        text: Wifi.enabled ? "acceso" : "spento"
-                        color: Wifi.enabled ? Theme.accent : Theme.muted
-                    }
-                }
-
                 // rete Wi-Fi
-                Item {
-                    visible: item.r.kind === "wifi"
-                    anchors.fill: parent
-                    BarIcon {
-                        id: sig
-                        anchors { left: parent.left; leftMargin: Theme.padding; verticalCenter: parent.verticalCenter }
-                        text: item.r.kind === "wifi" ? Icons.pick(Icons.wifi, item.r.e.signal) : ""
-                        color: item.r.kind === "wifi" && item.r.e.connected ? Theme.accent : Theme.foreground
+                PanelRow {
+                    visible: entry.r.kind === "wifi"
+                    anchors { fill: parent; leftMargin: Theme.spacing; rightMargin: Theme.spacing }
+                    hasCursor: ListView.isCurrentItem
+                    icon: entry.wifi ? Icons.pick(Icons.wifi, entry.wifi.signal) : ""
+                    iconColor: entry.wifi && entry.wifi.connected ? Theme.accent : Theme.foreground
+                    title: entry.wifi ? entry.wifi.name : ""
+                    bold: entry.wifi ? entry.wifi.connected : false
+                    selected: entry.wifi ? entry.wifi.connected : false
+                    trailingText: !entry.wifi ? "" : entry.wifi.connecting ? "connessione…" : entry.wifi.connected ? "connessa" : entry.wifi.known ? "salvata" : ""
+                    trailingColor: entry.wifi && entry.wifi.connected ? Theme.accent : Theme.muted
+                    trailing: Component {
+                        BarIcon { visible: entry.wifi && entry.wifi.secured; text: Icons.lock; color: Theme.muted; font.pixelSize: Theme.fontSize }
                     }
-                    BarText {
-                        anchors { left: sig.right; leftMargin: Theme.spacing; right: state.left; rightMargin: Theme.spacing; verticalCenter: parent.verticalCenter }
-                        text: item.r.kind === "wifi" ? item.r.e.name : ""
-                        elide: Text.ElideRight
-                        font.bold: item.r.kind === "wifi" && item.r.e.connected
-                    }
-                    Row {
-                        id: state
-                        anchors { right: parent.right; rightMargin: Theme.padding; verticalCenter: parent.verticalCenter }
-                        spacing: Theme.gap
-                        BarText {
-                            text: item.r.kind !== "wifi" ? "" : item.r.e.connecting ? "connessione…" : item.r.e.connected ? "connessa" : item.r.e.known ? "salvata" : ""
-                            color: item.r.kind === "wifi" && item.r.e.connected ? Theme.accent : Theme.muted
-                        }
-                        BarIcon { visible: item.r.kind === "wifi" && item.r.e.secured; text: Icons.lock; color: Theme.muted; font.pixelSize: Theme.fontSize }
-                    }
+                    onMoved: panel.select(entry.index)
+                    onClicked: { panel.select(entry.index); panel.activate(entry.r); }
                 }
 
-                // cavo
-                Item {
-                    visible: item.r.kind === "wired"
-                    anchors.fill: parent
-                    BarIcon { id: eth; anchors { left: parent.left; leftMargin: Theme.padding; verticalCenter: parent.verticalCenter } text: Icons.ethernet }
-                    BarText { anchors { left: eth.right; leftMargin: Theme.spacing; verticalCenter: parent.verticalCenter } text: item.r.kind === "wired" ? item.r.w.name : "" }
-                    BarText {
-                        anchors { right: parent.right; rightMargin: Theme.padding; verticalCenter: parent.verticalCenter }
-                        text: item.r.kind !== "wired" ? "" : item.r.w.connected ? "connesso" : item.r.w.link ? "collegato" : "scollegato"
-                        color: item.r.kind === "wired" && item.r.w.connected ? Theme.accent : Theme.muted
-                    }
+                // cavo (solo informazione)
+                PanelRow {
+                    visible: entry.r.kind === "wired"
+                    anchors { fill: parent; leftMargin: Theme.spacing; rightMargin: Theme.spacing }
+                    icon: Icons.ethernet
+                    iconColor: entry.wired && entry.wired.connected ? Theme.accent : Theme.muted
+                    title: entry.wired ? entry.wired.name : ""
+                    trailingText: !entry.wired ? "" : entry.wired.connected ? "connesso" : entry.wired.link ? "collegato" : "scollegato"
+                    trailingColor: entry.wired && entry.wired.connected ? Theme.accent : Theme.muted
+                    enabled: false
                 }
 
-                // VPN
-                Item {
-                    visible: item.r.kind === "vpn"
-                    anchors.fill: parent
-                    BarIcon { id: vp; anchors { left: parent.left; leftMargin: Theme.padding; verticalCenter: parent.verticalCenter } text: Icons.vpn; color: item.r.kind === "vpn" && item.r.active ? Theme.accent : Theme.muted }
-                    BarText {
-                        anchors { left: vp.right; leftMargin: Theme.spacing; right: vstate.left; rightMargin: Theme.spacing; verticalCenter: parent.verticalCenter }
-                        text: item.r.kind === "vpn" ? item.r.name : ""
-                        elide: Text.ElideRight
+                // VPN, con interruttore
+                PanelRow {
+                    visible: entry.r.kind === "vpn"
+                    anchors { fill: parent; leftMargin: Theme.spacing; rightMargin: Theme.spacing }
+                    hasCursor: ListView.isCurrentItem
+                    icon: Icons.vpn
+                    iconColor: entry.vpn && entry.vpn.active ? Theme.accent : Theme.muted
+                    title: entry.vpn ? entry.vpn.name : ""
+                    trailing: Component {
+                        ToggleSwitch { interactive: false; checked: entry.vpn ? entry.vpn.active : false }
                     }
-                    BarText {
-                        id: vstate
-                        anchors { right: parent.right; rightMargin: Theme.padding; verticalCenter: parent.verticalCenter }
-                        text: item.r.kind === "vpn" && item.r.active ? "attiva" : ""
-                        color: Theme.accent
-                    }
-                }
-
-                MouseArea {
-                    anchors.fill: parent
-                    enabled: panel.selectable(item.r)
-                    hoverEnabled: true
-                    onPositionChanged: list.currentIndex = item.index
-                    onClicked: { list.currentIndex = item.index; panel.activate(item.r); }
+                    onMoved: panel.select(entry.index)
+                    onClicked: { panel.select(entry.index); panel.activate(entry.r); }
                 }
             }
         }
 
-        // Conferma "dimentica" e suggerimenti
-        Rectangle {
-            id: foot
+        Item {
             anchors { bottom: parent.bottom; left: parent.left; right: parent.right }
             height: panel.footerHeight
-            color: "transparent"
             Rectangle { anchors.top: parent.top; width: parent.width; height: 1; color: Theme.border }
             BarText {
                 anchors { left: parent.left; right: parent.right; leftMargin: Theme.padding; rightMargin: Theme.padding; verticalCenter: parent.verticalCenter }
@@ -365,7 +332,7 @@ PanelHost {
                 color: panel.forgetting ? Theme.warning : Theme.dim
                 text: panel.forgetting ? "Dimenticare «" + panel.forgetting.name + "»? Invio = sì, Esc = no"
                     : panel.prompt ? "Invio = connetti · Esc = annulla"
-                    : "Invio = connetti/disconnetti · Canc = dimentica · Esc = chiudi"
+                    : "Invio connetti · Spazio Wi-Fi on/off · Canc dimentica"
             }
         }
     }

@@ -13,6 +13,7 @@ Rectangle {
     property color iconColor: Theme.foreground
     property string title: ""
     property bool bold: false
+    property color titleColor: Theme.foreground
     property string trailingText: ""
     property color trailingColor: Theme.muted
     property Component trailing: null
@@ -45,6 +46,7 @@ Rectangle {
         text: root.title
         elide: Text.ElideRight
         font.bold: root.bold
+        color: root.titleColor
     }
     Row {
         id: rightPart

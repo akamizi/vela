@@ -146,6 +146,8 @@ Testo sempre semplice, clic = chiudi, le notifiche critiche restano finché non 
 
 ## Pannello audio
 
+(Stile Omarchy, D-023: intestazione con uscita predefinita e interruttore del muto, cursori del volume per dispositivo.)
+
 Clic sull'icona del volume (clic destro = muto, rotellina = volume), menu Sistema › Audio o
 `vela ipc call panel toggle audio`. Uscite e ingressi con volume per dispositivo: ←/→ = volume,
 M = muto, Invio = rendi predefinito, Esc = chiude.
@@ -162,6 +164,8 @@ Clic sull'icona Bluetooth (clic destro = accendi/spegni), menu Sistema › Bluet
 Dispositivi che chiedono un PIN non sono ancora supportati.
 
 ## Pannello rete
+
+(Stile Omarchy, D-023: intestazione con interruttore Wi-Fi, reti con stati, VPN con interruttori; Spazio = Wi-Fi acceso/spento.)
 
 Si apre con un clic sull'icona di rete o sulla VPN nella barra, dal menu (Sistema › Rete) o con
 `vela ipc call panel toggle network`. Mostra Wi-Fi (interruttore, reti per segnale), cavo e VPN.
