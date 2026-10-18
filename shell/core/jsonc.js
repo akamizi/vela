@@ -76,6 +76,8 @@ function merge(base, over, path, warnings) {
         var kb = kind(base[key]), ko = kind(over[key]);
         if (kb === "object" && ko === "object") {
             out[key] = merge(base[key], over[key], p, warnings);
+        } else if (kb === "null") {
+            out[key] = over[key];   // il default null significa "non impostato": accetta qualsiasi tipo
         } else if (kb !== ko) {
             warnings.push(p + ": atteso " + kb + ", trovato " + ko);
         } else {

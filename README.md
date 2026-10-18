@@ -3,7 +3,7 @@
 Shell minimale per Sway su Void Linux (barra, launcher, pannelli), basata su Quickshell.
 Licenza: EUPL-1.2.
 
-Stato: Fase 1 (scheletro, tema e configurazione a strati). Vedi `PIANO.md` nella cartella padre del progetto.
+Stato: Fase 2 (barra completa; menu e pannelli arrivano nelle fasi successive). Vedi `PIANO.md` nella cartella padre del progetto.
 
 ## Prova in sviluppo
 
@@ -26,3 +26,24 @@ viene ignorato (in tutto o per la chiave interessata) e un avviso compare nella 
 La configurazione utente è ricaricata a caldo se `~/.config/vela/` esiste all'avvio.
 
 Variabile per i test: `VELA_USER_DIR` sostituisce `~/.config/vela`.
+
+## Barra
+
+Tre zone (sinistra, centro, destra) riempite dagli elementi elencati in `bar.modules` (`config/defaults/shell.jsonc`).
+Elementi: Menu, Workspaces, WindowTitle, Weather, Recording, Dnd, NightLight, Awake, Media, Clock, Tray, Memory, Cpu,
+Temperature, Fan, Bluetooth, Network, Vpn, Volume, Brightness, PowerProfile, Battery.
+Quelli che dipendono da hardware o servizi assenti (batteria, ventola, retroilluminazione, Bluetooth, VPN) si nascondono da soli.
+
+Interazioni: rotellina su Volume (±2%), Brightness (±5%), Workspaces e Media; clic destro su Volume (muto) e Bluetooth
+(on/off); clic su Clock (formato alternativo), PowerProfile (profilo successivo), Vpn (accendi/spegni), Tray (attiva; destro = menu).
+Passando il mouse compaiono i tooltip (calendario sull'orologio, previsioni sul meteo).
+
+## Comandi alla shell in esecuzione
+
+```sh
+scripts/vela ipc show                   # funzioni disponibili
+scripts/vela ipc call bar toggle        # mostra/nascondi la barra (sostituisce Win+B di Waybar)
+scripts/vela ipc call toggles awake     # resta sveglio (inibisce l'idle)
+scripts/vela ipc call toggles night     # luce notturna (gammastep)
+scripts/vela ipc call toggles dnd       # non disturbare (provvisorio: dunst)
+```

@@ -1,4 +1,26 @@
-// Copiare in ~/.config/vela/shell.jsonc.
+// Copiare in ~/.config/vela/shell.jsonc e tenere solo le chiavi da cambiare.
+// Esempio con le impostazioni più comuni.
 {
-  "bar": { "position": "top" }
+  "bar": {
+    // "top" o "bottom"
+    "position": "top",
+    // Ordine e scelta degli elementi di ciascuna zona (elenco completo in config/defaults/shell.jsonc)
+    "modules": {
+      "right": ["Tray", "Cpu", "Temperature", "Network", "Volume", "Battery"]
+    },
+    "clock": { "locale": "it_IT" }
+  },
+  "weather": {
+    "latitude": 43.91,
+    "longitude": 12.91,
+    "placeName": "Pesaro",
+    // api.met.no chiede un contatto nello User-Agent
+    "userAgent": "vela/0.1 nome@example.org"
+  },
+  "stats": { "monitorCommand": ["foot", "-e", "btop"] },
+  "toggles": {
+    // Registrazione schermo con uno script esterno: "è attiva?" e "fermala"
+    "recordingCommand": ["cap-record", "is-on"],
+    "recordingStopCommand": ["cap-record", "stop"]
+  }
 }

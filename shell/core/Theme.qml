@@ -21,6 +21,7 @@ Singleton {
 
     readonly property string fontFamily: t.font.family
     readonly property string iconFamily: t.font.iconFamily
+    readonly property string monoFamily: t.font.monoFamily
     readonly property int fontSize: t.font.size
     readonly property int iconSize: t.font.iconSize
 
@@ -28,4 +29,5 @@ Singleton {
     readonly property int radius: t.layout.radius
     readonly property int spacing: t.layout.spacing
     readonly property int padding: t.layout.padding
+    readonly property int gap: t.layout.gap
 }

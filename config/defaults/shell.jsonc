@@ -1,8 +1,64 @@
 // Configurazione della shell (default). Gli override stanno in ~/.config/vela/shell.jsonc
+// Nessun valore qui dipende da un PC particolare: i sensori si rilevano a runtime.
 {
   "bar": {
     "enabled": true,
     // "top" o "bottom"
-    "position": "bottom"
+    "position": "bottom",
+    // Elementi di ciascuna zona, nell'ordine in cui compaiono. Disponibili:
+    // Menu Workspaces WindowTitle Weather Recording Dnd NightLight Awake Media Clock Tray
+    // Memory Cpu Temperature Fan Bluetooth Network Vpn Volume Brightness PowerProfile Battery
+    "modules": {
+      "left": ["Menu", "Workspaces", "Weather", "WindowTitle"],
+      "center": ["Recording", "Dnd", "NightLight", "Awake", "Media", "Clock"],
+      "right": ["Tray", "Memory", "Cpu", "Temperature", "Fan", "Bluetooth", "Network", "Vpn",
+                "Volume", "Brightness", "PowerProfile", "Battery"]
+    },
+    "workspaces": { "persistent": [1, 2, 3, 4, 5] },
+    "windowTitle": { "maxWidth": 360 },
+    "media": { "maxWidth": 320 },
+    "vpn": { "maxWidth": 200 },
+    // Comando del pulsante menu (array di argomenti); il menu integrato arriva in Fase 3
+    "menuButton": { "command": null },
+    "clock": {
+      // "" = lingua di sistema, altrimenti per esempio "it_IT"
+      "locale": "",
+      "format": "ddd d MMM  HH:mm",
+      "formatAlt": "HH:mm - dd/MM/yyyy"
+    }
+  },
+  "tray": {
+    "enabled": true,
+    // true = parte chiuso, la freccia lo apre
+    "collapsed": true
+  },
+  "weather": {
+    // Servono entrambe le coordinate, altrimenti il meteo resta spento
+    "latitude": null,
+    "longitude": null,
+    "placeName": "",
+    // api.met.no chiede di identificarsi: meglio aggiungere un contatto, es. "vela/0.1 nome@example.org"
+    "userAgent": "vela-shell/0.1",
+    "interval": 1800
+  },
+  "stats": {
+    "interval": 5,
+    // nome del sensore hwmon da preferire (""= rilevamento automatico)
+    "temperatureSensor": "",
+    "criticalTemperature": 85,
+    // es. ["foot", "-e", "btop"]
+    "monitorCommand": null
+  },
+  "battery": { "warning": 20, "critical": 10 },
+  "audio": { "step": 0.02, "maxVolume": 1.0 },
+  "brightness": { "step": 5 },
+  "toggles": {
+    // secondi tra un controllo e l'altro degli stati esterni (luce notturna, non disturbare, registrazione)
+    "pollInterval": 5,
+    "nightTemperature": 4000,
+    // comando che esce con 0 se si sta registrando, es. ["cap-record", "is-on"]; null = indicatore spento
+    "recordingCommand": null,
+    // comando per fermare la registrazione, es. ["cap-record", "stop"]
+    "recordingStopCommand": null
   }
 }

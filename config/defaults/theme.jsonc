@@ -15,6 +15,7 @@
   "font": {
     "family": "Inter",
     "iconFamily": "Symbols Nerd Font Mono",
+    "monoFamily": "monospace",
     "size": 13,
     "iconSize": 15
   },
@@ -22,6 +23,8 @@
     "barHeight": 26,
     "radius": 0,
     "spacing": 6,
+    // distanza tra icona e testo dentro uno stesso elemento
+    "gap": 4,
     "padding": 10
   },
   // Trasparenza dello sfondo della barra (0 = trasparente, 1 = opaco)
