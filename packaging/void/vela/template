@@ -10,8 +10,8 @@ short_desc="Minimal desktop shell for Sway built on Quickshell"
 maintainer="Maurizio Cavalletti <maurizio@akabit.it>"
 license="EUPL-1.2"
 homepage="https://github.com/akamizi/vela"
-distfiles="${homepage}/archive/v${version}.tar.gz>vela-${version}.tar.gz"  # TODO: release reale
-checksum=0000000000000000000000000000000000000000000000000000000000000000  # TODO: sha256 reale
+distfiles="${homepage}/archive/v${version}.tar.gz>vela-${version}.tar.gz"
+checksum=aa505fab1db4841aeff0e7226953e03a32af24bf8b2b581dd64ba02e520a222c
 
 # Dipendenze facoltative: senza, la voce relativa sparisce (vedi README).
 # NetworkManager (rete, VPN), bluez (Bluetooth), wireplumber (audio PipeWire), upower (batteria),
