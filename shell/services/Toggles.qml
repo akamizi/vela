@@ -19,7 +19,29 @@ Singleton {
 
     readonly property var recordingCommand: Config.shell.toggles.recordingCommand
 
+    // "Resta sveglio" può essere anche esterno (es. uno script che ferma swayidle): `awakeCommand` esce con 0 se è
+    // attivo, `awakeToggleCommand` lo commuta. Senza questi comandi vale solo l'inibitore interno di Vela.
+    property bool awakeExternal: false
+    readonly property bool awakeOn: awake || awakeExternal
+    readonly property var awakeCommand: Config.shell.toggles.awakeCommand
+    readonly property var awakeToggleCommand: Config.shell.toggles.awakeToggleCommand
+
     function setAwake(on) { awake = on; }
+    function toggleAwake() {
+        if (awakeToggleCommand) { Quickshell.execDetached(awakeToggleCommand); refreshSoon.restart(); }
+        else awake = !awake;
+    }
+    // Spegne "resta sveglio" da qualunque origine sia attivo.
+    function stopAwake() {
+        awake = false;
+        if (awakeExternal && awakeToggleCommand) { Quickshell.execDetached(awakeToggleCommand); refreshSoon.restart(); }
+    }
+
+    Process {
+        id: awakeCheck
+        command: root.awakeCommand ? root.awakeCommand : ["false"]
+        onExited: code => root.awakeExternal = (root.awakeCommand !== null && code === 0)
+    }
 
     // --- luce notturna (gammastep) ---
     Process {
@@ -83,6 +105,7 @@ Singleton {
         nightCheck.running = true;
         if (hasDunstctl && !Notifications.active) dndCheck.running = true;
         if (recordingCommand) recCheck.running = true;
+        if (awakeCommand) awakeCheck.running = true;
     }
 
     Timer { id: refreshSoon; interval: 600; onTriggered: root.refresh() }

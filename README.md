@@ -94,6 +94,14 @@ Esc = cancella il testo / torna indietro / chiude. Le voci con `confirm` chiedon
 Le voci si definiscono in `config/defaults/menu.jsonc`; l'override utente `~/.config/vela/menu.jsonc` si fonde **per id**
 (vedi i commenti nel file e `config/user.example/menu.jsonc`). Le azioni `exec` sono sempre array di argomenti.
 
+## Resta sveglio
+
+Mentre è attivo la barra mostra una pillola arancione "SVEGLIO" (clic = disattiva). Di base è l'inibitore di
+idle di Vela (voce Interruttori › Resta sveglio, o `vela ipc call toggles awake`). Se usi uno script esterno
+(ad esempio uno che ferma `swayidle`) configura in `shell.jsonc` `toggles.awakeCommand` (esce con 0 se è
+attivo) e `toggles.awakeToggleCommand` (lo commuta): l'indicatore e la voce di menu li seguiranno, e lo script
+può chiamare `vela ipc call toggles refresh` per un aggiornamento immediato (altrimenti entro 5 secondi).
+
 ## Impostazioni
 
 `vela ipc call panel toggle settings` o menu Sistema › Impostazioni: finestra al centro con le categorie a

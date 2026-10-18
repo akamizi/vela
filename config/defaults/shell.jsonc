@@ -70,6 +70,10 @@
     "pollInterval": 5,
     "nightTemperature": 4000,
     // comando che esce con 0 se si sta registrando, es. ["cap-record", "is-on"]; null = indicatore spento
+    // "Resta sveglio" esterno (facoltativo): comando che esce con 0 se è attivo e comando che lo commuta,
+    // es. ["idle-inhibit-toggle", "is-on"] e ["idle-inhibit-toggle"]. Senza, vale l'inibitore interno di Vela.
+    "awakeCommand": null,
+    "awakeToggleCommand": null,
     "recordingCommand": null,
     // comando per fermare la registrazione, es. ["cap-record", "stop"]
     "recordingStopCommand": null

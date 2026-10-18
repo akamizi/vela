@@ -109,7 +109,7 @@ Singleton {
         if (!a || a.type !== "toggle") return null;
         switch (a.target) {
         case "night": return Toggles.night;
-        case "awake": return Toggles.awake;
+        case "awake": return Toggles.awakeOn;
         case "dnd": return Toggles.dnd;
         case "bar": return Runtime.barVisible;
         }
@@ -131,7 +131,7 @@ Singleton {
             return true;
         case "toggle":
             if (a.target === "night") Toggles.toggleNight();
-            else if (a.target === "awake") Toggles.setAwake(!Toggles.awake);
+            else if (a.target === "awake") Toggles.toggleAwake();
             else if (a.target === "dnd") Toggles.toggleDnd();
             else if (a.target === "bar") Runtime.barVisible = !Runtime.barVisible;
             else return false;

@@ -75,7 +75,8 @@ ShellRoot {
     }
     IpcHandler {
         target: "toggles"
-        function awake(): void { Toggles.setAwake(!Toggles.awake); }
+        function awake(): void { Toggles.toggleAwake(); }
+        function refresh(): void { Toggles.refresh(); }   // per gli script che cambiano uno stato esterno
         function night(): void { Toggles.toggleNight(); }
         function dnd(): void { Toggles.toggleDnd(); }
     }
