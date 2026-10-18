@@ -14,6 +14,22 @@ Singleton {
     readonly property var cfg: Config.shell.weather
     readonly property bool enabled: typeof cfg.latitude === "number" && typeof cfg.longitude === "number"
 
+    readonly property bool imperial: cfg.units === "imperial"
+    readonly property string unitLabel: imperial ? "°F" : "°C"
+    // Temperatura nell'unità scelta (l'API dà sempre °C).
+    function conv(c) { return imperial ? c * 9 / 5 + 32 : c; }
+    readonly property real lat: typeof cfg.latitude === "number" ? cfg.latitude : 0
+    readonly property real lon: typeof cfg.longitude === "number" ? cfg.longitude : 0
+    // Se cambiano città o unità (dalle Impostazioni) si aggiorna subito.
+    onLatChanged: relocate.restart()
+    onLonChanged: relocate.restart()
+    Timer {
+        id: relocate
+        interval: 300      // latitudine e longitudine cambiano insieme: una sola richiesta
+        onTriggered: { if (!root.enabled) return; fetch.running = false; root.data = null; root.refresh(); }
+    }
+    onImperialChanged: if (data) render(data, stale)
+
     property string text: ""
     property string tooltip: ""
     property bool stale: false
@@ -55,10 +71,10 @@ Singleton {
             if (Math.abs(Date.parse(series[i].time) - now) < Math.abs(Date.parse(best.time) - now)) best = series[i];
         var temp = best.data.instant.details.air_temperature;
         var symbol = symbolOf(best);
-        text = lookup(iconFor, symbol, Icons.weather.cloudy) + " " + Math.round(temp) + "°";
+        text = lookup(iconFor, symbol, Icons.weather.cloudy) + " " + Math.round(conv(temp)) + "°";
 
         var loc = Config.shell.bar.clock.locale ? Qt.locale(Config.shell.bar.clock.locale) : Qt.locale();
-        var lines = [(cfg.placeName ? cfg.placeName + " — " : "") + lookup(labelFor, symbol, symbol) + ", " + temp + "°C", ""];
+        var lines = [(cfg.placeName ? cfg.placeName + " — " : "") + lookup(labelFor, symbol, symbol) + ", " + Math.round(conv(temp) * 10) / 10 + unitLabel, ""];
         if (isStale) {
             var upd = json.properties.meta && json.properties.meta.updated_at;
             var age = upd ? Math.round((now - Date.parse(upd)) / 60000) : -1;
@@ -78,7 +94,7 @@ Singleton {
             });
             var ds = symbolOf(noon);
             lines.push(day.toLocaleDateString(loc, "ddd") + " " + lookup(iconFor, ds, Icons.weather.cloudy) + " "
-                + Math.round(Math.max.apply(null, temps)) + "°/" + Math.round(Math.min.apply(null, temps)) + "°C "
+                + Math.round(conv(Math.max.apply(null, temps))) + "°/" + Math.round(conv(Math.min.apply(null, temps))) + unitLabel + " "
                 + lookup(labelFor, ds, ds));
         }
         tooltip = lines.join("\n");

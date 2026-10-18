@@ -43,6 +43,8 @@
     "latitude": null,
     "longitude": null,
     "placeName": "",
+    // "metric" (°C) oppure "imperial" (°F)
+    "units": "metric",
     // api.met.no chiede di identificarsi: meglio aggiungere un contatto, es. "vela/0.1 nome@example.org"
     "userAgent": "vela-shell/0.1",
     "interval": 1800

@@ -103,6 +103,11 @@ carattere, dimensione, angoli di pannelli, menu e notifiche. ←/→ cambia i va
 L'effetto è immediato. Le scelte vanno in `~/.config/vela/settings.jsonc`, che ha la precedenza sugli altri
 file: i tuoi `shell.jsonc`, `theme.jsonc` e `menu.jsonc` non vengono mai modificati da Vela.
 
+La categoria **Meteo** imposta la città e le unità. "Città": Invio, scrivi il nome e scegli tra i risultati
+(la ricerca usa il servizio di geocodifica di Open-Meteo e invia solo il nome cercato, solo quando la avvii);
+le coordinate e il nome finiscono in `settings.jsonc`. "Unità di misura": metriche (°C, predefinito) o
+imperiali (°F). Senza città il meteo resta spento. Canc sulla città ripristina.
+
 La categoria **Compositor** mostra quali compositor ci sono (installato, in esecuzione, sessione attuale), se
 Vela ha un backend per quello attivo e quali categorie di impostazioni sono già disponibili o in arrivo
 (schermi, tastiera e touchpad, sfondo, scorciatoie, avvio automatico, regole, bordi). Oggi il backend è Sway.

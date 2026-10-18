@@ -21,8 +21,8 @@ PanelHost {
     readonly property int footerHeight: 28
     readonly property int maxRows: 14
 
-    property int tab: 0                       // 0 = Barra, 1 = Tema, 2 = Compositor
-    readonly property var tabNames: ["Barra", "Tema", "Compositor"]
+    property int tab: 0                       // 0 = Barra, 1 = Tema, 2 = Meteo, 3 = Compositor
+    readonly property var tabNames: ["Barra", "Tema", "Meteo", "Compositor"]
     property var editing: null                // riga in modifica (colore o testo)
     property bool confirmReset: false
     property string currentKey: ""
@@ -97,6 +97,26 @@ PanelHost {
         return out;
     }
 
+    function weatherRows() {
+        var w = Config.shell.weather;
+        var out = [header("Meteo")];
+        var on = typeof w.latitude === "number" && typeof w.longitude === "number";
+        out.push(info("Stato", on ? "attivo" : "spento: scegli una città", on ? "accent" : "warn"));
+        out.push({ kind: "search", label: "Città", text: w.placeName ? w.placeName : (on ? "coordinate impostate" : "non impostata"),
+                   over: Settings.overridden("shell", "weather.placeName"), key: "search:city" });
+        out.push(choice("shell", "weather.units", "Unità di misura", [{ v: "metric", t: "metriche (°C)" }, { v: "imperial", t: "imperiali (°F)" }]));
+        if (Geocoding.busy) out.push(info("Ricerca di «" + Geocoding.query + "»", "in corso…"));
+        else if (Geocoding.error !== "") out.push(info("Ricerca di «" + Geocoding.query + "»", Geocoding.error, "warn"));
+        if (Geocoding.results.length > 0) {
+            out.push(header("Risultati per «" + Geocoding.query + "»"));
+            Geocoding.results.forEach(function (r, i) {
+                out.push({ kind: "place", label: r.label, text: r.lat.toFixed(2) + ", " + r.lon.toFixed(2), place: r, key: "place:" + i });
+            });
+        }
+        out.push({ kind: "action", label: "Ripristina questa scheda", act: "resetTab", key: "a:resetTab" });
+        return out;
+    }
+
     function info(label, text, tone) { return { kind: "info", label: label, text: text, tone: tone || "", key: "i:" + label }; }
 
     function compositorRows() {
@@ -121,7 +141,7 @@ PanelHost {
         return out;
     }
 
-    readonly property var rows: tab === 0 ? barRows() : tab === 1 ? themeRows() : compositorRows()
+    readonly property var rows: tab === 0 ? barRows() : tab === 1 ? themeRows() : tab === 2 ? weatherRows() : compositorRows()
     function selectable(r) { return r && r.kind !== "header" && r.kind !== "info"; }
     function current() { return rows[list.currentIndex] || null; }
 
@@ -149,7 +169,7 @@ PanelHost {
     }
     onRowsChanged: Qt.callLater(restoreSelection)
 
-    onTabChanged: { currentKey = ""; confirmReset = false; if (tab === 2) Compositors.refresh(); }
+    onTabChanged: { currentKey = ""; confirmReset = false; if (tab === 3) Compositors.refresh(); }
 
     // --- azioni -----------------------------------------------------------------------
     function round(v, dec) { var m = Math.pow(10, dec); return Math.round(v * m) / m; }
@@ -202,12 +222,18 @@ PanelHost {
     function resetList() {
         return tab === 0
             ? [["shell", "bar.position"], ["shell", "bar.modules"], ["theme", "layout.barHeight"], ["theme", "layout.barRadius"], ["theme", "font.barSize"], ["theme", "barOpacity"]]
+            : tab === 2 ? [["shell", "weather.latitude"], ["shell", "weather.longitude"], ["shell", "weather.placeName"], ["shell", "weather.units"]]
             : [["theme", "colors"], ["theme", "font.family"], ["theme", "font.size"], ["theme", "layout.radius"]];
     }
 
     function activate(r) {
         if (!r) return;
-        if (r.kind === "color" || r.kind === "text") { startEdit(r); return; }
+        if (r.kind === "color" || r.kind === "text" || r.kind === "search") { startEdit(r); return; }
+        if (r.kind === "place") {
+            Settings.setMany("shell", { "weather.latitude": r.place.lat, "weather.longitude": r.place.lon, "weather.placeName": r.place.name });
+            Geocoding.clear();
+            return;
+        }
         if (r.kind === "number" || r.kind === "choice") { step(r, 1); return; }
         if (r.kind !== "action") return;
         if (r.act === "presetDark") Settings.resetMany([["theme", "colors"]]);
@@ -219,7 +245,7 @@ PanelHost {
     function startEdit(r) {
         editing = r;
         note = "";
-        editor.begin(String(r.value));
+        editor.begin(r.kind === "search" ? "" : String(r.value));
         field.forceActiveFocus();
         field.selectAll();
     }
@@ -230,13 +256,15 @@ PanelHost {
             if (!/^#[0-9a-fA-F]{6}$/.test(t)) { note = "Colore non valido: usare #rrggbb"; return; }
             t = t.toLowerCase();
         } else if (t === "") { note = "Valore vuoto"; return; }
+        if (r.kind === "search") { Geocoding.search(t); cancelEdit(); return; }
         Settings.set(r.file, r.path, t);
         cancelEdit();
     }
     function cancelEdit() { editing = null; note = ""; keys.forceActiveFocus(); }
 
     function resetRow(r) {
-        if (r && r.file && r.over) Settings.reset(r.file, r.path);
+        if (r && r.kind === "search") Settings.resetMany([["shell", "weather.latitude"], ["shell", "weather.longitude"], ["shell", "weather.placeName"]]);
+        else if (r && r.file && r.over) Settings.reset(r.file, r.path);
         else if (r && r.kind === "module") Settings.resetMany([["shell", "bar.modules"]]);
     }
 
@@ -377,7 +405,7 @@ PanelHost {
             BarText {
                 id: editLabel
                 width: parent.width
-                text: panel.editing ? panel.editing.label : ""
+                text: panel.editing ? (panel.editing.kind === "search" ? "Nome della città" : panel.editing.label) : ""
                 elide: Text.ElideRight
                 color: Theme.muted
             }
@@ -642,7 +670,9 @@ PanelHost {
                     if (panel.confirmReset) return "Ripristinare questa scheda? Invio = sì, Esc = no";
                     if (panel.editing) return "Invio = applica · Esc = annulla";
                     var r = panel.current();
-                    if (panel.tab === 2) return "Informazioni sul compositor · Tab categoria · Esc chiudi";
+                    if (panel.tab === 3) return "Informazioni sul compositor · Tab categoria · Esc chiudi";
+                    if (r && r.kind === "search") return "Invio = cerca una città · Canc ripristina · Tab categoria";
+                    if (r && r.kind === "place") return "Invio = scegli questa città · Tab categoria";
                     if (r && r.kind === "module") return "←/→ zona · Maiusc+↑/↓ ordine · Canc ripristina · Tab scheda";
                     if (r && (r.kind === "number" || r.kind === "choice")) return "←/→ cambia · Canc ripristina · Tab scheda · Esc chiudi";
                     if (r && (r.kind === "color" || r.kind === "text")) return "Invio = modifica · Canc ripristina · Tab scheda";
