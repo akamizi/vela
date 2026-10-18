@@ -2,6 +2,9 @@
 # Avvia Vela. Funziona dal repository e, una volta installato, da /usr/share/vela.
 #   vela                      avvia la shell
 #   vela ipc call bar toggle  comandi alla shell in esecuzione (vedi shell/shell.qml)
+# Sway lancia i programmi senza ~/.local/bin nel PATH: lì stanno gli script personali usati dal menu.
+PATH="$HOME/.local/bin:$PATH"
+export PATH
 here=$(dirname "$(readlink -f "$0")")
 if [ -f "$here/../shell/shell.qml" ]; then
     root="$here/.."
