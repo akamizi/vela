@@ -10,8 +10,11 @@ import Quickshell.Wayland
 Singleton {
     id: root
 
+    // Backend implementato in questo file (D-022). Compositors.qml dice se coincide col compositor della sessione.
+    readonly property string backend: "sway"
+
     // Titolo della finestra attiva (protocollo wlr-foreign-toplevel, valido per più compositor).
-    readonly property string activeTitle: ToplevelManager.activeToplevel ? ToplevelManager.activeToplevel.title : ""
+    readonly property string activeTitle: ToplevelManager.activeToplevel ? (ToplevelManager.activeToplevel.title || "") : ""
 
     // Workspace dello schermo dato, ordinati per numero. `persistent` è l'elenco di numeri
     // da mostrare sempre, anche se vuoti. Ogni voce: {num, name, present, focused, urgent}.

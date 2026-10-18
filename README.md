@@ -103,6 +103,10 @@ carattere, dimensione, angoli di pannelli, menu e notifiche. ←/→ cambia i va
 L'effetto è immediato. Le scelte vanno in `~/.config/vela/settings.jsonc`, che ha la precedenza sugli altri
 file: i tuoi `shell.jsonc`, `theme.jsonc` e `menu.jsonc` non vengono mai modificati da Vela.
 
+La categoria **Compositor** mostra quali compositor ci sono (installato, in esecuzione, sessione attuale), se
+Vela ha un backend per quello attivo e quali categorie di impostazioni sono già disponibili o in arrivo
+(schermi, tastiera e touchpad, sfondo, scorciatoie, avvio automatico, regole, bordi). Oggi il backend è Sway.
+
 ## OSD e notifiche
 
 L'OSD di volume e luminosità (`osd.enabled`) compare a ogni cambio e sostituisce `wob`. Il server di

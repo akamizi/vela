@@ -21,8 +21,8 @@ PanelHost {
     readonly property int footerHeight: 28
     readonly property int maxRows: 14
 
-    property int tab: 0                       // 0 = Barra, 1 = Tema
-    readonly property var tabNames: ["Barra", "Tema"]
+    property int tab: 0                       // 0 = Barra, 1 = Tema, 2 = Compositor
+    readonly property var tabNames: ["Barra", "Tema", "Compositor"]
     property var editing: null                // riga in modifica (colore o testo)
     property bool confirmReset: false
     property string currentKey: ""
@@ -97,8 +97,32 @@ PanelHost {
         return out;
     }
 
-    readonly property var rows: tab === 0 ? barRows() : themeRows()
-    function selectable(r) { return r && r.kind !== "header"; }
+    function info(label, text, tone) { return { kind: "info", label: label, text: text, tone: tone || "", key: "i:" + label }; }
+
+    function compositorRows() {
+        var out = [header("Compositor rilevati")];
+        Compositors.compositors.forEach(function (c) {
+            var st = [];
+            st.push(c.installed ? "installato" : "non installato");
+            if (c.running) st.push("in esecuzione");
+            if (c.active) st.push("sessione attuale");
+            out.push(info(c.name, st.join(" · "), c.active ? "accent" : ""));
+        });
+        var a = Compositors.active;
+        if (a === null) {
+            out.push(info("Sessione", "compositor non riconosciuto", "warn"));
+            return out;
+        }
+        out.push(header("Backend di Vela per " + a.name));
+        out.push(info("Stato", a.backend ? "disponibile" : "non ancora disponibile: barra e impostazioni limitate", a.backend ? "" : "warn"));
+        out.push(info("File di configurazione", a.config));
+        if (Compositors.categories.length > 0) out.push(header("Categorie di impostazioni"));
+        Compositors.categories.forEach(function (c) { out.push(info(c.label, c.available ? "disponibile" : "in arrivo", c.available ? "accent" : "")); });
+        return out;
+    }
+
+    readonly property var rows: tab === 0 ? barRows() : tab === 1 ? themeRows() : compositorRows()
+    function selectable(r) { return r && r.kind !== "header" && r.kind !== "info"; }
     function current() { return rows[list.currentIndex] || null; }
 
     // La selezione è ricordata per chiave, non per indice: l'elenco si ricostruisce a ogni modifica.
@@ -125,7 +149,7 @@ PanelHost {
     }
     onRowsChanged: Qt.callLater(restoreSelection)
 
-    onTabChanged: { currentKey = ""; confirmReset = false; }
+    onTabChanged: { currentKey = ""; confirmReset = false; if (tab === 2) Compositors.refresh(); }
 
     // --- azioni -----------------------------------------------------------------------
     function round(v, dec) { var m = Math.pow(10, dec); return Math.round(v * m) / m; }
@@ -574,7 +598,11 @@ PanelHost {
                             width: !item.isHeader && item.r.kind === "color" ? 64 : implicitWidth
                             horizontalAlignment: Text.AlignRight
                             text: item.isHeader || item.r.kind === "action" ? "" : (item.r.kind === "number" || item.r.kind === "choice" ? "‹ " + item.r.text + " ›" : item.r.text)
-                            color: !item.isHeader && item.r.kind === "module" && item.r.zone === "hidden" ? Theme.dim : Theme.muted
+                            color: item.isHeader ? Theme.muted
+                                 : item.r.kind === "module" && item.r.zone === "hidden" ? Theme.dim
+                                 : item.r.kind === "info" && item.r.tone === "accent" ? Theme.accent
+                                 : item.r.kind === "info" && item.r.tone === "warn" ? Theme.warning
+                                 : Theme.muted
                         }
                     }
                 }
@@ -614,6 +642,7 @@ PanelHost {
                     if (panel.confirmReset) return "Ripristinare questa scheda? Invio = sì, Esc = no";
                     if (panel.editing) return "Invio = applica · Esc = annulla";
                     var r = panel.current();
+                    if (panel.tab === 2) return "Informazioni sul compositor · Tab categoria · Esc chiudi";
                     if (r && r.kind === "module") return "←/→ zona · Maiusc+↑/↓ ordine · Canc ripristina · Tab scheda";
                     if (r && (r.kind === "number" || r.kind === "choice")) return "←/→ cambia · Canc ripristina · Tab scheda · Esc chiudi";
                     if (r && (r.kind === "color" || r.kind === "text")) return "Invio = modifica · Canc ripristina · Tab scheda";
