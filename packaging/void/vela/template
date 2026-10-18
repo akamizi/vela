@@ -1,5 +1,5 @@
-# Template xbps-src per Vela (da copiare in srcpkgs/vela/ di void-packages).
-# distfiles e checksum vanno impostati quando esiste una release pubblicata.
+# Template file for 'vela'
+# Per void-packages: copiare in srcpkgs/vela/template (distfiles e checksum sono quelli della release v0.1.0).
 pkgname=vela
 version=0.1.0
 revision=1
