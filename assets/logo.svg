@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Logo di Vela: una vela (randa e fiocco) su uno scafo. Copyright (C) 2026 Maurizio Cavalletti, EUPL-1.2 -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128" role="img" aria-label="Vela">
+  <title>Vela</title>
+  <!-- randa -->
+  <path d="M66 10 C 92 34 104 62 106 88 L 66 88 Z" fill="#3689e6"/>
+  <!-- fiocco -->
+  <path d="M58 26 C 44 46 36 66 32 88 L 58 88 Z" fill="#8cc0f5"/>
+  <!-- scafo -->
+  <path d="M16 98 L 112 98 C 106 112 96 118 84 118 L 44 118 C 32 118 22 112 16 98 Z" fill="#1f5aa8"/>
+</svg>

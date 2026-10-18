@@ -3,6 +3,7 @@
 // con anteprima immediata. Su: ↑/↓ · ←/→ cambia valore · Invio modifica · Canc ripristina · Tab cambia scheda.
 import QtQuick
 import Quickshell
+import Quickshell.Io
 import "../../core"
 import "../../core/icons.js" as Icons
 import "../../core/swayconf.js" as SwayConf
@@ -31,7 +32,7 @@ PanelHost {
                    { id: "keys", label: "Scorciatoie" }, { id: "autostart", label: "Avvio automatico" },
                    { id: "rules", label: "Regole delle finestre" }, { id: "gaps", label: "Bordi e spazi" });
         }
-        t.push({ id: "compositor", label: "Compositor" });
+        t.push({ id: "compositor", label: "Compositor" }, { id: "about", label: "Informazioni" });
         return t;
     }
     readonly property var tabNames: tabs.map(function (t) { return t.label; })
@@ -364,6 +365,29 @@ PanelHost {
     function removeAt(name, idx) { var l = list(name); l.splice(idx, 1); setList(name, l); }
     function removeBind(combo) { setList("keybindings", list("keybindings").filter(function (b) { return b.combo !== combo; })); }
 
+    readonly property string homeUrl: "https://github.com/akamizi/vela"
+    FileView {
+        id: versionFile
+        path: Quickshell.shellDir + "/../VERSION"
+        blockLoading: true
+        printErrors: false
+    }
+    readonly property string version: { try { return versionFile.text().trim() || "sconosciuta"; } catch (e) { return "sconosciuta"; } }
+
+    function aboutRows() {
+        var out = [{ kind: "logo", key: "logo" }];
+        out.push(header("Informazioni"));
+        out.push(info("Versione", version));
+        out.push(info("Licenza", "EUPL-1.2"));
+        out.push(info("Compositor", Compositors.active ? Compositors.active.name : "non riconosciuto"));
+        out.push(info("Configurazione", Config.userDir));
+        out.push(header("Progetto"));
+        out.push(info("Indirizzo", homeUrl.replace("https://", "")));
+        out.push({ kind: "action", label: "Apri la pagina del progetto", act: "openHome", key: "a:home" });
+        out.push({ kind: "action", label: "Apri le note di rilascio", act: "openReleases", key: "a:releases" });
+        return out;
+    }
+
     function info(label, text, tone) { return { kind: "info", label: label, text: text, tone: tone || "", key: "i:" + label }; }
 
     function compositorRows() {
@@ -401,10 +425,11 @@ PanelHost {
         case "autostart": return autostartRows();
         case "rules": return rulesRows();
         case "gaps": return gapsRows();
+        case "about": return aboutRows();
         default: return compositorRows();
         }
     }
-    function selectable(r) { return r && r.kind !== "header" && r.kind !== "info"; }
+    function selectable(r) { return r && r.kind !== "header" && r.kind !== "info" && r.kind !== "logo"; }
     function current() { return rows[list.currentIndex] || null; }
 
     // La selezione è ricordata per chiave, non per indice: l'elenco si ricostruisce a ogni modifica.
@@ -521,6 +546,8 @@ PanelHost {
         else if (r.act === "presetLight") Settings.setMany("theme", light);
         else if (r.act === "resetModules") Settings.resetMany([["shell", "bar.modules"]]);
         else if (r.act === "resetTab") confirmReset = true;
+        else if (r.act === "openHome") Quickshell.execDetached(["xdg-open", homeUrl]);
+        else if (r.act === "openReleases") Quickshell.execDetached(["xdg-open", homeUrl + "/releases"]);
         else if (r.act === "addBind") addBind();
         else if (r.act === "addAuto") addAuto();
         else if (r.act === "addRule") addRule();
@@ -880,9 +907,19 @@ PanelHost {
                 readonly property bool isHeader: modelData && modelData.kind === "header"
                 readonly property bool isInfo: modelData && modelData.kind === "info"
                 width: ListView.view.width
-                height: isHeader ? 28 : Theme.rowHeight
+                height: isHeader ? 28 : (modelData && modelData.kind === "logo") ? 190 : Theme.rowHeight
 
                 PanelSectionHeader { visible: entry.isHeader; text: entry.isHeader ? entry.r.label : "" }
+
+                // logo e nome del progetto (pagina Informazioni)
+                Column {
+                    visible: entry.r.kind === "logo"
+                    anchors.centerIn: parent
+                    spacing: Theme.spacing
+                    VelaLogo { size: 96; anchors.horizontalCenter: parent.horizontalCenter }
+                    BarText { text: "Vela"; font.bold: true; font.pixelSize: Theme.fontSize + 8; anchors.horizontalCenter: parent.horizontalCenter }
+                    BarText { text: "Shell desktop per Sway su Void Linux"; color: Theme.muted; anchors.horizontalCenter: parent.horizontalCenter }
+                }
 
                 Component {
                     id: swatchComp
@@ -896,7 +933,7 @@ PanelHost {
 
                 // impostazione (numero, scelta, colore, testo, elemento, azione, informazione)
                 PanelRow {
-                    visible: !entry.isHeader
+                    visible: !entry.isHeader && entry.r.kind !== "logo"
                     enabled: !entry.isInfo
                     anchors { fill: parent; leftMargin: Theme.spacing; rightMargin: Theme.spacing }
                     hasCursor: ListView.isCurrentItem && panel.selectable(entry.r)

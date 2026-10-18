@@ -1,9 +1,11 @@
-# Vela
+<p align="center"><img src="assets/logo.svg" alt="Logo di Vela" width="120"></p>
+
+<h1 align="center">Vela</h1>
 
 Shell minimale per Sway su Void Linux (barra, launcher, pannelli), basata su Quickshell.
 Licenza: EUPL-1.2.
 
-Stato: sviluppo, Fase 8 (barra, menu/launcher, pannelli rete, Bluetooth e audio, OSD, notifiche). Vedi `PIANO.md` nella cartella padre del progetto.
+Versione 0.1.0: barra, menu/launcher, pannelli (rete, Bluetooth, audio), OSD, notifiche e Impostazioni per Sway.
 
 ## Requisiti
 
@@ -131,6 +133,8 @@ ne cambia il comando (vuoto = disattiva) scrivendo una sostituzione in `vela.con
 **Avvio automatico** e **Regole delle finestre** funzionano allo stesso modo (gli avvii di Vela partono dal
 prossimo login e richiedono l'include). **Bordi e spazi**: spazio tra le finestre e dal bordo dello schermo,
 spessore del bordo (per le finestre nuove), niente spazi o bordi con una sola finestra.
+
+La categoria **Informazioni** mostra il logo, la versione, la licenza, il compositor e i link al progetto.
 
 La categoria **Compositor** mostra quali compositor ci sono (installato, in esecuzione, sessione attuale), se
 Vela ha un backend per quello attivo e quali categorie di impostazioni sono già disponibili o in arrivo
