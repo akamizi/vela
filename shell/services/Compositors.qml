@@ -13,7 +13,7 @@ Singleton {
     // Compositor noti. `backend`: Vela sa pilotarlo (Compositor.qml). `categories`: id -> disponibile.
     readonly property var known: [
         { id: "sway", name: "Sway", binary: "sway", config: "~/.config/sway/config", backend: true,
-          categories: { outputs: true, input: true, wallpaper: true, keybindings: false, autostart: false, rules: false, gaps: false } },
+          categories: { outputs: true, input: true, wallpaper: true, keybindings: true, autostart: true, rules: true, gaps: true } },
         { id: "labwc", name: "labwc", binary: "labwc", config: "~/.config/labwc/rc.xml", backend: false,
           categories: {} }
     ]

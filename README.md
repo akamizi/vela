@@ -117,6 +117,13 @@ cambia al prossimo `swaymsg reload`). Vela scrive `~/.config/vela/sway.d/vela.co
 login, il config di Sway deve includerlo: la categoria **Compositor** ha l'azione "Aggiungi la riga include"
 (chiede conferma e fa una copia `config.bak-vela-include`), oppure aggiungi tu `include ~/.config/vela/sway.d/*.conf`.
 
+**Scorciatoie** elenca quelle del tuo config di Sway (sola lettura) e le tue di Vela: Invio su una del config
+ne cambia il comando (vuoto = disattiva) scrivendo una sostituzione in `vela.conf`, Canc toglie la sostituzione;
+"Aggiungi una scorciatoia" chiede combinazione e comando e avvisa se la combinazione è già assegnata.
+**Avvio automatico** e **Regole delle finestre** funzionano allo stesso modo (gli avvii di Vela partono dal
+prossimo login e richiedono l'include). **Bordi e spazi**: spazio tra le finestre e dal bordo dello schermo,
+spessore del bordo (per le finestre nuove), niente spazi o bordi con una sola finestra.
+
 La categoria **Compositor** mostra quali compositor ci sono (installato, in esecuzione, sessione attuale), se
 Vela ha un backend per quello attivo e quali categorie di impostazioni sono già disponibili o in arrivo
 (schermi, tastiera e touchpad, sfondo, scorciatoie, avvio automatico, regole, bordi). Oggi il backend è Sway.

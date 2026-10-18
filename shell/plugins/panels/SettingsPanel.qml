@@ -5,6 +5,7 @@ import QtQuick
 import Quickshell
 import "../../core"
 import "../../core/icons.js" as Icons
+import "../../core/swayconf.js" as SwayConf
 import "../../services"
 import "../../ui"
 
@@ -26,7 +27,9 @@ PanelHost {
     readonly property var tabs: {
         var t = [{ id: "bar", label: "Barra" }, { id: "theme", label: "Tema" }, { id: "weather", label: "Meteo" }];
         if (Compositors.activeHasBackend && SwayBackend.active) {
-            t.push({ id: "outputs", label: "Schermi" }, { id: "input", label: "Tastiera e touchpad" }, { id: "wallpaper", label: "Sfondo" });
+            t.push({ id: "outputs", label: "Schermi" }, { id: "input", label: "Tastiera e touchpad" }, { id: "wallpaper", label: "Sfondo" },
+                   { id: "keys", label: "Scorciatoie" }, { id: "autostart", label: "Avvio automatico" },
+                   { id: "rules", label: "Regole delle finestre" }, { id: "gaps", label: "Bordi e spazi" });
         }
         t.push({ id: "compositor", label: "Compositor" });
         return t;
@@ -225,6 +228,142 @@ PanelHost {
         return out;
     }
 
+    // --- scorciatoie, avvio automatico, regole, bordi e spazi (Sway) ---------------------------------
+    function list(name) { return (Config.sway[name] || []).slice(); }
+    function setList(name, arr) { Settings.set("sway", name, arr); }
+
+    function keysRows() {
+        var out = [header("Scorciatoie di Vela")];
+        var mine = Config.sway.keybindings;
+        mine.forEach(function (b) {
+            out.push({ kind: "bind", own: true, combo: b.combo, command: b.command, label: b.combo,
+                       text: b.command ? b.command : "disattivata", key: "kb:" + b.combo });
+        });
+        if (mine.length === 0) out.push(info("Nessuna", "aggiungine una o cambia una del config di Sway"));
+        out.push({ kind: "action", label: "Aggiungi una scorciatoia", act: "addBind", key: "a:addbind" });
+        var theirs = SwayBackend.userConfig.binds;
+        out.push(header("Dal config di Sway (la tua scelta sostituisce quella del config)"));
+        var vars = SwayBackend.userConfig.vars;
+        theirs.forEach(function (b) {
+            var n = SwayConf.normalize(b.combo, vars);
+            var over = mine.some(function (m) { return SwayConf.normalize(m.combo, vars) === n; });
+            out.push({ kind: "bind", own: false, combo: b.combo, command: b.command, label: b.combo,
+                       text: (over ? "sostituita · " : "") + b.command, over: over, key: "ub:" + b.combo });
+        });
+        if (theirs.length === 0) out.push(info("Config di Sway", "nessuna scorciatoia trovata"));
+        if (SwayBackend.lastError !== "") out.push(info("Errore di Sway", SwayBackend.lastError, "warn"));
+        out.push({ kind: "action", label: "Ripristina questa scheda", act: "resetTab", key: "a:resetTab" });
+        return out;
+    }
+
+    function autostartRows() {
+        var out = [header("Avviati da Vela")];
+        Config.sway.autostart.forEach(function (c, i) { out.push({ kind: "auto", idx: i, label: c, text: "", key: "au:" + i + ":" + c }); });
+        if (Config.sway.autostart.length === 0) out.push(info("Nessuno", "aggiungine uno"));
+        out.push({ kind: "action", label: "Aggiungi un programma", act: "addAuto", key: "a:addauto" });
+        if (!SwayBackend.hasInclude) out.push(info("Attenzione", "serve l'include nel config di Sway (categoria Compositor)", "warn"));
+        out.push(header("Dal config di Sway (sola lettura)"));
+        SwayBackend.userConfig.execs.forEach(function (e, i) { out.push(info(e.command, e.always ? "a ogni reload" : "all'avvio")); });
+        out.push({ kind: "action", label: "Ripristina questa scheda", act: "resetTab", key: "a:resetTab" });
+        return out;
+    }
+
+    function rulesRows() {
+        var out = [header("Regole di Vela")];
+        Config.sway.rules.forEach(function (rl, i) { out.push({ kind: "rule", idx: i, label: rl.criteria, text: rl.command, key: "ru:" + i + ":" + rl.criteria }); });
+        if (Config.sway.rules.length === 0) out.push(info("Nessuna", "aggiungine una (es. [app_id=\"foot\"] floating enable)"));
+        out.push({ kind: "action", label: "Aggiungi una regola", act: "addRule", key: "a:addrule" });
+        out.push(header("Dal config di Sway (sola lettura)"));
+        SwayBackend.userConfig.rules.forEach(function (rl) { out.push(info(rl.criteria, rl.command)); });
+        out.push({ kind: "action", label: "Ripristina questa scheda", act: "resetTab", key: "a:resetTab" });
+        return out;
+    }
+
+    function gapsRows() {
+        var out = [header("Finestre")];
+        out.push(number("sway", "gaps.inner", "Spazio tra le finestre (px)", 0, 50, 1, 0, 0));
+        out.push(number("sway", "gaps.outer", "Spazio dal bordo dello schermo (px)", 0, 50, 1, 0, 0));
+        out.push(number("sway", "gaps.border", "Spessore del bordo (px, finestre nuove)", 0, 10, 1, 0, 1));
+        out.push(choice("sway", "gaps.smartGaps", "Niente spazi con una sola finestra", [{ v: "on", t: "sì" }, { v: "off", t: "no" }, { v: "inverse_outer", t: "solo esterni" }]));
+        out.push(choice("sway", "gaps.smartBorders", "Niente bordi con una sola finestra", [{ v: "on", t: "sì" }, { v: "off", t: "no" }, { v: "no_gaps", t: "solo senza spazi" }]));
+        if (SwayBackend.lastError !== "") out.push(info("Errore di Sway", SwayBackend.lastError, "warn"));
+        out.push({ kind: "action", label: "Ripristina questa scheda", act: "resetTab", key: "a:resetTab" });
+        return out;
+    }
+
+    // Inserimento a più passi (es. combinazione, poi comando).
+    property var steps: null
+    property int stepIndex: 0
+    property var answers: []
+    property var finishFn: null
+
+    function stepLabel() {
+        var st = steps[stepIndex];
+        return typeof st.label === "function" ? st.label(answers) : st.label;
+    }
+    function startSteps(stepList, finish) {
+        steps = stepList; stepIndex = 0; answers = []; finishFn = finish; note = "";
+        editing = { kind: "steps", label: stepLabel() };
+        field.text = steps[0].initial || "";
+        field.forceActiveFocus();
+        field.selectAll();
+    }
+    function stepSubmit() {
+        var st = steps[stepIndex], t = field.text.trim();
+        if (t === "" && !st.allowEmpty) { note = "Valore vuoto"; return; }
+        if (t !== "" && !SwayBackend.oneLine(t)) { note = "Solo una riga, senza caratteri di controllo"; return; }
+        if (st.validate) { var err = st.validate(t); if (err) { note = err; return; } }
+        answers = answers.concat([t]);
+        note = st.after ? st.after(answers) : "";
+        if (stepIndex + 1 < steps.length) {
+            stepIndex++;
+            editing = { kind: "steps", label: stepLabel() };
+            field.text = steps[stepIndex].initial || "";
+            field.forceActiveFocus();
+            field.selectAll();
+        } else {
+            var fn = finishFn, a = answers;
+            var keep = note;
+            cancelEdit();
+            note = keep;
+            fn(a);
+        }
+    }
+
+    function upsertBind(combo, command) {
+        var a = list("keybindings"), done = false;
+        for (var i = 0; i < a.length; i++) if (a[i].combo === combo) { a[i] = { combo: combo, command: command }; done = true; }
+        if (!done) a.push({ combo: combo, command: command });
+        setList("keybindings", a);
+    }
+    function editBind(r) {
+        startSteps([{ label: "Comando per " + r.combo + " (vuoto = disattiva)", initial: r.own ? (r.command || "") : r.command, allowEmpty: true }],
+                   function (a) { upsertBind(r.combo, a[0]); });
+    }
+    function addBind() {
+        startSteps([
+            { label: "Combinazione (es. $mod+Shift+e)", validate: function (t) { return /^[A-Za-z0-9_$+\-]+$/.test(t) ? "" : "Combinazione non valida: usare nomi come $mod+Shift+e"; },
+              after: function (a) {
+                  var c = SwayBackend.conflictFor(a[0], "");
+                  return c ? "Attenzione: «" + a[0] + "» è già assegnata a «" + c.command + "» (" + (c.source === "sway" ? "config di Sway" : "Vela") + "): sarà sostituita" : "";
+              } },
+            { label: function (a) { return "Comando per " + a[0] + " (es. exec foot)"; } }
+        ], function (a) { upsertBind(a[0], a[1]); });
+    }
+    function addAuto() { startSteps([{ label: "Programma da avviare (es. nm-applet --indicator)" }], function (a) { var l = list("autostart"); l.push(a[0]); setList("autostart", l); }); }
+    function editAuto(r) { startSteps([{ label: "Programma da avviare", initial: r.label }], function (a) { var l = list("autostart"); l[r.idx] = a[0]; setList("autostart", l); }); }
+    function addRule() {
+        startSteps([
+            { label: "Criteri (es. app_id=\"foot\")" },
+            { label: function (a) { return "Comando per [" + a[0].replace(/^\[|\]$/g, "") + "] (es. floating enable)"; } }
+        ], function (a) { var l = list("rules"); l.push({ criteria: a[0], command: a[1] }); setList("rules", l); });
+    }
+    function editRule(r) {
+        startSteps([{ label: "Comando per " + r.label, initial: r.text }], function (a) { var l = list("rules"); l[r.idx] = { criteria: l[r.idx].criteria, command: a[0] }; setList("rules", l); });
+    }
+    function removeAt(name, idx) { var l = list(name); l.splice(idx, 1); setList(name, l); }
+    function removeBind(combo) { setList("keybindings", list("keybindings").filter(function (b) { return b.combo !== combo; })); }
+
     function info(label, text, tone) { return { kind: "info", label: label, text: text, tone: tone || "", key: "i:" + label }; }
 
     function compositorRows() {
@@ -258,6 +397,10 @@ PanelHost {
         case "outputs": return outputsRows();
         case "input": return inputRows();
         case "wallpaper": return wallpaperRows();
+        case "keys": return keysRows();
+        case "autostart": return autostartRows();
+        case "rules": return rulesRows();
+        case "gaps": return gapsRows();
         default: return compositorRows();
         }
     }
@@ -267,7 +410,7 @@ PanelHost {
     // La selezione è ricordata per chiave, non per indice: l'elenco si ricostruisce a ogni modifica.
     function select(i) {
         list.currentIndex = i;
-        if (i >= 0 && i < rows.length) currentKey = rows[i].key;
+        if (i >= 0 && i < rows.length) { currentKey = rows[i].key; list.positionViewAtIndex(i, ListView.Contain); }
     }
 
     function move(delta) {
@@ -285,13 +428,15 @@ PanelHost {
         for (var i = 0; i < rows.length; i++) if (rows[i].key === currentKey) { idx = i; break; }
         if (idx < 0) for (var j = 0; j < rows.length; j++) if (selectable(rows[j])) { idx = j; break; }
         list.currentIndex = idx;      // la chiave resta quella ricordata
+        if (idx >= 0) list.positionViewAtIndex(idx, ListView.Contain);
     }
     onRowsChanged: Qt.callLater(restoreSelection)
 
     onTabChanged: {
         currentKey = ""; confirmReset = false; pendingConfirm = null;
+        Qt.callLater(function () { list.positionViewAtBeginning(); });
         if (tabId === "compositor") Compositors.refresh();
-        if (tabId === "outputs" || tabId === "input" || tabId === "compositor") SwayBackend.refresh();
+        if (tabId === "outputs" || tabId === "input" || tabId === "compositor" || tabId === "keys" || tabId === "autostart" || tabId === "rules") SwayBackend.refresh();
     }
 
     // --- azioni -----------------------------------------------------------------------
@@ -351,6 +496,10 @@ PanelHost {
         case "outputs": return [["sway", "outputs"]];
         case "input": return [["sway", "input"]];
         case "wallpaper": return [["sway", "wallpaper"]];
+        case "keys": return [["sway", "keybindings"]];
+        case "autostart": return [["sway", "autostart"]];
+        case "rules": return [["sway", "rules"]];
+        case "gaps": return [["sway", "gaps"]];
         default: return [["theme", "colors"], ["theme", "font.family"], ["theme", "font.size"], ["theme", "layout.radius"]];
         }
     }
@@ -358,6 +507,9 @@ PanelHost {
     function activate(r) {
         if (!r) return;
         if (r.kind === "color" || r.kind === "text" || r.kind === "search") { startEdit(r); return; }
+        if (r.kind === "bind") { editBind(r); return; }
+        if (r.kind === "auto") { editAuto(r); return; }
+        if (r.kind === "rule") { editRule(r); return; }
         if (r.kind === "place") {
             Settings.setMany("shell", { "weather.latitude": r.place.lat, "weather.longitude": r.place.lon, "weather.placeName": r.place.name });
             Geocoding.clear();
@@ -369,6 +521,9 @@ PanelHost {
         else if (r.act === "presetLight") Settings.setMany("theme", light);
         else if (r.act === "resetModules") Settings.resetMany([["shell", "bar.modules"]]);
         else if (r.act === "resetTab") confirmReset = true;
+        else if (r.act === "addBind") addBind();
+        else if (r.act === "addAuto") addAuto();
+        else if (r.act === "addRule") addRule();
         else if (r.act === "keepOutputs") SwayBackend.confirm();
         else if (r.act === "revertOutputs") SwayBackend.revert();
         else if (r.act === "addInclude")
@@ -384,6 +539,7 @@ PanelHost {
         field.selectAll();
     }
     function submitEdit() {
+        if (editing && editing.kind === "steps") { stepSubmit(); return; }
         var r = editing, t = field.text.trim();
         if (r.kind === "color") {
             if (/^[0-9a-fA-F]{6}$/.test(t)) t = "#" + t;
@@ -401,6 +557,9 @@ PanelHost {
     function cancelEdit() { editing = null; note = ""; keys.forceActiveFocus(); }
 
     function resetRow(r) {
+        if (r && r.kind === "bind") { removeBind(r.combo); return; }
+        if (r && r.kind === "auto") { removeAt("autostart", r.idx); return; }
+        if (r && r.kind === "rule") { removeAt("rules", r.idx); return; }
         if (r && r.kind === "search") Settings.resetMany([["shell", "weather.latitude"], ["shell", "weather.longitude"], ["shell", "weather.placeName"]]);
         else if (r && r.file && r.over) Settings.reset(r.file, r.path);
         else if (r && r.kind === "module") Settings.resetMany([["shell", "bar.modules"]]);
@@ -410,6 +569,7 @@ PanelHost {
         if (open) {
             editing = null; confirmReset = false; pendingConfirm = null; note = "";
             SwayBackend.refresh();
+            Qt.callLater(function () { list.positionViewAtBeginning(); });
             for (var i = 0; i < rows.length; i++) if (selectable(rows[i])) { select(i); break; }
             keys.forceActiveFocus();
         }
@@ -764,7 +924,8 @@ PanelHost {
                             anchors.verticalCenter: parent.verticalCenter
                         }
                         BarText {
-                            width: !item.isHeader && item.r.kind === "color" ? 64 : implicitWidth
+                            width: !item.isHeader && item.r.kind === "color" ? 64 : Math.min(implicitWidth, 420)
+                            elide: Text.ElideRight
                             horizontalAlignment: Text.AlignRight
                             text: item.isHeader || item.r.kind === "action" ? "" : (item.r.kind === "number" || item.r.kind === "choice" ? "‹ " + item.r.text + " ›" : item.r.text)
                             color: item.isHeader ? Theme.muted
@@ -813,6 +974,8 @@ PanelHost {
                     if (panel.editing) return "Invio = applica · Esc = annulla";
                     var r = panel.current();
                     if (panel.tabId === "compositor" && !(panel.current() && panel.current().kind === "action")) return "Informazioni sul compositor · Tab categoria · Esc chiudi";
+                    if (r && r.kind === "bind") return "Invio = cambia il comando · Canc " + (r.own ? "rimuove" : "toglie la sostituzione") + " · Tab categoria";
+                    if (r && (r.kind === "auto" || r.kind === "rule")) return "Invio = modifica · Canc rimuove · Tab categoria";
                     if (r && r.kind === "search") return "Invio = cerca una città · Canc ripristina · Tab categoria";
                     if (r && r.kind === "place") return "Invio = scegli questa città · Tab categoria";
                     if (r && r.kind === "module") return "←/→ zona · Maiusc+↑/↓ ordine · Canc ripristina · Tab scheda";

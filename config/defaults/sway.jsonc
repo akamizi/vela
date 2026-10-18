@@ -20,6 +20,20 @@
       "accel": null           // -1.0 … 1.0
     }
   },
+  // Scorciatoie di Vela: [{ "combo": "$mod+Shift+e", "command": "exec foot" }]. Stessa combinazione di una del
+  // config di Sway = la sostituisce; "command": "" la disattiva.
+  "keybindings": [],
+  // Programmi da avviare con Sway (richiede l'include nel config di Sway): ["nm-applet --indicator"]
+  "autostart": [],
+  // Regole per le finestre: [{ "criteria": "[app_id=\"foot\"]", "command": "floating enable" }]
+  "rules": [],
+  "gaps": {
+    "inner": null,         // spazio tra le finestre (px)
+    "outer": null,         // spazio dal bordo dello schermo (px)
+    "border": null,        // spessore del bordo delle finestre (px, per le nuove)
+    "smartGaps": null,     // "on" | "off" | "inverse_outer"
+    "smartBorders": null   // "on" | "off" | "no_gaps"
+  },
   "wallpaper": {
     "path": null,           // percorso di un'immagine
     "mode": "fill",         // fill | fit | stretch | center | tile
