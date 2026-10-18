@@ -14,6 +14,9 @@ QtObject {
     required property string userDir
     property string mode: "object"      // "menu" = merge per id delle voci
 
+    property var settings: ({})          // strato scritto dal pannello Impostazioni (sopra l'override utente)
+    onSettingsChanged: rebuild()
+
     property var data: ({})
     property var warnings: []
 
@@ -63,6 +66,12 @@ QtObject {
             } catch (e) {
                 w.push(name + ".jsonc (utente): " + e.message);
             }
+        }
+        // Strato delle impostazioni: stessa fusione, ha l'ultima parola.
+        if (mode !== "menu" && settings && typeof settings === "object" && Object.keys(settings).length > 0) {
+            var sw = [];
+            result = Jsonc.merge(result, settings, "", sw);
+            for (var s = 0; s < sw.length; s++) w.push("settings.jsonc: " + sw[s]);
         }
         data = result;
         // Il rebuild parte da più segnali all'avvio: si logga solo se gli avvisi cambiano.

@@ -30,7 +30,8 @@
   "panels": {
     "network": { "enabled": true },
     "bluetooth": { "enabled": true },
-    "audio": { "enabled": true }
+    "audio": { "enabled": true },
+    "settings": { "enabled": true }
   },
   "tray": {
     "enabled": true,

@@ -41,6 +41,11 @@ ShellRoot {
     }
 
     Loader {
+        active: Config.shell.panels.settings.enabled
+        sourceComponent: SettingsPanel {}
+    }
+
+    Loader {
         active: Config.shell.osd.enabled
         sourceComponent: Osd {}
     }

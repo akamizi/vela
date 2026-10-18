@@ -24,9 +24,13 @@ Singleton {
     readonly property string monoFamily: t.font.monoFamily
     readonly property int fontSize: t.font.size
     readonly property int iconSize: t.font.iconSize
+    // Nella barra testo e icone hanno una dimensione propria; le icone mantengono la differenza rispetto al testo.
+    readonly property int barFontSize: t.font.barSize
+    readonly property int barIconSize: t.font.barSize + (t.font.iconSize - t.font.size)
 
     readonly property int barHeight: t.layout.barHeight
     readonly property int radius: t.layout.radius
+    readonly property int barRadius: t.layout.barRadius
     readonly property int spacing: t.layout.spacing
     readonly property int padding: t.layout.padding
     readonly property int gap: t.layout.gap

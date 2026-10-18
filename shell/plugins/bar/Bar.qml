@@ -44,9 +44,10 @@ Variants {
         }
 
         Rectangle {
+            readonly property bool isBarZone: true
             anchors.fill: parent
             color: Theme.barBackground
-            radius: Theme.radius
+            radius: Theme.barRadius
 
             Row {
                 id: left

@@ -94,6 +94,15 @@ Esc = cancella il testo / torna indietro / chiude. Le voci con `confirm` chiedon
 Le voci si definiscono in `config/defaults/menu.jsonc`; l'override utente `~/.config/vela/menu.jsonc` si fonde **per id**
 (vedi i commenti nel file e `config/user.example/menu.jsonc`). Le azioni `exec` sono sempre array di argomenti.
 
+## Impostazioni
+
+`vela ipc call panel toggle settings` o menu Sistema › Impostazioni: finestra al centro con le categorie a
+sinistra. **Barra**: posizione, altezza, dimensione del testo e angoli (della barra, separati dagli altri), trasparenza e gli elementi (←/→ li sposta tra Sinistra, Centro,
+Destra e Nascosto, Maiusc+↑/↓ li riordina). **Tema**: preset scuro/chiaro, colori (Invio: campo `#rrggbb` con quadrato saturazione/luminosità, barra del tono e tavolozza; si può anche scrivere il codice),
+carattere, dimensione, angoli di pannelli, menu e notifiche. ←/→ cambia i valori, Canc ripristina il valore di default, Tab cambia categoria.
+L'effetto è immediato. Le scelte vanno in `~/.config/vela/settings.jsonc`, che ha la precedenza sugli altri
+file: i tuoi `shell.jsonc`, `theme.jsonc` e `menu.jsonc` non vengono mai modificati da Vela.
+
 ## OSD e notifiche
 
 L'OSD di volume e luminosità (`osd.enabled`) compare a ogni cambio e sostituisce `wob`. Il server di

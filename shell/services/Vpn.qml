@@ -44,9 +44,10 @@ Singleton {
     Component.onCompleted: refresh()
 
     // Eventi di NetworkManager: ogni riga di output fa rileggere lo stato (con debounce).
+    // `setpriv --pdeathsig` fa terminare nmcli se Vela muore: senza, a ogni uscita ne resterebbe uno orfano.
     Process {
         running: true
-        command: ["nmcli", "monitor"]
+        command: ["sh", "-c", "command -v setpriv >/dev/null && exec setpriv --pdeathsig TERM nmcli monitor; exec nmcli monitor"]
         stdout: SplitParser { onRead: debounce.restart() }
     }
     Timer { id: debounce; interval: 400; onTriggered: root.refresh() }

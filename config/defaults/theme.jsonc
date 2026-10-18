@@ -17,11 +17,16 @@
     "iconFamily": "Symbols Nerd Font Mono",
     "monoFamily": "monospace",
     "size": 13,
+    // dimensione del testo nella barra (le icone seguono: stessa differenza di iconSize rispetto a size)
+    "barSize": 13,
     "iconSize": 15
   },
   "layout": {
     "barHeight": 26,
+    // angoli di pannelli, menu, notifiche e OSD
     "radius": 0,
+    // angoli della barra (separati dagli altri)
+    "barRadius": 0,
     "spacing": 6,
     // distanza tra icona e testo dentro uno stesso elemento
     "gap": 4,

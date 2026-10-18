@@ -7,5 +7,5 @@ import "../../../ui"
 // Pulsante del menu: clic = apre il menu completo.
 BarItem {
     onClicked: button => { if (button === Qt.LeftButton) Runtime.toggleMenu("menu"); }
-    BarIcon { text: Icons.menu; font.pixelSize: Theme.iconSize + 2 }
+    BarIcon { text: Icons.menu; font.pixelSize: Theme.barIconSize + 2 }
 }

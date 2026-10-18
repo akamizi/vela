@@ -26,14 +26,14 @@ BarItem {
             id: cell
             required property var modelData
             visible: root.expanded
-            width: visible ? Theme.iconSize + 4 : 0
+            width: visible ? Theme.barIconSize + 4 : 0
             height: Theme.barHeight
 
             Image {
                 anchors.centerIn: parent
-                width: Theme.iconSize; height: Theme.iconSize
+                width: Theme.barIconSize; height: Theme.barIconSize
                 source: cell.modelData.icon
-                sourceSize: Qt.size(Theme.iconSize * 2, Theme.iconSize * 2)
+                sourceSize: Qt.size(Theme.barIconSize * 2, Theme.barIconSize * 2)
                 smooth: true
             }
             MouseArea {

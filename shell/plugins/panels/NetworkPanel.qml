@@ -345,7 +345,7 @@ PanelHost {
                     anchors.fill: parent
                     enabled: panel.selectable(item.r)
                     hoverEnabled: true
-                    onEntered: list.currentIndex = item.index
+                    onPositionChanged: list.currentIndex = item.index
                     onClicked: { list.currentIndex = item.index; panel.activate(item.r); }
                 }
             }

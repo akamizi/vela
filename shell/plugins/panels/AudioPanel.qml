@@ -204,7 +204,7 @@ PanelHost {
                     anchors.fill: parent
                     enabled: panel.selectable(item.r)
                     hoverEnabled: true
-                    onEntered: list.currentIndex = item.index
+                    onPositionChanged: list.currentIndex = item.index
                     onClicked: { list.currentIndex = item.index; if (item.r.kind === "device") AudioDevices.makeDefault(item.r.d); }
                 }
             }
