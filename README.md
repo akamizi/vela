@@ -56,6 +56,13 @@ Esc = cancella il testo / torna indietro / chiude. Le voci con `confirm` chiedon
 Le voci si definiscono in `config/defaults/menu.jsonc`; l'override utente `~/.config/vela/menu.jsonc` si fonde **per id**
 (vedi i commenti nel file e `config/user.example/menu.jsonc`). Le azioni `exec` sono sempre array di argomenti.
 
+## Pannello Bluetooth
+
+Clic sull'icona Bluetooth (clic destro = accendi/spegni), menu Sistema › Bluetooth o
+`vela ipc call panel toggle bluetooth`. Elenca i dispositivi accoppiati e quelli trovati dalla scansione
+(attiva solo a pannello aperto). Invio = connetti/disconnetti/accoppia, Canc = dimentica, Esc = chiude.
+Dispositivi che chiedono un PIN non sono ancora supportati.
+
 ## Pannello rete
 
 Si apre con un clic sull'icona di rete o sulla VPN nella barra, dal menu (Sistema › Rete) o con
