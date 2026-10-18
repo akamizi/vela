@@ -16,7 +16,7 @@ BarItem {
     }
     onClicked: button => {
         if (button === Qt.RightButton) BluetoothStatus.togglePower();
-        else if (MenuModel.availablePanels.indexOf("bluetooth") >= 0) Runtime.togglePanel("bluetooth");
+        else if (MenuModel.availablePanels.indexOf("bluetooth") >= 0) Runtime.togglePanel("bluetooth", mapToGlobal(width / 2, 0).x);
     }
     BarIcon {
         text: !BluetoothStatus.enabled ? Icons.bluetoothOff

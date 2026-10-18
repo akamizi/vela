@@ -11,9 +11,12 @@ Singleton {
     property string menuMode: ""
     // Pannello aperto: "" = nessuno, altrimenti "network", "bluetooth", "audio". Menu e pannelli si escludono.
     property string panel: ""
-    function openPanel(name) { menuMode = ""; panel = name; }
-    function closePanel() { panel = ""; }
-    function togglePanel(name) { if (panel === name) panel = ""; else openPanel(name); }
+    // Ascissa (in pixel dello schermo) del pulsante che ha aperto il pannello: il pannello si ancora lì.
+    // -1 = aperto dal menu o da IPC: resta nell'angolo accanto alla barra.
+    property real panelAnchorX: -1
+    function openPanel(name, anchorX) { menuMode = ""; panelAnchorX = (anchorX === undefined) ? -1 : anchorX; panel = name; }
+    function closePanel() { panel = ""; panelAnchorX = -1; }
+    function togglePanel(name, anchorX) { if (panel === name) closePanel(); else openPanel(name, anchorX); }
 
     function openMenu(mode) { panel = ""; menuMode = mode; }
     function closeMenu() { menuMode = ""; }

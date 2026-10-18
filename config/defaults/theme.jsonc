@@ -39,6 +39,14 @@
     "panelWidth": 380,
     "panelMargin": 8
   },
+  // Stati delle righe e dei controlli dei pannelli: opacità del colore del testo usata come riempimento
+  // o bordo (sotto il mouse, cursore da tastiera, selezionato) e bordo sottile a riposo.
+  "states": {
+    "hover": 0.07,
+    "cursor": 0.12,
+    "selected": 0.18,
+    "border": 0.22
+  },
   // Trasparenza dello sfondo della barra (0 = trasparente, 1 = opaco)
   "barOpacity": 0.88
 }

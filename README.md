@@ -152,6 +152,10 @@ M = muto, Invio = rendi predefinito, Esc = chiude.
 
 ## Pannello Bluetooth
 
+(In stile Omarchy, D-023: intestazione con interruttore, sezioni, righe con stati; si apre sotto o sopra l'icona
+della barra che l'ha aperto.) In più: Spazio = accendi/spegni.
+
+
 Clic sull'icona Bluetooth (clic destro = accendi/spegni), menu Sistema › Bluetooth o
 `vela ipc call panel toggle bluetooth`. Elenca i dispositivi accoppiati e quelli trovati dalla scansione
 (attiva solo a pannello aperto). Invio = connetti/disconnetti/accoppia, Canc = dimentica, Esc = chiude.

@@ -17,6 +17,12 @@ Singleton {
     readonly property color warning: t.colors.warning
     readonly property color error: t.colors.error
 
+    // Stati dei pannelli (D-023): riempimenti e bordi ricavati dal colore del testo.
+    readonly property color stateHover: Qt.alpha(foreground, t.states.hover)
+    readonly property color stateCursor: Qt.alpha(foreground, t.states.cursor)
+    readonly property color stateSelected: Qt.alpha(foreground, t.states.selected)
+    readonly property color softBorder: Qt.alpha(foreground, t.states.border)
+
     readonly property color barBackground: Qt.alpha(background, t.barOpacity)
 
     readonly property string fontFamily: t.font.family

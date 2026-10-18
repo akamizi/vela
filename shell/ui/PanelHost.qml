@@ -41,7 +41,9 @@ PanelWindow {
         width: host.cardWidth
         height: host.centered ? Math.min(host.cardHeight, host.height - Theme.barHeight * 2 - Theme.panelMargin * 2)
                               : Math.min(host.contentHeight, host.height - Theme.barHeight - Theme.panelMargin * 3)
-        x: host.centered ? (host.width - width) / 2 : host.width - width - Theme.panelMargin
+        x: host.centered ? (host.width - width) / 2
+         : Runtime.panelAnchorX >= 0 ? Math.max(Theme.panelMargin, Math.min(host.width - width - Theme.panelMargin, Runtime.panelAnchorX - width / 2))
+         : host.width - width - Theme.panelMargin
         y: host.centered ? (host.height - height) / 2
                          : host.atTop ? Theme.barHeight + Theme.panelMargin : host.height - Theme.barHeight - Theme.panelMargin - height
         color: Theme.surface
