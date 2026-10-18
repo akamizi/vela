@@ -18,8 +18,6 @@
     "windowTitle": { "maxWidth": 360 },
     "media": { "maxWidth": 320 },
     "vpn": { "maxWidth": 200 },
-    // Comando del pulsante menu (array di argomenti); il menu integrato arriva in Fase 3
-    "menuButton": { "command": null },
     "clock": {
       // "" = lingua di sistema, altrimenti per esempio "it_IT"
       "locale": "",
@@ -27,6 +25,7 @@
       "formatAlt": "HH:mm - dd/MM/yyyy"
     }
   },
+  "menu": { "enabled": true },
   "tray": {
     "enabled": true,
     // true = parte chiuso, la freccia lo apre

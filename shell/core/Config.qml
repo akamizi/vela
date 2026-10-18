@@ -21,7 +21,12 @@ Singleton {
         name: "theme"; defaultsDir: root.defaultsDir; userDir: root.userDir
     }
 
+    readonly property ConfigLayer menuLayer: ConfigLayer {
+        name: "menu"; mode: "menu"; defaultsDir: root.defaultsDir; userDir: root.userDir
+    }
+
+    readonly property var menu: menuLayer.data
     readonly property var shell: shellLayer.data
     readonly property var theme: themeLayer.data
-    readonly property var warnings: shellLayer.warnings.concat(themeLayer.warnings)
+    readonly property var warnings: shellLayer.warnings.concat(themeLayer.warnings, menuLayer.warnings)
 }

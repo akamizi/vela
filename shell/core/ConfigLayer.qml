@@ -12,6 +12,7 @@ QtObject {
     required property string name        // "theme" -> theme.jsonc
     required property string defaultsDir
     required property string userDir
+    property string mode: "object"      // "menu" = merge per id delle voci
 
     property var data: ({})
     property var warnings: []
@@ -54,7 +55,9 @@ QtObject {
         if (userText.trim() !== "") {
             try {
                 var typeWarnings = [];
-                result = Jsonc.merge(base, Jsonc.parse(userText), "", typeWarnings);
+                var over = Jsonc.parse(userText);
+                result = mode === "menu" ? Jsonc.mergeMenu(base, over, "", typeWarnings)
+                                         : Jsonc.merge(base, over, "", typeWarnings);
                 for (var i = 0; i < typeWarnings.length; i++)
                     w.push(name + ".jsonc: " + typeWarnings[i]);
             } catch (e) {

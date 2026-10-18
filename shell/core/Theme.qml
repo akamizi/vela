@@ -30,4 +30,7 @@ Singleton {
     readonly property int spacing: t.layout.spacing
     readonly property int padding: t.layout.padding
     readonly property int gap: t.layout.gap
+    readonly property int menuWidth: t.layout.menuWidth
+    readonly property int menuRows: t.layout.menuRows
+    readonly property int rowHeight: t.layout.rowHeight
 }

@@ -1,0 +1,42 @@
+// Menu di Vela (default). Gli override stanno in ~/.config/vela/menu.jsonc e si fondono per "id":
+//   - stesso id: i campi indicati sostituiscono quelli di default ("children" si fonde ricorsivamente)
+//   - id nuovo: la voce si aggiunge in fondo
+//   - "hidden": true: toglie la voce
+// Campi di una voce: id, label, children (sottomenu) oppure action, requires (comandi che devono
+// esistere, altrimenti la voce non compare), glyph ("U+F0F85": icona Nerd Font), confirm (chiede conferma).
+// Azioni: {"type":"exec","command":[...]} (array di argomenti, mai una stringa da shell),
+//         {"type":"toggle","target":"night|awake|dnd|bar"}, {"type":"panel","target":"..."},
+//         {"type":"compositor","command":"logout|reload"}, {"type":"apps"} (elenco applicazioni).
+{
+  "items": [
+    { "id": "apps", "label": "App", "glyph": "U+F003B", "action": { "type": "apps" } },
+    {
+      "id": "toggles", "label": "Interruttori", "glyph": "U+F0521",
+      "children": [
+        { "id": "night", "label": "Luce notturna", "requires": ["gammastep"], "action": { "type": "toggle", "target": "night" } },
+        { "id": "awake", "label": "Resta sveglio", "action": { "type": "toggle", "target": "awake" } },
+        { "id": "dnd", "label": "Non disturbare", "requires": ["dunstctl"], "action": { "type": "toggle", "target": "dnd" } },
+        { "id": "bar", "label": "Barra", "action": { "type": "toggle", "target": "bar" } }
+      ]
+    },
+    {
+      "id": "system", "label": "Sistema", "glyph": "U+F0493",
+      "children": [
+        // I pannelli compaiono quando esistono (fasi 4-6)
+        { "id": "network", "label": "Rete", "action": { "type": "panel", "target": "network" } },
+        { "id": "bluetooth", "label": "Bluetooth", "action": { "type": "panel", "target": "bluetooth" } },
+        { "id": "audio", "label": "Audio", "action": { "type": "panel", "target": "audio" } }
+      ]
+    },
+    {
+      "id": "power", "label": "Alimentazione", "glyph": "U+F0425",
+      "children": [
+        { "id": "lock", "label": "Blocca", "requires": ["swaylock"], "action": { "type": "exec", "command": ["swaylock", "-f"] } },
+        { "id": "suspend", "label": "Sospendi", "requires": ["loginctl"], "action": { "type": "exec", "command": ["loginctl", "suspend"] } },
+        { "id": "logout", "label": "Esci dalla sessione", "confirm": true, "action": { "type": "compositor", "command": "logout" } },
+        { "id": "reboot", "label": "Riavvia", "confirm": true, "requires": ["loginctl"], "action": { "type": "exec", "command": ["loginctl", "reboot"] } },
+        { "id": "poweroff", "label": "Spegni", "confirm": true, "requires": ["loginctl"], "action": { "type": "exec", "command": ["loginctl", "poweroff"] } }
+      ]
+    }
+  ]
+}

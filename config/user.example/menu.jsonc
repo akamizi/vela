@@ -1,0 +1,16 @@
+// Copiare in ~/.config/vela/menu.jsonc. Esempio: aggiunge un sottomenu "Cattura" con
+// strumenti esterni (compaiono solo se i comandi esistono) e toglie una voce di default.
+{
+  "items": [
+    {
+      "id": "capture", "label": "Cattura", "glyph": "U+F0100",
+      "children": [
+        { "id": "shot-area", "label": "Screenshot area", "requires": ["cap-shot"], "action": { "type": "exec", "command": ["cap-shot", "area"] } },
+        { "id": "shot-screen", "label": "Screenshot schermo", "requires": ["cap-shot"], "action": { "type": "exec", "command": ["cap-shot", "screen"] } },
+        { "id": "rec-area", "label": "Registra area", "requires": ["cap-record"], "action": { "type": "exec", "command": ["cap-record", "start", "area", "none"] } },
+        { "id": "ocr", "label": "Testo (OCR)", "requires": ["cap-ocr"], "action": { "type": "exec", "command": ["cap-ocr"] } }
+      ]
+    },
+    { "id": "logout", "hidden": true }
+  ]
+}

@@ -42,4 +42,19 @@ Singleton {
     function cycle(direction) {
         I3.dispatch(direction > 0 ? "workspace prev_on_output" : "workspace next_on_output");
     }
+
+    // Schermo su cui sta il focus (per aprire il menu dove guarda l'utente).
+    readonly property var focusedScreen: {
+        var m = I3.focusedMonitor;
+        var screens = Quickshell.screens;
+        for (var i = 0; m && i < screens.length; i++) if (screens[i].name === m.name) return screens[i];
+        return screens.length > 0 ? screens[0] : null;
+    }
+
+    // Comandi del compositor che il menu può invocare (elenco chiuso, nessuna stringa libera).
+    function run(command) {
+        if (command === "logout") { I3.dispatch("exit"); return true; }
+        if (command === "reload") { I3.dispatch("reload"); return true; }
+        return false;
+    }
 }

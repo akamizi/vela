@@ -86,3 +86,48 @@ function merge(base, over, path, warnings) {
     }
     return out;
 }
+
+// --- Menu: merge per id --------------------------------------------------------------
+// Il menu è un albero di voci con "id". Nell'override, una voce con un id già presente
+// fonde i suoi campi con quella di default (i "children" ricorsivamente); un id nuovo si
+// aggiunge in fondo; `"hidden": true` toglie la voce. Gli array di voci non si sostituiscono.
+function cloneItem(item) { return JSON.parse(JSON.stringify(item)); }
+
+function mergeItems(base, over, warnings, path) {
+    var result = (base || []).map(cloneItem);
+    if (kind(over) !== "array") return result;
+    for (var i = 0; i < over.length; i++) {
+        var u = over[i];
+        if (kind(u) !== "object" || typeof u.id !== "string" || u.id === "") {
+            warnings.push(path + "[" + i + "]: voce senza id");
+            continue;
+        }
+        var idx = -1;
+        for (var j = 0; j < result.length; j++) if (result[j].id === u.id) { idx = j; break; }
+        if (idx < 0) {
+            if (u.hidden === true) continue;
+            // Una voce nuova deve avere un'etichetta e un'azione o dei sottomenu; altrimenti è un errore di scrittura.
+            if (typeof u.label !== "string" || (kind(u.action) !== "object" && kind(u.children) !== "array")) {
+                warnings.push(path + "." + u.id + ": voce nuova senza label o senza action/children, ignorata");
+                continue;
+            }
+            result.push(cloneItem(u));
+        } else if (u.hidden === true) {
+            result.splice(idx, 1);
+        } else {
+            var merged = result[idx];
+            for (var k in u) {
+                if (k === "children") merged.children = mergeItems(merged.children, u.children, warnings, path + "." + u.id);
+                else merged[k] = u[k];
+            }
+        }
+    }
+    return result;
+}
+
+function mergeMenu(base, over, path, warnings) {
+    var out = {};
+    for (var key in base) out[key] = base[key];
+    out.items = mergeItems(base.items, kind(over) === "object" ? over.items : [], warnings, "items");
+    return out;
+}

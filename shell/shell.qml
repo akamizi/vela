@@ -9,6 +9,7 @@ import "core"
 import "ui"
 import "services"
 import "plugins/bar"
+import "plugins/menu"
 
 ShellRoot {
     Loader {
@@ -16,10 +17,21 @@ ShellRoot {
         sourceComponent: Bar {}
     }
 
+    Loader {
+        active: Config.shell.menu.enabled
+        sourceComponent: Menu {}
+    }
+
     // Comandi da scorciatoie Sway: `vela ipc call <target> <funzione>`, es. `vela ipc call bar toggle`.
     IpcHandler {
         target: "bar"
         function toggle(): void { Runtime.barVisible = !Runtime.barVisible; }
+    }
+    IpcHandler {
+        target: "menu"
+        function toggle(): void { Runtime.toggleMenu("menu"); }   // menu completo
+        function apps(): void { Runtime.toggleMenu("apps"); }     // solo applicazioni
+        function close(): void { Runtime.closeMenu(); }
     }
     IpcHandler {
         target: "toggles"
