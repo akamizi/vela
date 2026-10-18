@@ -29,7 +29,10 @@
     // launcher/menu: larghezza, righe visibili, altezza di una riga
     "menuWidth": 560,
     "menuRows": 9,
-    "rowHeight": 34
+    "rowHeight": 34,
+    // larghezza dei pannelli (rete, Bluetooth, audio) e distanza dal bordo dello schermo
+    "panelWidth": 380,
+    "panelMargin": 8
   },
   // Trasparenza dello sfondo della barra (0 = trasparente, 1 = opaco)
   "barOpacity": 0.88

@@ -33,4 +33,6 @@ Singleton {
     readonly property int menuWidth: t.layout.menuWidth
     readonly property int menuRows: t.layout.menuRows
     readonly property int rowHeight: t.layout.rowHeight
+    readonly property int panelWidth: t.layout.panelWidth
+    readonly property int panelMargin: t.layout.panelMargin
 }

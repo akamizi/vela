@@ -11,8 +11,12 @@ Singleton {
     id: root
 
     readonly property var items: Config.menu.items
-    // Pannelli disponibili (si aggiungono nelle fasi 4-6)
-    readonly property var availablePanels: []
+    // Pannelli abilitati in configurazione e realmente presenti (si aggiungono nelle fasi 4-6)
+    readonly property var implementedPanels: ["network"]
+    readonly property var availablePanels: implementedPanels.filter(function (n) {
+        var c = Config.shell.panels[n];
+        return c !== undefined && c.enabled === true;
+    })
 
     // --- comandi richiesti (`requires`): una voce con un comando assente non compare ---
     property var found: ({})
@@ -131,6 +135,9 @@ Singleton {
             else if (a.target === "dnd") Toggles.toggleDnd();
             else if (a.target === "bar") Runtime.barVisible = !Runtime.barVisible;
             else return false;
+            return true;
+        case "panel":
+            Runtime.openPanel(a.target);
             return true;
         case "compositor":
             return Compositor.run(a.command);

@@ -3,7 +3,7 @@
 Shell minimale per Sway su Void Linux (barra, launcher, pannelli), basata su Quickshell.
 Licenza: EUPL-1.2.
 
-Stato: Fase 3 (barra e menu/launcher; i pannelli arrivano nelle fasi successive). Vedi `PIANO.md` nella cartella padre del progetto.
+Stato: Fase 4 (barra, menu/launcher, pannello rete; Bluetooth e audio nelle fasi successive). Vedi `PIANO.md` nella cartella padre del progetto.
 
 ## Prova in sviluppo
 
@@ -56,11 +56,20 @@ Esc = cancella il testo / torna indietro / chiude. Le voci con `confirm` chiedon
 Le voci si definiscono in `config/defaults/menu.jsonc`; l'override utente `~/.config/vela/menu.jsonc` si fonde **per id**
 (vedi i commenti nel file e `config/user.example/menu.jsonc`). Le azioni `exec` sono sempre array di argomenti.
 
+## Pannello rete
+
+Si apre con un clic sull'icona di rete o sulla VPN nella barra, dal menu (Sistema › Rete) o con
+`vela ipc call panel toggle network`. Mostra Wi-Fi (interruttore, reti per segnale), cavo e VPN.
+Invio = connetti/disconnetti (rete nuova protetta: campo password), Canc = dimentica la rete salvata,
+Esc = indietro/chiude, clic fuori = chiude. La password passa direttamente a NetworkManager e non viene
+salvata né registrata. Le reti aziendali (802.1x) vanno configurate con `nm-connection-editor`.
+
 ## Comandi alla shell in esecuzione
 
 ```sh
 scripts/vela ipc show                   # funzioni disponibili
 scripts/vela ipc call menu toggle       # apre/chiude il menu (menu apps = solo app)
+scripts/vela ipc call panel toggle network   # apre/chiude il pannello rete
 scripts/vela ipc call bar toggle        # mostra/nascondi la barra (sostituisce Win+B di Waybar)
 scripts/vela ipc call toggles awake     # resta sveglio (inibisce l'idle)
 scripts/vela ipc call toggles night     # luce notturna (gammastep)

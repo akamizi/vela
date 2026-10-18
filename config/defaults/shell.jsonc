@@ -26,6 +26,10 @@
     }
   },
   "menu": { "enabled": true },
+  // Pannelli (si aprono dal menu, dagli elementi della barra o con `vela ipc call panel toggle <nome>`)
+  "panels": {
+    "network": { "enabled": true }
+  },
   "tray": {
     "enabled": true,
     // true = parte chiuso, la freccia lo apre

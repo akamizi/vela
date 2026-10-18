@@ -10,6 +10,7 @@ import "ui"
 import "services"
 import "plugins/bar"
 import "plugins/menu"
+import "plugins/panels"
 
 ShellRoot {
     Loader {
@@ -22,6 +23,11 @@ ShellRoot {
         sourceComponent: Menu {}
     }
 
+    Loader {
+        active: Config.shell.panels.network.enabled
+        sourceComponent: NetworkPanel {}
+    }
+
     // Comandi da scorciatoie Sway: `vela ipc call <target> <funzione>`, es. `vela ipc call bar toggle`.
     IpcHandler {
         target: "bar"
@@ -32,6 +38,13 @@ ShellRoot {
         function toggle(): void { Runtime.toggleMenu("menu"); }   // menu completo
         function apps(): void { Runtime.toggleMenu("apps"); }     // solo applicazioni
         function close(): void { Runtime.closeMenu(); }
+    }
+    IpcHandler {
+        target: "panel"
+        function toggle(name: string): void {
+            if (MenuModel.availablePanels.indexOf(name) >= 0) Runtime.togglePanel(name);
+        }
+        function close(): void { Runtime.closePanel(); }
     }
     IpcHandler {
         target: "toggles"
