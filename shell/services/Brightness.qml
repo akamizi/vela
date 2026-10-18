@@ -48,7 +48,7 @@ Singleton {
     }
 
     Timer {
-        interval: Config.shell.osd.enabled ? 500 : 3000     // con l'OSD serve una risposta pronta ai tasti
+        interval: Config.shell.osd.enabled ? 1000 : 3000    // con l'OSD serve una risposta pronta ai tasti
         running: root.available
         repeat: true
         onTriggered: root.read()

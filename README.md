@@ -3,7 +3,21 @@
 Shell minimale per Sway su Void Linux (barra, launcher, pannelli), basata su Quickshell.
 Licenza: EUPL-1.2.
 
-Stato: Fase 4 (barra, menu/launcher, pannello rete; Bluetooth e audio nelle fasi successive). Vedi `PIANO.md` nella cartella padre del progetto.
+Stato: sviluppo, Fase 8 (barra, menu/launcher, pannelli rete, Bluetooth e audio, OSD, notifiche). Vedi `PIANO.md` nella cartella padre del progetto.
+
+## Requisiti
+
+Obbligatori: `quickshell` (≥ 0.3) con i moduli Quickshell usati (`scripts/check-deps.sh` li elenca) e `sway`.
+Facoltativi — se mancano, la voce relativa sparisce o mostra "non disponibile" e la shell parte lo stesso:
+`brightnessctl` (luminosità), PipeWire (audio), NetworkManager e `nmcli` (rete, VPN), BlueZ (Bluetooth),
+`power-profiles-daemon`, UPower (batteria), `gammastep` (luce notturna), `curl` (meteo), `dunstctl` (solo
+per "non disturbare" se si usa dunst al posto delle notifiche integrate).
+
+## Misure
+
+A riposo su un portatile con Sway e un solo schermo: circa 195 MB di RAM e meno dell'1 % di CPU; la parte
+fissa di Qt/Quickshell è circa 170 MB. Tolti Waybar, `dunst` e `wob`, che Vela sostituisce, il consumo totale
+sale in RAM ma scende in CPU. Dettagli e motivazione in `DECISIONI.md` (D-010).
 
 ## Prova in sviluppo
 

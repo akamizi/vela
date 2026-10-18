@@ -42,9 +42,17 @@ Singleton {
         function onDndChanged() { root.dnd = Notifications.dnd; }
     }
     Component.onCompleted: if (Notifications.active) { dnd = Notifications.dnd; dndAvailable = true; }
+    // dunstctl può mancare (altro server di notifiche, o nessuno): lo si cerca una volta sola,
+    // senza riprovare a ogni controllo periodico.
+    property bool hasDunstctl: false
+    Process {
+        command: ["sh", "-c", "command -v dunstctl"]
+        running: true
+        onExited: code => { root.hasDunstctl = (code === 0); if (root.hasDunstctl) dndCheck.running = true; }
+    }
     Process {
         id: dndCheck
-        command: Notifications.active ? ["true"] : ["dunstctl", "is-paused"]
+        command: ["dunstctl", "is-paused"]
         stdout: StdioCollector {
             onStreamFinished: { if (!Notifications.active) { root.dnd = text.trim() === "true"; root.dndAvailable = true; } }
         }
@@ -52,7 +60,7 @@ Singleton {
 
     function toggleDnd() {
         if (Notifications.active) { Notifications.dnd = !Notifications.dnd; return; }
-        if (!dndAvailable) return;
+        if (!dndAvailable || !hasDunstctl) return;
         Quickshell.execDetached(["dunstctl", "set-paused", "toggle"]);
         dnd = !dnd;
         refreshSoon.restart();
@@ -73,7 +81,7 @@ Singleton {
 
     function refresh() {
         nightCheck.running = true;
-        dndCheck.running = true;
+        if (hasDunstctl && !Notifications.active) dndCheck.running = true;
         if (recordingCommand) recCheck.running = true;
     }
 
