@@ -29,7 +29,8 @@
   // Pannelli (si aprono dal menu, dagli elementi della barra o con `vela ipc call panel toggle <nome>`)
   "panels": {
     "network": { "enabled": true },
-    "bluetooth": { "enabled": true }
+    "bluetooth": { "enabled": true },
+    "audio": { "enabled": true }
   },
   "tray": {
     "enabled": true,

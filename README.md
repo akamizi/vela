@@ -56,6 +56,12 @@ Esc = cancella il testo / torna indietro / chiude. Le voci con `confirm` chiedon
 Le voci si definiscono in `config/defaults/menu.jsonc`; l'override utente `~/.config/vela/menu.jsonc` si fonde **per id**
 (vedi i commenti nel file e `config/user.example/menu.jsonc`). Le azioni `exec` sono sempre array di argomenti.
 
+## Pannello audio
+
+Clic sull'icona del volume (clic destro = muto, rotellina = volume), menu Sistema › Audio o
+`vela ipc call panel toggle audio`. Uscite e ingressi con volume per dispositivo: ←/→ = volume,
+M = muto, Invio = rendi predefinito, Esc = chiude.
+
 ## Pannello Bluetooth
 
 Clic sull'icona Bluetooth (clic destro = accendi/spegni), menu Sistema › Bluetooth o

@@ -33,6 +33,11 @@ ShellRoot {
         sourceComponent: BluetoothPanel {}
     }
 
+    Loader {
+        active: Config.shell.panels.audio.enabled
+        sourceComponent: AudioPanel {}
+    }
+
     // Comandi da scorciatoie Sway: `vela ipc call <target> <funzione>`, es. `vela ipc call bar toggle`.
     IpcHandler {
         target: "bar"

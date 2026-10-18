@@ -9,6 +9,7 @@ var trayCollapsed = cp(0xF0141), trayExpanded = cp(0xF0142);
 var bluetooth = cp(0xF00AF), bluetoothOff = cp(0xF00B2), bluetoothConnected = cp(0xF00B1);
 var ethernet = cp(0xF0200), wifiOff = cp(0xF092E);
 var wifi = [cp(0xF092F), cp(0xF091F), cp(0xF0922), cp(0xF0925), cp(0xF0928)];
+var mic = cp(0xF036C), micOff = cp(0xF036D);
 var volumeMuted = cp(0xF075F);
 var volume = [cp(0xF057F), cp(0xF0580), cp(0xF057E)];
 var brightness = [cp(0xF00DE), cp(0xF00DF), cp(0xF00E0)];
