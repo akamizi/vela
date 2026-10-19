@@ -27,7 +27,7 @@ PanelHost {
     // Le categorie del compositor compaiono solo se il compositor attivo ha un backend che le gestisce.
     readonly property var tabs: {
         var t = [{ id: "bar", label: "Barra" }, { id: "theme", label: "Tema" }, { id: "weather", label: "Meteo" },
-                 { id: "idle", label: "Blocco e inattività" }, { id: "apps", label: "App predefinite" }];
+                 { id: "idle", label: "Blocco e inattività" }, { id: "apps", label: "App predefinite" }, { id: "radio", label: "Radio" }];
         if (Compositors.activeHasBackend && SwayBackend.active) {
             t.push({ id: "outputs", label: "Schermi" }, { id: "input", label: "Tastiera e touchpad" }, { id: "wallpaper", label: "Sfondo" },
                    { id: "keys", label: "Scorciatoie" }, { id: "autostart", label: "Avvio automatico" },
@@ -258,6 +258,41 @@ PanelHost {
         return out;
     }
 
+    // --- radio: le stazioni stanno in shell.radio.stations; alla prima modifica la lista attuale (anche quella
+    // scritta a mano in shell.jsonc) viene copiata in settings.jsonc, che ha la precedenza.
+    function stations() { return (Config.shell.radio.stations || []).map(function (s) { return { name: s.name, url: s.url }; }); }
+    function setStations(a) { Settings.set("shell", "radio.stations", a); }
+    function radioRows() {
+        var out = [header("Stazioni")];
+        stations().forEach(function (st, i) { out.push({ kind: "station", idx: i, label: st.name, text: st.url, key: "rs:" + st.url }); });
+        if (Config.shell.radio.stations.length === 0) out.push(info("Nessuna", "aggiungine una"));
+        out.push({ kind: "action", label: "Aggiungi una stazione", act: "addStation", key: "a:addstation" });
+        out.push(info("Ordine", "Maiusc+↑/↓ sposta la stazione selezionata"));
+        out.push({ kind: "action", label: "Ripristina questa scheda", act: "resetTab", key: "a:resetTab" });
+        return out;
+    }
+    function urlProblem(t) { return Radio.validUrl(t) ? "" : "Indirizzo non valido: deve iniziare con http:// o https://"; }
+    function addStation() {
+        startSteps([
+            { label: "Nome della stazione" },
+            { label: function (a) { return "Indirizzo del flusso di " + a[0] + " (http://…)"; }, validate: urlProblem }
+        ], function (a) { var l = stations(); l.push({ name: a[0], url: a[1] }); setStations(l); });
+    }
+    function editStation(r) {
+        var st = stations()[r.idx];
+        if (!st) return;
+        startSteps([
+            { label: "Nome della stazione", initial: st.name },
+            { label: "Indirizzo del flusso", initial: st.url, validate: urlProblem }
+        ], function (a) { var l = stations(); l[r.idx] = { name: a[0], url: a[1] }; setStations(l); });
+    }
+    function moveStation(r, dir) {
+        var l = stations(), j = r.idx + dir;
+        if (j < 0 || j >= l.length) return;
+        var t = l[r.idx]; l[r.idx] = l[j]; l[j] = t;
+        setStations(l);
+    }
+
     function autostartRows() {
         var out = [header("Avviati da Vela")];
         Config.sway.autostart.forEach(function (c, i) { out.push({ kind: "auto", idx: i, label: c, text: "", key: "au:" + i + ":" + c }); });
@@ -467,6 +502,7 @@ PanelHost {
         case "wallpaper": return wallpaperRows();
         case "keys": return keysRows();
         case "autostart": return autostartRows();
+        case "radio": return radioRows();
         case "rules": return rulesRows();
         case "gaps": return gapsRows();
         case "about": return aboutRows();
@@ -570,6 +606,7 @@ PanelHost {
         case "outputs": return [["sway", "outputs"]];
         case "input": return [["sway", "input"]];
         case "wallpaper": return [["sway", "wallpaper"]];
+        case "radio": return [["shell", "radio.stations"]];
         case "keys": return [["sway", "keybindings"]];
         case "autostart": return [["sway", "autostart"]];
         case "rules": return [["sway", "rules"]];
@@ -583,6 +620,7 @@ PanelHost {
         if (r.kind === "color" || r.kind === "text" || r.kind === "search") { startEdit(r); return; }
         if (r.kind === "bind") { editBind(r); return; }
         if (r.kind === "auto") { editAuto(r); return; }
+        if (r.kind === "station") { editStation(r); return; }
         if (r.kind === "rule") { editRule(r); return; }
         if (r.kind === "place") {
             Settings.setMany("shell", { "weather.latitude": r.place.lat, "weather.longitude": r.place.lon, "weather.placeName": r.place.name });
@@ -600,6 +638,7 @@ PanelHost {
         else if (r.act === "openReleases") Quickshell.execDetached(["xdg-open", homeUrl + "/releases"]);
         else if (r.act === "addBind") addBind();
         else if (r.act === "addAuto") addAuto();
+        else if (r.act === "addStation") addStation();
         else if (r.act === "addRule") addRule();
         else if (r.act === "keepOutputs") SwayBackend.confirm();
         else if (r.act === "revertOutputs") SwayBackend.revert();
@@ -641,6 +680,7 @@ PanelHost {
     function resetRow(r) {
         if (r && r.kind === "bind") { removeBind(r.combo); return; }
         if (r && r.kind === "auto") { removeAt("autostart", r.idx); return; }
+        if (r && r.kind === "station") { var sl = stations(); sl.splice(r.idx, 1); setStations(sl); return; }
         if (r && r.kind === "rule") { removeAt("rules", r.idx); return; }
         if (r && r.kind === "search") Settings.resetMany([["shell", "weather.latitude"], ["shell", "weather.longitude"], ["shell", "weather.placeName"]]);
         else if (r && r.file && r.over) Settings.reset(r.file, r.path);
@@ -682,8 +722,10 @@ PanelHost {
                 panel.tab = (panel.tab + 1) % panel.tabNames.length;
             } else if (shift && event.key === Qt.Key_Up) {
                 if (r && r.kind === "module") panel.reorder(r, -1);
+                else if (r && r.kind === "station") panel.moveStation(r, -1);
             } else if (shift && event.key === Qt.Key_Down) {
                 if (r && r.kind === "module") panel.reorder(r, 1);
+                else if (r && r.kind === "station") panel.moveStation(r, 1);
             } else if (event.key === Qt.Key_Down || (ctrl && (event.key === Qt.Key_J || event.key === Qt.Key_N))) {
                 panel.move(1);
             } else if (event.key === Qt.Key_Up || (ctrl && (event.key === Qt.Key_K || event.key === Qt.Key_P))) {
@@ -1030,6 +1072,7 @@ PanelHost {
                     if (panel.tabId === "compositor" && !(panel.current() && panel.current().kind === "action")) return "Informazioni sul compositor · Tab categoria · Esc chiudi";
                     if (r && r.kind === "bind") return "Invio = cambia il comando · Canc " + (r.own ? "rimuove" : "toglie la sostituzione") + " · Tab categoria";
                     if (r && (r.kind === "auto" || r.kind === "rule")) return "Invio = modifica · Canc rimuove · Tab categoria";
+                    if (r && r.kind === "station") return "Invio = modifica · Canc rimuove · Maiusc+↑/↓ ordine · Tab categoria";
                     if (r && r.kind === "search") return "Invio = cerca una città · Canc ripristina · Tab categoria";
                     if (r && r.kind === "place") return "Invio = scegli questa città · Tab categoria";
                     if (r && r.kind === "module") return "←/→ zona · Maiusc+↑/↓ ordine · Canc ripristina · Tab scheda";
