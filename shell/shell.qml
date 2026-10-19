@@ -49,6 +49,11 @@ ShellRoot {
     }
 
     Loader {
+        active: Config.shell.panels.shortcuts.enabled
+        sourceComponent: ShortcutsPanel {}
+    }
+
+    Loader {
         active: Config.shell.osd.enabled
         sourceComponent: Osd {}
     }

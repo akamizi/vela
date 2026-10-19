@@ -25,6 +25,7 @@ var dnd = cp(0xF009B), night = cp(0xF0594), awake = cp(0xF0176);
 var recording = cp(0xF044A);
 var play = cp(0x25B6), pause = cp(0x23F8);
 var vpn = cp(0xF0582);
+var keyboard = cp(0xF030C);
 var lock = cp(0xF033E), check = cp(0xF012C), power = cp(0xF0425);
 
 // Meteo (simbolo yr.no -> icona)

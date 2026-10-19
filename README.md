@@ -160,6 +160,13 @@ aver fermato dunst/mako, perché un solo programma alla volta può possedere `or
 Testo sempre semplice, clic = chiudi, le notifiche critiche restano finché non si chiudono.
 "Non disturbare" (`vela ipc call toggles dnd` o la voce nel menu) scarta quelle non critiche.
 
+## Pannello delle scorciatoie
+
+`vela ipc call panel toggle shortcuts` o menu Sistema › Scorciatoie: finestra al centro con le scorciatoie attuali,
+composte da sole dal config di Sway e dalle scorciatoie di Vela (nessun elenco da tenere aggiornato). Si digita per
+filtrare, ↑/↓ scorrono, Esc cancella il filtro e poi chiude. Per dare un nome a una scorciatoia di Sway basta un
+commento in coda alla riga: `bindsym $mod+t exec foot  # Terminale`.
+
 ## Pannello audio
 
 (Stile Omarchy, D-023: intestazione con uscita predefinita e interruttore del muto, cursori del volume per dispositivo.)

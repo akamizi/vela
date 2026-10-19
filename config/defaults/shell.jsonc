@@ -31,7 +31,8 @@
     "network": { "enabled": true },
     "bluetooth": { "enabled": true },
     "audio": { "enabled": true },
-    "settings": { "enabled": true }
+    "settings": { "enabled": true },
+    "shortcuts": { "enabled": true }
   },
   "tray": {
     "enabled": true,

@@ -26,7 +26,8 @@
         { "id": "settings", "label": "Impostazioni", "action": { "type": "panel", "target": "settings" } },
         { "id": "network", "label": "Rete", "action": { "type": "panel", "target": "network" } },
         { "id": "bluetooth", "label": "Bluetooth", "action": { "type": "panel", "target": "bluetooth" } },
-        { "id": "audio", "label": "Audio", "action": { "type": "panel", "target": "audio" } }
+        { "id": "audio", "label": "Audio", "action": { "type": "panel", "target": "audio" } },
+        { "id": "shortcuts", "label": "Scorciatoie", "action": { "type": "panel", "target": "shortcuts" } }
       ]
     },
     {
