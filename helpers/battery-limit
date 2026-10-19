@@ -15,6 +15,8 @@
 # Prova senza root: VELA_BATTERY_TEST_DIR=/cartella (con sys/BAT0/…) viene ignorata se si è root.
 
 set -u
+# pkexec parte con umask 077: i file di stato devono restare leggibili da `status` lanciato come utente.
+umask 022
 
 LIMIT_START=75
 LIMIT_END=80
@@ -133,7 +135,8 @@ need_root() {
 cmd_limit() {
     need_root
     case "${1:-}" in on|off) ;; *) die "uso: limit on|off" ;; esac
-    mkdir -p "$STATE_DIR" && printf '%s\n' "$1" > "$CHOICE" && chmod 644 "$CHOICE"
+    # La scelta deve poter essere letta senza root (la legge `status` lanciato dalla shell).
+    mkdir -p "$STATE_DIR" && chmod 755 "$STATE_DIR" && printf '%s\n' "$1" > "$CHOICE" && chmod 644 "$CHOICE"
     # Durante la carica piena le soglie restano 99/100: la scelta si applica al termine.
     if full_alive; then return 0; fi
     apply_choice || die "scrittura delle soglie fallita."
