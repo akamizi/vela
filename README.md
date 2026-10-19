@@ -141,6 +141,11 @@ spegne e dopo Z sospende (di default solo a batteria); 0 = mai. Rispetta le fine
 compositor (il pannello avvisa se è in esecuzione). Chiusura del coperchio e pulsante di accensione dipendono da
 elogind e non sono ancora configurabili da qui.
 
+**App predefinite**: sceglie, per ogni tipo di file, l'applicazione che lo apre: browser web, gestore di file,
+editor di testo, lettore PDF, immagini, video, audio e client di posta. Legge lo stato con `xdg-mime query
+default` e scrive `~/.config/mimeapps.list` (con `xdg-mime` e `xdg-settings`); le applicazioni candidate sono i
+file `.desktop` che dichiarano quel tipo.
+
 La categoria **Informazioni** mostra il logo, la versione, la licenza, il compositor e i link al progetto.
 
 La categoria **Compositor** mostra quali compositor ci sono (installato, in esecuzione, sessione attuale), se

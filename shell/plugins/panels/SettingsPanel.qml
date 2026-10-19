@@ -27,7 +27,7 @@ PanelHost {
     // Le categorie del compositor compaiono solo se il compositor attivo ha un backend che le gestisce.
     readonly property var tabs: {
         var t = [{ id: "bar", label: "Barra" }, { id: "theme", label: "Tema" }, { id: "weather", label: "Meteo" },
-                 { id: "idle", label: "Blocco e inattività" }];
+                 { id: "idle", label: "Blocco e inattività" }, { id: "apps", label: "App predefinite" }];
         if (Compositors.activeHasBackend && SwayBackend.active) {
             t.push({ id: "outputs", label: "Schermi" }, { id: "input", label: "Tastiera e touchpad" }, { id: "wallpaper", label: "Sfondo" },
                    { id: "keys", label: "Scorciatoie" }, { id: "autostart", label: "Avvio automatico" },
@@ -374,6 +374,22 @@ PanelHost {
         return r;
     }
 
+    function appsRows() {
+        var out = [header("Applicazioni predefinite")];
+        DefaultApps.groups.forEach(function (g) {
+            var cands = DefaultApps.candidates[g.id] || [];
+            var cur = DefaultApps.current[g.id] || "";
+            if (cands.length === 0) { out.push(info(g.label, "nessuna applicazione trovata")); return; }
+            var found = cands.some(function (c) { return c.id === cur; });
+            var row = choiceC("app:" + g.id, g.label, cands.map(function (c) { return { v: c.id, t: c.name }; }), found ? cur : "",
+                              function (v) { DefaultApps.set(g.id, v); });
+            if (!found) row.text = cur !== "" ? DefaultApps.nameOf(cur) : "non impostata";
+            out.push(row);
+        });
+        out.push(info("Nota", "scrive ~/.config/mimeapps.list (xdg-mime e xdg-settings)"));
+        return out;
+    }
+
     function idleRows() {
         var out = [header("Inattività")];
         out.push(info("Stato", Idle.enabled ? "gestita da Vela" : "spenta (la gestisce altro, se presente)", Idle.enabled ? "accent" : ""));
@@ -455,6 +471,7 @@ PanelHost {
         case "gaps": return gapsRows();
         case "about": return aboutRows();
         case "idle": return idleRows();
+        case "apps": return appsRows();
         default: return compositorRows();
         }
     }
@@ -491,6 +508,7 @@ PanelHost {
         Qt.callLater(function () { list.positionViewAtBeginning(); });
         if (tabId === "compositor") Compositors.refresh();
         if (tabId === "idle") Idle.checkExternal();
+        if (tabId === "apps") DefaultApps.refresh();
         if (tabId === "outputs" || tabId === "input" || tabId === "compositor" || tabId === "keys" || tabId === "autostart" || tabId === "rules") SwayBackend.refresh();
     }
 
