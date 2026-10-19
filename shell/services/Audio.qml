@@ -17,6 +17,7 @@ Singleton {
     // Microfono predefinito (tasto di muto del microfono)
     readonly property var source: Pipewire.defaultAudioSource
     readonly property bool micAvailable: source !== null && source.audio !== null
+    readonly property real micVolume: micAvailable ? source.audio.volume : 0
     readonly property bool micMuted: micAvailable ? source.audio.muted : false
 
     PwObjectTracker { objects: [root.sink, root.source] }

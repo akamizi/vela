@@ -12,7 +12,7 @@ import "../../ui"
 PanelWindow {
     id: osd
 
-    property string kind: "volume"      // "volume" | "brightness"
+    property string kind: "volume"      // "volume" | "brightness" | "mic"
     property real value: 0
     property bool muted: false
     property bool shown: false
@@ -51,6 +51,11 @@ PanelWindow {
         function onSinkChanged() { osd.armed = false; arm.restart(); }
     }
     Connections {
+        target: Audio
+        // Solo il muto del microfono: il suo livello non cambia da tastiera.
+        function onMicMutedChanged() { osd.show("mic", Audio.micVolume, Audio.micMuted); }
+    }
+    Connections {
         target: Brightness
         function onLevelChanged() { osd.show("brightness", Brightness.level, false); }
     }
@@ -71,6 +76,7 @@ PanelWindow {
                 id: icon
                 anchors.verticalCenter: parent.verticalCenter
                 text: osd.kind === "brightness" ? Icons.pick(Icons.brightness, osd.value)
+                    : osd.kind === "mic" ? (osd.muted ? Icons.micOff : Icons.mic)
                     : osd.muted ? Icons.volumeMuted : Icons.pick(Icons.volume, osd.value)
                 color: osd.muted ? Theme.muted : Theme.accent
             }
@@ -87,7 +93,7 @@ PanelWindow {
                 width: 40
                 anchors.verticalCenter: parent.verticalCenter
                 horizontalAlignment: Text.AlignRight
-                text: Math.round(osd.value * 100) + "%"
+                text: osd.kind === "mic" && osd.muted ? I18n.tr("Muto") : Math.round(osd.value * 100) + "%"
                 color: Theme.muted
             }
         }
