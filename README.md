@@ -160,6 +160,14 @@ aver fermato dunst/mako, perché un solo programma alla volta può possedere `or
 Testo sempre semplice, clic = chiudi, le notifiche critiche restano finché non si chiudono.
 "Non disturbare" (`vela ipc call toggles dnd` o la voce nel menu) scarta quelle non critiche.
 
+## Web radio
+
+`vela ipc call panel toggle radio` o menu Sistema › Radio: le stazioni di `radio.stations`
+(`[{ "name": "Rai Radio 3", "url": "http://icestreaming.rai.it/3.mp3" }]` in `~/.config/vela/shell.jsonc`).
+Invio o clic = ascolta (di nuovo = ferma), digitando si filtra. Serve `mpv` (o un altro player in `radio.command`).
+L'elemento di barra `Radio` compare mentre suona: clic = pannello, clic destro = ferma.
+`vela ipc call radio stop` e `vela ipc call radio play "Rai Radio 3"` per le scorciatoie.
+
 ## Pannello delle scorciatoie
 
 `vela ipc call panel toggle shortcuts` o menu Sistema › Scorciatoie: finestra al centro con le scorciatoie attuali,

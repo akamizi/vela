@@ -6,7 +6,7 @@
     // "top" o "bottom"
     "position": "bottom",
     // Elementi di ciascuna zona, nell'ordine in cui compaiono. Disponibili:
-    // Menu Workspaces WindowTitle Weather Recording Dnd NightLight Awake Media Clock Tray
+    // Menu Workspaces WindowTitle Weather Recording Dnd NightLight Awake Media Radio Clock Tray
     // Memory Cpu Temperature Fan Bluetooth Network Vpn Volume Brightness PowerProfile Battery
     "modules": {
       "left": ["Menu", "Workspaces", "Weather", "WindowTitle"],
@@ -17,6 +17,7 @@
     "workspaces": { "persistent": [1, 2, 3, 4, 5] },
     "windowTitle": { "maxWidth": 360 },
     "media": { "maxWidth": 320 },
+    "radio": { "maxWidth": 220 },
     "vpn": { "maxWidth": 200 },
     "clock": {
       // "" = lingua di sistema, altrimenti per esempio "it_IT"
@@ -32,7 +33,14 @@
     "bluetooth": { "enabled": true },
     "audio": { "enabled": true },
     "settings": { "enabled": true },
-    "shortcuts": { "enabled": true }
+    "shortcuts": { "enabled": true },
+    "radio": { "enabled": true }
+  },
+  // Web radio: stazioni [{ "name": "Rai Radio 3", "url": "http://icestreaming.rai.it/3.mp3" }] e player
+  // (riceve l'indirizzo come ultimo argomento). Elemento di barra "Radio" e pannello `panel toggle radio`.
+  "radio": {
+    "stations": [],
+    "command": ["mpv", "--no-video", "--no-terminal"]
   },
   "tray": {
     "enabled": true,

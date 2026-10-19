@@ -54,6 +54,11 @@ ShellRoot {
     }
 
     Loader {
+        active: Config.shell.panels.radio.enabled
+        sourceComponent: RadioPanel {}
+    }
+
+    Loader {
         active: Config.shell.osd.enabled
         sourceComponent: Osd {}
     }
@@ -87,6 +92,14 @@ ShellRoot {
         function refresh(): void { Toggles.refresh(); }   // per gli script che cambiano uno stato esterno
         function night(): void { Toggles.toggleNight(); }
         function dnd(): void { Toggles.toggleDnd(); }
+    }
+    IpcHandler {
+        target: "radio"
+        function stop(): void { Radio.stop(); }
+        function play(name: string): void {
+            var st = Radio.stations.filter(function (s) { return s.name === name; })[0];
+            if (st) Radio.play(st);
+        }
     }
     IpcHandler {
         target: "idle"
