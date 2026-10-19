@@ -59,6 +59,11 @@ ShellRoot {
     }
 
     Loader {
+        active: Config.shell.panels.brightness.enabled
+        sourceComponent: BrightnessPanel {}
+    }
+
+    Loader {
         active: Config.shell.panels.radio.enabled
         sourceComponent: RadioPanel {}
     }

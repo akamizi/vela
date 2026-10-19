@@ -54,9 +54,26 @@ Singleton {
         onTriggered: root.read()
     }
 
+    // Un valore arrivato mentre brightnessctl è occupato (trascinamento del cursore) si applica appena finisce.
+    property var pending: null
     Process {
         id: setter
-        onExited: root.read()
+        onExited: {
+            root.read();
+            if (root.pending !== null) { var p = root.pending; root.pending = null; root.apply(p); }
+        }
+    }
+    function apply(percent) {
+        setter.command = ["brightnessctl", "set", percent + "%"];
+        setter.running = true;
+    }
+
+    // valore assoluto 0..1 (mai sotto l'1%: lo schermo non va a nero)
+    function set(fraction) {
+        if (!available) return;
+        var p = Math.max(1, Math.min(100, Math.round(fraction * 100)));
+        level = p / 100;
+        if (setter.running) pending = p; else apply(p);
     }
 
     // step in percentuale (positivo o negativo)

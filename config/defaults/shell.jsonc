@@ -38,7 +38,8 @@
     "settings": { "enabled": true },
     "shortcuts": { "enabled": true },
     "radio": { "enabled": true },
-    "power": { "enabled": true }
+    "power": { "enabled": true },
+    "brightness": { "enabled": true }
   },
   // Web radio: stazioni [{ "name": "Rai Radio 3", "url": "http://icestreaming.rai.it/3.mp3" }] e player
   // (riceve l'indirizzo come ultimo argomento). Elemento di barra "Radio" e pannello `panel toggle radio`.

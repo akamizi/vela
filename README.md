@@ -167,6 +167,11 @@ dell'ambiente, poi italiano). I cataloghi stanno in `i18n/<lingua>.json` (italia
 `~/.config/vela/i18n/<lingua>.json`. Una voce mancante o vuota mostra l'italiano. Per tradurre: `scripts/i18n-extract --update xx`
 crea il catalogo con tutte le chiavi, poi si riempiono i valori.
 
+## Pannello luminosità
+
+Clic sull'icona della luminosità nella barra (la rotellina cambia di ±5%), menu Sistema › Luminosità o
+`vela ipc call panel toggle brightness`. Cursore trascinabile; ←/→ = passo, PagSu/PagGiù = ±20%, 1-9 = 10-90%, 0 = 100%.
+
 ## Pannello energia
 
 Clic sull'icona del profilo energetico (clic destro o rotellina = profilo successivo), menu Sistema › Energia o
