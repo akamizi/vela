@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE policyconfig PUBLIC "-//freedesktop//DTD PolicyKit Policy Configuration 1.0//EN"
+ "http://www.freedesktop.org/standards/PolicyKit/1/policyconfig.dtd">
+<!-- Copyright (C) 2026 Maurizio Cavalletti — Licensed under the EUPL-1.2 -->
+<policyconfig>
+  <vendor>Vela</vendor>
+  <action id="org.vela.battery-limit">
+    <description>Change the battery charge limit</description>
+    <message>Authentication is required to change the battery charge limit</message>
+    <defaults>
+      <allow_any>auth_admin</allow_any>
+      <allow_inactive>auth_admin</allow_inactive>
+      <allow_active>auth_admin_keep</allow_active>
+    </defaults>
+    <annotate key="org.freedesktop.policykit.exec.path">@LIBEXEC@/vela/battery-limit</annotate>
+  </action>
+</policyconfig>

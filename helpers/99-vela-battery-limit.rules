@@ -1,0 +1,5 @@
+# Copyright (C) 2026 Maurizio Cavalletti — Licensed under the EUPL-1.2
+# Riapplica all'avvio la scelta fatta dal pannello di Vela (limite di carica sì/no).
+# Non scrive attributi da sé (niente cicli di eventi): lancia l'helper, che non fa nulla se la scelta non c'è mai stata.
+# Se esiste una regola vecchia con soglie fisse (es. 99-battery-charge-threshold.rules) va tolta, altrimenti vince al boot.
+ACTION=="add", SUBSYSTEM=="power_supply", KERNEL=="BAT*", RUN+="@LIBEXEC@/vela/battery-limit boot"

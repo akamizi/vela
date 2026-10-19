@@ -167,6 +167,13 @@ dell'ambiente, poi italiano). I cataloghi stanno in `i18n/<lingua>.json` (italia
 `~/.config/vela/i18n/<lingua>.json`. Una voce mancante o vuota mostra l'italiano. Per tradurre: `scripts/i18n-extract --update xx`
 crea il catalogo con tutte le chiavi, poi si riempiono i valori.
 
+## Limite di carica della batteria
+
+Sui portatili che lo permettono, il clic sull'icona della batteria apre un pannello con l'interruttore del limite di carica e
+"Carica al 100% una volta" (poi il limite torna da solo). Stesse azioni nelle Impostazioni › Batteria. Su un PC senza questa funzione non compare nulla.
+Serve la parte di sistema (helper di root, regola polkit per il gruppo `wheel`, regola udev): `doas make install-system`.
+Funziona con le soglie regolabili (ThinkPad, 75/80) e con il limite fisso del firmware (IdeaPad, `charge_types`).
+
 ## Calcolatrice
 
 `vela ipc call menu calc` (o, nel menu, "=" davanti): scrivi un'espressione (`2+3*4`, `100 km to miles`, `5 EUR to USD`) e Invio copia

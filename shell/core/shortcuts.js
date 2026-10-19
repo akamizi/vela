@@ -141,7 +141,7 @@ function describeVela(target, fn, arg) {
         var name = arg || "";
         return { label: fn === "close" ? tr("Chiudi il pannello") : tr("Pannello %1", panelNames()[name] || name), group: v };
     }
-    if (target === "toggles") return { label: ({ awake: tr("Resta sveglio"), night: tr("Luce notturna"), dnd: tr("Non disturbare"), touchpad: tr("Touchpad") })[fn] || tr("Interruttore %1", fn), group: v };
+    if (target === "toggles") return { label: ({ awake: tr("Resta sveglio"), night: tr("Luce notturna"), dnd: tr("Non disturbare"), touchpad: tr("Touchpad"), batteryLimit: tr("Limite di carica") })[fn] || tr("Interruttore %1", fn), group: v };
     if (target === "idle") return { label: fn === "lock" ? tr("Blocca lo schermo") : fn === "suspend" ? tr("Sospendi") : tr("Inattività (%1)", fn), group: "Sistema" };
     return { label: tr("Vela: %1 %2", target, fn), group: v };
 }

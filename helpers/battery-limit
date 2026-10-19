@@ -1,0 +1,206 @@
+#!/bin/sh
+# Copyright (C) 2026 Maurizio Cavalletti — Licensed under the EUPL-1.2
+# Helper di Vela per le soglie di carica della batteria (D-032).
+#
+#   battery-limit status          stato in righe chiave=valore (non serve root)
+#   battery-limit limit on|off    limite attivo (soglie 75/80, o il limite fisso del firmware) o disattivo; resta dopo il riavvio
+#   battery-limit full start      carica piena una tantum finché la batteria è piena, poi ripristina
+#   battery-limit full stop       annulla la carica piena e ripristina subito
+#   battery-limit boot            riapplica la scelta all'avvio (regola udev); non fa nulla se non è mai stata fatta
+#
+# Due tipi di batteria: a soglie (charge_control_*_threshold) o con limite fisso (charge_types: Long_Life).
+# Gira come root tramite pkexec (regola polkit per il gruppo wheel). Accetta SOLO queste parole e
+# nessun valore numerico dall'esterno: le soglie vengono da /etc/vela/battery-limit.conf, scritto da root.
+#
+# Prova senza root: VELA_BATTERY_TEST_DIR=/cartella (con sys/BAT0/…) viene ignorata se si è root.
+
+set -u
+
+LIMIT_START=75
+LIMIT_END=80
+FULL_START=99
+FULL_END=100
+POLL=30
+TIMEOUT=$((6 * 3600))        # oltre 6 ore qualcosa non va
+UNPLUGGED_GIVEUP=$((2 * 3600))
+
+if [ "$(id -u)" -ne 0 ] && [ -n "${VELA_BATTERY_TEST_DIR:-}" ]; then
+    SYS=$VELA_BATTERY_TEST_DIR/sys; CONF_DIR=$VELA_BATTERY_TEST_DIR/etc; STATE_DIR=$VELA_BATTERY_TEST_DIR/var; RUN_DIR=$VELA_BATTERY_TEST_DIR/run
+else
+    SYS=/sys/class/power_supply; CONF_DIR=/etc/vela; STATE_DIR=/var/lib/vela; RUN_DIR=/run
+fi
+CONF=$CONF_DIR/battery-limit.conf        # facoltativo: LIMIT_START=… LIMIT_END=… (solo root)
+CHOICE=$STATE_DIR/battery-limit          # contiene "on" oppure "off"
+FULLSTATE=$RUN_DIR/vela-battery-full     # pid del sorvegliante
+
+die() { printf 'battery-limit: %s\n' "$1" >&2; exit 1; }
+digits() { case "$1" in ''|*[!0-9]*) return 1 ;; esac; }
+num() { digits "$1" && [ "$1" -ge 0 ] && [ "$1" -le 100 ]; }
+
+# Valori del limite: quelli di default, o quelli del file di root se sono numeri coerenti.
+if [ -r "$CONF" ]; then
+    s=$(sed -n 's/^LIMIT_START=//p' "$CONF" | head -1); e=$(sed -n 's/^LIMIT_END=//p' "$CONF" | head -1)
+    if num "$s" && num "$e" && [ "$s" -lt "$e" ]; then LIMIT_START=$s; LIMIT_END=$e; fi
+fi
+
+# Prima batteria controllabile. Due modi:
+#   thresholds  soglie di carica regolabili (ThinkPad e simili: charge_control_*_threshold)
+#   fixed       limite fisso del firmware, solo acceso/spento (IdeaPad e simili: charge_types con Long_Life)
+BAT=; MODE=
+for d in "$SYS"/BAT*; do
+    if [ -e "$d/charge_control_end_threshold" ]; then BAT=$d; MODE=thresholds; break; fi
+done
+if [ -z "$BAT" ]; then
+    for d in "$SYS"/BAT*; do
+        if grep -q Long_Life "$d/charge_types" 2>/dev/null; then BAT=$d; MODE=fixed; break; fi
+    done
+fi
+
+rd() { cat "$BAT/$1" 2>/dev/null; }
+choice() { cat "$CHOICE" 2>/dev/null; }
+
+# Scrive le soglie. L'EC rifiuta start > end: salendo si alza prima il tetto, scendendo prima il pavimento.
+# Se la batteria non ha la soglia di inizio (solo end), si scrive solo quella.
+write_thresholds() {
+    start=$1; end=$2
+    [ -n "$BAT" ] || return 1
+    if [ -e "$BAT/charge_control_start_threshold" ]; then
+        cur_end=$(rd charge_control_end_threshold)
+        if [ "$end" -ge "${cur_end:-0}" ]; then
+            echo "$end" > "$BAT/charge_control_end_threshold" && echo "$start" > "$BAT/charge_control_start_threshold"
+        else
+            echo "$start" > "$BAT/charge_control_start_threshold" && echo "$end" > "$BAT/charge_control_end_threshold"
+        fi
+    else
+        echo "$end" > "$BAT/charge_control_end_threshold"
+    fi
+}
+
+# Tipo di carica selezionato (il kernel lo mostra tra parentesi quadre: "[Standard] Long_Life").
+charge_type() {
+    t=$(cat "$BAT/charge_types" 2>/dev/null)
+    sel=$(printf '%s' "$t" | sed -n 's/.*\[\([A-Za-z_]*\)\].*/\1/p')
+    printf '%s' "${sel:-$t}"
+}
+
+# Limite acceso o spento, a prescindere dal modo della batteria.
+set_limited() {
+    if [ "$MODE" = fixed ]; then
+        if [ "$1" = on ]; then echo Long_Life > "$BAT/charge_types"; else echo Standard > "$BAT/charge_types"; fi
+    elif [ "$1" = on ]; then write_thresholds "$LIMIT_START" "$LIMIT_END"
+    else write_thresholds 0 100; fi
+}
+# Carica piena una tantum: nessun limite, e (a soglie) la soglia di inizio alta perché riparta subito.
+set_full() {
+    if [ "$MODE" = fixed ]; then echo Standard > "$BAT/charge_types"; else write_thresholds "$FULL_START" "$FULL_END"; fi
+}
+# Stato voluto in questo momento secondo la scelta salvata.
+apply_choice() { set_limited "$(choice)"; }
+
+# 1 se la batteria è limitata adesso.
+is_limited() {
+    if [ "$MODE" = fixed ]; then [ "$(charge_type)" = Long_Life ]
+    else [ "$(rd charge_control_end_threshold)" != 100 ]; fi
+}
+
+full_alive() {
+    [ -f "$FULLSTATE" ] || return 1
+    p=$(cat "$FULLSTATE" 2>/dev/null)
+    digits "$p" && [ "$p" -gt 1 ] && [ -d "/proc/$p" ]
+}
+
+cmd_status() {
+    if [ -z "$BAT" ]; then echo "supported=0"; return 0; fi
+    echo "supported=1"
+    echo "battery=${BAT##*/}"
+    echo "mode=$MODE"
+    if is_limited; then echo "limited=1"; else echo "limited=0"; fi
+    if [ "$MODE" = thresholds ]; then
+        echo "start=$(rd charge_control_start_threshold)"
+        echo "end=$(rd charge_control_end_threshold)"
+        echo "limit_start=$LIMIT_START"
+        echo "limit_end=$LIMIT_END"
+    fi
+    echo "choice=$(choice)"
+    if full_alive; then echo "full=1"; else echo "full=0"; fi
+}
+
+need_root() {
+    if [ "$(id -u)" -ne 0 ] && [ -z "${VELA_BATTERY_TEST_DIR:-}" ]; then die "serve root (pkexec)."; fi
+    [ -n "$BAT" ] || die "questa batteria non ha un limite di carica controllabile."
+}
+
+cmd_limit() {
+    need_root
+    case "${1:-}" in on|off) ;; *) die "uso: limit on|off" ;; esac
+    mkdir -p "$STATE_DIR" && printf '%s\n' "$1" > "$CHOICE" && chmod 644 "$CHOICE"
+    # Durante la carica piena le soglie restano 99/100: la scelta si applica al termine.
+    if full_alive; then return 0; fi
+    apply_choice || die "scrittura delle soglie fallita."
+}
+
+watch_loop() {
+    echo $$ > "$FULLSTATE"
+    started=$(date +%s); unplugged_at=
+    while :; do
+        sleep "$POLL"
+        cap=$(rd capacity); st=$(rd status)
+        ac=0
+        for a in "$SYS"/AC* "$SYS"/ADP*; do
+            [ -e "$a/online" ] && [ "$(cat "$a/online")" = 1 ] && ac=1
+        done
+        now=$(date +%s)
+        if [ "$ac" != 1 ]; then
+            [ -n "$unplugged_at" ] || unplugged_at=$now
+            [ $((now - unplugged_at)) -ge "$UNPLUGGED_GIVEUP" ] && break
+            continue
+        fi
+        unplugged_at=
+        # "Full" o 100%; l'EC a volte si ferma a 97-99 con "Not charging".
+        if [ "$st" = Full ] || [ "${cap:-0}" -ge 100 ] || { [ "${cap:-0}" -ge 97 ] && [ "$st" = "Not charging" ]; }; then break; fi
+        [ $((now - started)) -ge "$TIMEOUT" ] && break
+    done
+    apply_choice
+    rm -f "$FULLSTATE"
+}
+
+cmd_full() {
+    need_root
+    case "${1:-}" in
+    start)
+        full_alive && die "carica piena già in corso."
+        is_limited || [ "$(choice)" = on ] || die "il limite è già disattivo: niente da fare."
+        mkdir -p "$RUN_DIR"
+        set_full || die "scrittura fallita."
+        # Il sorvegliante gira staccato: ripristina da solo ore dopo, senza terminale né password.
+        # (setsid può fare un fork: il pid lo scrive il sorvegliante stesso, e qui lo si aspetta.)
+        setsid "$0" __watch > /dev/null 2>&1 < /dev/null &
+        n=0; while [ $n -lt 20 ] && ! full_alive; do sleep 0.1; n=$((n+1)); done
+        full_alive || { apply_choice; die "il sorvegliante non è partito: soglie ripristinate."; }
+        ;;
+    stop)
+        full_alive || die "nessuna carica piena in corso."
+        kill "$(cat "$FULLSTATE")" 2>/dev/null
+        rm -f "$FULLSTATE"
+        apply_choice || die "ripristino fallito."
+        ;;
+    *) die "uso: full start|stop" ;;
+    esac
+}
+
+# All'avvio: il kernel può registrare gli attributi dopo l'evento udev, quindi si riprova in coda.
+cmd_boot() {
+    [ -n "$(choice)" ] || exit 0
+    if [ -n "$BAT" ]; then apply_choice; exit 0; fi
+    setsid sh -c 'i=0; while [ $i -lt 20 ]; do sleep 3; "$0" boot-retry && exit 0; i=$((i+1)); done' "$0" > /dev/null 2>&1 < /dev/null &
+}
+
+case "${1:-}" in
+    status)     cmd_status ;;
+    limit)      shift; cmd_limit "$@" ;;
+    full)       shift; cmd_full "$@" ;;
+    boot)       cmd_boot ;;
+    boot-retry) [ -n "$BAT" ] && apply_choice ;;
+    __watch)    watch_loop ;;
+    *)          sed -n '3,12p' "$0" | sed 's/^# \{0,1\}//'; exit 2 ;;
+esac

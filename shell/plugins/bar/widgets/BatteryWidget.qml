@@ -5,13 +5,18 @@ import "../../../core"
 import "../../../core/icons.js" as Icons
 import "../../../services"
 import "../../../ui"
-// Batteria: percentuale e icona, colori di avviso e critico. Nascosta senza batteria.
+// Batteria: percentuale e icona, colori di avviso e critico. Nascosta senza batteria. Il clic apre il pannello del limite di carica, dove esiste.
 BarItem {
     id: root
     readonly property real pct: Power.percent
     readonly property bool low: pct <= Config.shell.battery.warning && !Power.charging
     readonly property bool critical: pct <= Config.shell.battery.critical && !Power.charging
     visible: Power.hasBattery
+    // Clic = pannello del limite di carica, ma solo sui portatili che lo permettono.
+    onClicked: button => {
+        if (button === Qt.LeftButton && BatteryLimit.supported && MenuModel.availablePanels.indexOf("battery") >= 0)
+            Runtime.togglePanel("battery", mapToGlobal(width / 2, 0).x);
+    }
     tooltip: {
         var s = Math.round(Power.percent) + "%";
         if (Power.charging) s += " · " + I18n.tr("in carica");
@@ -21,6 +26,7 @@ BarItem {
             var h = Math.floor(t / 3600), m = Math.round((t % 3600) / 60);
             s += " · " + (h > 0 ? I18n.tr("%1 h %2 min", h, m) : I18n.tr("%1 min", m));
         }
+        if (BatteryLimit.supported) s += " · " + (BatteryLimit.full ? I18n.tr("carica piena") : BatteryLimit.limited ? I18n.tr("limite di carica attivo") : I18n.tr("limite di carica spento"));
         return s;
     }
     BarText {

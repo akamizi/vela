@@ -1,0 +1,7 @@
+// Copyright (C) 2026 Maurizio Cavalletti — Licensed under the EUPL-1.2
+// Chi è nel gruppo wheel, in una sessione locale attiva, cambia le soglie di carica senza password.
+// L'helper accetta solo "limit on|off" e "full start|stop" (vedi battery-limit).
+polkit.addRule(function(action, subject) {
+    if (action.id == "org.vela.battery-limit" && subject.local && subject.active && subject.isInGroup("wheel"))
+        return polkit.Result.YES;
+});

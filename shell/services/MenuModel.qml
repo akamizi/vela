@@ -12,7 +12,7 @@ Singleton {
 
     readonly property var items: Config.menu.items
     // Pannelli abilitati in configurazione e realmente presenti (si aggiungono nelle fasi 4-6)
-    readonly property var implementedPanels: ["network", "bluetooth", "audio", "settings", "shortcuts", "radio", "power", "brightness"]
+    readonly property var implementedPanels: ["network", "bluetooth", "audio", "settings", "shortcuts", "radio", "power", "brightness", "battery"]
     readonly property var availablePanels: implementedPanels.filter(function (n) {
         var c = Config.shell.panels[n];
         return c !== undefined && c.enabled === true;
@@ -53,6 +53,7 @@ Singleton {
         var a = item.action;
         if (a && a.type === "panel" && availablePanels.indexOf(a.target) < 0) return false;
         if (a && a.type === "toggle" && a.target === "touchpad" && !Toggles.touchpadAvailable) return false;
+        if (a && a.type === "panel" && a.target === "battery" && !BatteryLimit.supported) return false;
         return true;
     }
 

@@ -33,6 +33,7 @@ PanelHost {
                    { id: "keys", label: I18n.tr("Scorciatoie") }, { id: "autostart", label: I18n.tr("Avvio automatico") },
                    { id: "rules", label: I18n.tr("Regole delle finestre") }, { id: "gaps", label: I18n.tr("Bordi e spazi") });
         }
+        if (BatteryLimit.supported) t.push({ id: "battery", label: I18n.tr("Batteria") });
         t.push({ id: "compositor", label: I18n.tr("Compositor") }, { id: "about", label: I18n.tr("Informazioni") });
         return t;
     }
@@ -444,6 +445,19 @@ PanelHost {
         return out;
     }
 
+    function batteryRows() {
+        var L = BatteryLimit;
+        var out = [header(I18n.tr("Limite di carica"))];
+        out.push(info(I18n.tr("Tipo"), L.mode === "fixed" ? I18n.tr("limite fisso del firmware") : I18n.tr("soglie regolabili (%1–%2%)", L.limitStart, L.limitEnd)));
+        out.push(info(I18n.tr("Stato"), L.full ? I18n.tr("carica piena in corso") : L.limited ? I18n.tr("limite attivo") : I18n.tr("limite spento"), L.limited ? "accent" : ""));
+        if (!L.helperInstalled) out.push(info(I18n.tr("Attenzione"), I18n.tr("manca l'helper di sistema: doas make install-system"), "warn"));
+        if (L.error !== "") out.push(info(I18n.tr("Errore"), L.error, "warn"));
+        out.push({ kind: "action", label: L.wanted ? I18n.tr("Spegni il limite di carica") : I18n.tr("Attiva il limite di carica"), act: "batteryLimit", key: "a:batlimit" });
+        if (L.full || L.wanted)
+            out.push({ kind: "action", label: L.full ? I18n.tr("Annulla la carica piena") : I18n.tr("Carica al 100% una volta"), act: "batteryFull", key: "a:batfull" });
+        return out;
+    }
+
     readonly property string homeUrl: "https://github.com/akamizi/vela"
     FileView {
         id: versionFile
@@ -506,6 +520,7 @@ PanelHost {
         case "rules": return rulesRows();
         case "gaps": return gapsRows();
         case "about": return aboutRows();
+        case "battery": return batteryRows();
         case "idle": return idleRows();
         case "apps": return appsRows();
         default: return compositorRows();
@@ -544,6 +559,7 @@ PanelHost {
         Qt.callLater(function () { list.positionViewAtBeginning(); });
         if (tabId === "compositor") Compositors.refresh();
         if (tabId === "idle") Idle.checkExternal();
+        if (tabId === "battery") BatteryLimit.refresh();
         if (tabId === "apps") DefaultApps.refresh();
         if (tabId === "outputs" || tabId === "input" || tabId === "compositor" || tabId === "keys" || tabId === "autostart" || tabId === "rules") SwayBackend.refresh();
     }
@@ -634,6 +650,8 @@ PanelHost {
         else if (r.act === "resetModules") Settings.resetMany([["shell", "bar.modules"]]);
         else if (r.act === "resetTab") confirmReset = true;
         else if (r.act === "lockNow") Idle.lock();
+        else if (r.act === "batteryLimit") BatteryLimit.toggleLimit();
+        else if (r.act === "batteryFull") BatteryLimit.toggleFull();
         else if (r.act === "openHome") Quickshell.execDetached(["xdg-open", homeUrl]);
         else if (r.act === "openReleases") Quickshell.execDetached(["xdg-open", homeUrl + "/releases"]);
         else if (r.act === "addBind") addBind();

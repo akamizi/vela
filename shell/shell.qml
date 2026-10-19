@@ -59,6 +59,11 @@ ShellRoot {
     }
 
     Loader {
+        active: Config.shell.panels.battery.enabled && BatteryLimit.supported
+        sourceComponent: BatteryPanel {}
+    }
+
+    Loader {
         active: Config.shell.panels.brightness.enabled
         sourceComponent: BrightnessPanel {}
     }
@@ -104,6 +109,7 @@ ShellRoot {
         function night(): void { Toggles.toggleNight(); }
         function dnd(): void { Toggles.toggleDnd(); }
         function touchpad(): void { Toggles.toggleTouchpad(); }
+        function batteryLimit(): void { BatteryLimit.toggleLimit(); }
     }
     IpcHandler {
         target: "radio"

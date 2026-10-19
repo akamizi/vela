@@ -30,6 +30,7 @@
         { "id": "audio", "label": "Audio", "action": { "type": "panel", "target": "audio" } },
         { "id": "shortcuts", "label": "Scorciatoie", "action": { "type": "panel", "target": "shortcuts" } },
         { "id": "power-profile", "label": "Energia", "action": { "type": "panel", "target": "power" } },
+        { "id": "battery-limit", "label": "Limite di carica", "action": { "type": "panel", "target": "battery" } },
         { "id": "brightness", "label": "Luminosità", "requires": ["brightnessctl"], "action": { "type": "panel", "target": "brightness" } },
         { "id": "radio", "label": "Radio", "requires": ["mpv"], "action": { "type": "panel", "target": "radio" } }
       ]
