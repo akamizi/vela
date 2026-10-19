@@ -6,7 +6,7 @@ SHARE = $(DESTDIR)$(PREFIX)/share
 
 install:
 	install -Dm755 scripts/vela $(DESTDIR)$(PREFIX)/bin/vela
-	find shell config/defaults -type f -exec install -Dm644 {} $(SHARE)/vela/{} \;
+	find shell config/defaults i18n -type f -exec install -Dm644 {} $(SHARE)/vela/{} \;
 	find config/user.example -type f -exec install -Dm644 {} $(SHARE)/doc/vela/{} \;
 	install -Dm644 README.md THIRD-PARTY.md -t $(SHARE)/doc/vela
 	install -Dm644 VERSION $(SHARE)/vela/VERSION

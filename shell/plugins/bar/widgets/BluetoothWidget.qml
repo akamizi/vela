@@ -9,9 +9,9 @@ import "../../../ui"
 BarItem {
     visible: BluetoothStatus.available
     tooltip: {
-        if (!BluetoothStatus.enabled) return "Bluetooth spento";
+        if (!BluetoothStatus.enabled) return I18n.tr("Bluetooth spento");
         var c = BluetoothStatus.connected;
-        if (c.length === 0) return "Bluetooth acceso, nessun dispositivo connesso";
+        if (c.length === 0) return I18n.tr("Bluetooth acceso, nessun dispositivo connesso");
         return c.map(function (d) { return d.name + (d.battery >= 0 ? " " + Math.round(d.battery * 100) + "%" : ""); }).join("\n");
     }
     onClicked: button => {

@@ -58,9 +58,9 @@ PanelHost {
             id: hero
             icon: panel.iconFor(Power.profile)
             iconColor: Theme.accent
-            title: "Energia"
+            title: I18n.tr("Energia")
             meta: Power.profileLabel
-            detail: Power.hasBattery ? Math.round(Power.percent) + "%" + (Power.charging ? " · in carica" : Power.onAc ? " · alimentatore" : "") : "alimentatore"
+            detail: Power.hasBattery ? Math.round(Power.percent) + "%" + (Power.charging ? " · " + I18n.tr("in carica") : Power.onAc ? " · " + I18n.tr("alimentatore") : "") : I18n.tr("alimentatore")
         }
         PanelSeparator { id: sep; anchors.top: hero.bottom }
 
@@ -106,7 +106,7 @@ PanelHost {
                 elide: Text.ElideRight
                 font.pixelSize: Theme.fontSize - 2
                 color: Theme.dim
-                text: "Invio attiva · 1-" + panel.rows.length + " scelta diretta · Esc chiude"
+                text: I18n.tr("Invio attiva · 1-%1 scelta diretta · Esc chiude", panel.rows.length)
             }
         }
     }

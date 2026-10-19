@@ -56,7 +56,7 @@ Singleton {
             if (root.pending) { var p = root.pending; root.pending = null; root.start(p); return; }
             if (root.stopping) { root.stopping = false; root.state = "stopped"; return; }
             root.state = "error";
-            root.error = code === 127 ? "player non trovato" : "stazione non raggiungibile";
+            root.error = code === 127 ? I18n.tr("player non trovato") : I18n.tr("stazione non raggiungibile");
         }
     }
     // Se dopo qualche secondo il player è ancora vivo, il flusso è partito.

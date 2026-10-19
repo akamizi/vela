@@ -1,6 +1,9 @@
 // Configurazione della shell (default). Gli override stanno in ~/.config/vela/shell.jsonc
 // Nessun valore qui dipende da un PC particolare: i sensori si rilevano a runtime.
 {
+  // Lingua dell'interfaccia: codice a due lettere ("it", "en"…). Vuoto = lingua dell'ambiente, poi italiano.
+  // I cataloghi stanno in i18n/<lingua>.json; i propri in ~/.config/vela/i18n/<lingua>.json.
+  "language": "",
   "bar": {
     "enabled": true,
     // "top" o "bottom"

@@ -42,9 +42,9 @@ Singleton {
                                    label: r.name + (r.admin1 ? ", " + r.admin1 : "") + (r.country ? " (" + r.country + ")" : "") });
                     });
                     root.results = out;
-                    if (out.length === 0) root.error = "Nessuna città trovata";
+                    if (out.length === 0) root.error = I18n.tr("Nessuna città trovata");
                 } catch (e) {
-                    root.error = "Ricerca non riuscita (rete non raggiungibile?)";
+                    root.error = I18n.tr("Ricerca non riuscita (rete non raggiungibile?)");
                 }
             }
         }

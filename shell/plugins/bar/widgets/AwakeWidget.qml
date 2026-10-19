@@ -12,7 +12,7 @@ import "../../../ui"
 BarItem {
     id: root
     visible: Toggles.awakeOn
-    tooltip: "Resta sveglio: il blocco dello schermo è sospeso. Clic per disattivare."
+    tooltip: I18n.tr("Resta sveglio: il blocco dello schermo è sospeso. Clic per disattivare.")
     onClicked: Toggles.stopAwake()
 
     IdleInhibitor {
@@ -30,7 +30,7 @@ BarItem {
             anchors.centerIn: parent
             spacing: Theme.gap
             BarIcon { text: Icons.awake; color: Theme.background; anchors.verticalCenter: parent.verticalCenter }
-            BarText { text: "SVEGLIO"; font.bold: true; color: Theme.background; anchors.verticalCenter: parent.verticalCenter }
+            BarText { text: I18n.tr("SVEGLIO"); font.bold: true; color: Theme.background; anchors.verticalCenter: parent.verticalCenter }
         }
     }
 }

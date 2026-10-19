@@ -6,20 +6,21 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Io
+import "../core"
 
 Singleton {
     id: root
 
     // `mimes[0]` serve per cercare i candidati e per leggere il valore attuale; tutti vengono impostati.
     readonly property var groups: [
-        { id: "web", label: "Browser web", mimes: ["x-scheme-handler/http", "x-scheme-handler/https", "text/html"] },
-        { id: "files", label: "Gestore di file", mimes: ["inode/directory"] },
-        { id: "text", label: "Editor di testo", mimes: ["text/plain"] },
-        { id: "pdf", label: "Lettore PDF", mimes: ["application/pdf"] },
-        { id: "image", label: "Visualizzatore di immagini", mimes: ["image/png", "image/jpeg", "image/gif", "image/webp"] },
-        { id: "video", label: "Lettore video", mimes: ["video/mp4", "video/x-matroska", "video/webm"] },
-        { id: "audio", label: "Lettore audio", mimes: ["audio/mpeg", "audio/flac", "audio/ogg"] },
-        { id: "mail", label: "Client di posta", mimes: ["x-scheme-handler/mailto"] }
+        { id: "web", label: I18n.tr("Browser web"), mimes: ["x-scheme-handler/http", "x-scheme-handler/https", "text/html"] },
+        { id: "files", label: I18n.tr("Gestore di file"), mimes: ["inode/directory"] },
+        { id: "text", label: I18n.tr("Editor di testo"), mimes: ["text/plain"] },
+        { id: "pdf", label: I18n.tr("Lettore PDF"), mimes: ["application/pdf"] },
+        { id: "image", label: I18n.tr("Visualizzatore di immagini"), mimes: ["image/png", "image/jpeg", "image/gif", "image/webp"] },
+        { id: "video", label: I18n.tr("Lettore video"), mimes: ["video/mp4", "video/x-matroska", "video/webm"] },
+        { id: "audio", label: I18n.tr("Lettore audio"), mimes: ["audio/mpeg", "audio/flac", "audio/ogg"] },
+        { id: "mail", label: I18n.tr("Client di posta"), mimes: ["x-scheme-handler/mailto"] }
     ]
 
     property var candidates: ({})     // gruppo -> [{id, name}]

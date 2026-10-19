@@ -23,26 +23,26 @@ PanelHost {
     function buildRows() {
         var out = [];
         if (!BluetoothDevices.available) {
-            out.push({ kind: "message", text: "Nessun adattatore Bluetooth", tone: "dim", key: "m-none" });
+            out.push({ kind: "message", text: I18n.tr("Nessun adattatore Bluetooth"), tone: "dim", key: "m-none" });
             return out;
         }
         if (BluetoothDevices.error !== "")
             out.push({ kind: "message", text: BluetoothDevices.error, tone: "error", key: "m-err" });
         if (!BluetoothDevices.enabled) {
-            out.push({ kind: "message", text: "Bluetooth spento: premi Spazio per accenderlo", tone: "dim", key: "m-off" });
+            out.push({ kind: "message", text: I18n.tr("Bluetooth spento: premi Spazio per accenderlo"), tone: "dim", key: "m-off" });
             return out;
         }
         var devs = BluetoothDevices.devices;
         var known = devs.filter(function (d) { return d.paired || d.connected; });
         var found = devs.filter(function (d) { return !(d.paired || d.connected); });
         if (known.length > 0) {
-            out.push({ kind: "header", label: "Dispositivi", key: "h-known" });
+            out.push({ kind: "header", label: I18n.tr("Dispositivi"), key: "h-known" });
             known.forEach(function (d) { out.push({ kind: "device", d: d, key: "dev:" + d.address }); });
         }
-        out.push({ kind: "header", label: "Disponibili", key: "h-found" });
+        out.push({ kind: "header", label: I18n.tr("Disponibili"), key: "h-found" });
         found.forEach(function (d) { out.push({ kind: "device", d: d, key: "dev:" + d.address }); });
         if (found.length === 0)
-            out.push({ kind: "message", text: "Ricerca dispositivi… (mettilo in modalità accoppiamento)", tone: "dim", key: "m-scan" });
+            out.push({ kind: "message", text: I18n.tr("Ricerca dispositivi… (mettilo in modalità accoppiamento)"), tone: "dim", key: "m-scan" });
         return out;
     }
     readonly property var rows: buildRows()
@@ -143,9 +143,9 @@ PanelHost {
             id: hero
             icon: !BluetoothDevices.enabled ? Icons.bluetoothOff : panel.connectedCount > 0 ? Icons.bluetoothConnected : Icons.bluetooth
             iconColor: BluetoothDevices.enabled ? Theme.accent : Theme.muted
-            title: "Bluetooth"
-            meta: !BluetoothDevices.available ? "non disponibile" : !BluetoothDevices.enabled ? "spento" : "acceso"
-            detail: panel.connectedCount > 0 ? panel.connectedCount + (panel.connectedCount === 1 ? " collegato" : " collegati") : ""
+            title: I18n.tr("Bluetooth")
+            meta: !BluetoothDevices.available ? I18n.tr("non disponibile") : !BluetoothDevices.enabled ? I18n.tr("spento") : I18n.tr("acceso")
+            detail: panel.connectedCount > 0 ? (panel.connectedCount === 1 ? I18n.tr("%1 collegato", panel.connectedCount) : I18n.tr("%1 collegati", panel.connectedCount)) : ""
             trailing: Component {
                 ToggleSwitch {
                     visible: BluetoothDevices.available
@@ -196,10 +196,10 @@ PanelHost {
                     trailingText: {
                         if (item.r.kind !== "device") return "";
                         var d = item.r.d;
-                        if (d.pairing) return "accoppiamento…";
-                        if (d.connecting) return "connessione…";
-                        if (d.connected) return d.battery >= 0 ? Math.round(d.battery * 100) + "%" : "connesso";
-                        return d.paired ? "accoppiato" : "";
+                        if (d.pairing) return I18n.tr("accoppiamento…");
+                        if (d.connecting) return I18n.tr("connessione…");
+                        if (d.connected) return d.battery >= 0 ? Math.round(d.battery * 100) + "%" : I18n.tr("connesso");
+                        return d.paired ? I18n.tr("accoppiato") : "";
                     }
                     trailingColor: item.r.kind === "device" && item.r.d.connected ? Theme.accent : Theme.muted
                     onMoved: panel.select(item.index)
@@ -218,8 +218,8 @@ PanelHost {
                 elide: Text.ElideRight
                 font.pixelSize: Theme.fontSize - 2
                 color: panel.forgetting ? Theme.warning : Theme.dim
-                text: panel.forgetting ? "Dimenticare «" + panel.forgetting.name + "»? Invio = sì, Esc = no"
-                    : "Invio connetti · Spazio on/off · Canc dimentica"
+                text: panel.forgetting ? I18n.tr("Dimenticare «%1»? Invio = sì, Esc = no", panel.forgetting.name)
+                    : I18n.tr("Invio connetti · Spazio on/off · Canc dimentica")
             }
         }
     }

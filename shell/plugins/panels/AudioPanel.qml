@@ -22,12 +22,12 @@ PanelHost {
     // --- elenco -------------------------------------------------------------------
     function buildRows() {
         var out = [];
-        out.push({ kind: "header", label: "Uscite", key: "h-out" });
+        out.push({ kind: "header", label: I18n.tr("Uscite"), key: "h-out" });
         AudioDevices.sinks.forEach(function (d) { out.push({ kind: "device", d: d, sink: true, key: "dev:" + d.id }); });
-        if (AudioDevices.sinks.length === 0) out.push({ kind: "message", text: "Nessuna uscita audio", key: "m-out" });
-        out.push({ kind: "header", label: "Ingressi", key: "h-in" });
+        if (AudioDevices.sinks.length === 0) out.push({ kind: "message", text: I18n.tr("Nessuna uscita audio"), key: "m-out" });
+        out.push({ kind: "header", label: I18n.tr("Ingressi"), key: "h-in" });
         AudioDevices.sources.forEach(function (d) { out.push({ kind: "device", d: d, sink: false, key: "dev:" + d.id }); });
-        if (AudioDevices.sources.length === 0) out.push({ kind: "message", text: "Nessun ingresso audio", key: "m-in" });
+        if (AudioDevices.sources.length === 0) out.push({ kind: "message", text: I18n.tr("Nessun ingresso audio"), key: "m-in" });
         return out;
     }
     readonly property var rows: buildRows()
@@ -107,9 +107,9 @@ PanelHost {
             id: hero
             icon: !Audio.available ? Icons.volumeMuted : Audio.muted ? Icons.volumeMuted : Icons.pick(Icons.volume, Audio.volume)
             iconColor: Audio.available && !Audio.muted ? Theme.accent : Theme.muted
-            title: "Audio"
-            meta: Audio.available ? Audio.deviceName : "nessuna uscita"
-            detail: Audio.available ? Math.round(Audio.volume * 100) + "%" + (Audio.muted ? " · muto" : "") : ""
+            title: I18n.tr("Audio")
+            meta: Audio.available ? Audio.deviceName : I18n.tr("nessuna uscita")
+            detail: Audio.available ? Math.round(Audio.volume * 100) + "%" + (Audio.muted ? " · " + I18n.tr("muto") : "") : ""
             trailing: Component {
                 ToggleSwitch {
                     visible: Audio.available
@@ -186,7 +186,7 @@ PanelHost {
                 elide: Text.ElideRight
                 font.pixelSize: Theme.fontSize - 2
                 color: Theme.dim
-                text: "Invio predefinito · ←/→ volume · M muto · Spazio muto uscita"
+                text: I18n.tr("Invio predefinito · ←/→ volume · M muto · Spazio muto uscita")
             }
         }
     }

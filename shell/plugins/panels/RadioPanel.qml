@@ -26,11 +26,11 @@ PanelHost {
         var q = query.trim().toLowerCase();
         var list = Radio.stations.filter(function (s) { return q === "" || s.name.toLowerCase().indexOf(q) >= 0; });
         if (Radio.stations.length === 0)
-            return [{ kind: "message", text: "Nessuna stazione: aggiungile in radio.stations (~/.config/vela/shell.jsonc)", key: "m:none" }];
-        if (list.length === 0) return [{ kind: "message", text: "Nessuna stazione corrisponde", key: "m:nomatch" }];
+            return [{ kind: "message", text: I18n.tr("Nessuna stazione: aggiungile in radio.stations (~/.config/vela/shell.jsonc)"), key: "m:none" }];
+        if (list.length === 0) return [{ kind: "message", text: I18n.tr("Nessuna stazione corrisponde"), key: "m:nomatch" }];
         var out = [];
         if (Radio.playing || Radio.state === "error") out.push({ kind: "stop", key: "stop" });
-        out.push({ kind: "header", label: "Stazioni", key: "h:st" });
+        out.push({ kind: "header", label: I18n.tr("Stazioni"), key: "h:st" });
         list.forEach(function (s) { out.push({ kind: "station", s: s, key: "st:" + s.url }); });
         return out;
     }
@@ -113,9 +113,9 @@ PanelHost {
             id: hero
             icon: Icons.radio
             iconColor: Radio.state === "error" ? Theme.warning : Radio.playing ? Theme.accent : Theme.muted
-            title: "Radio"
-            meta: Radio.state === "stopped" ? "ferma" : Radio.name
-            detail: Radio.state === "starting" ? "connessione…" : Radio.state === "playing" ? "in onda" : Radio.state === "error" ? Radio.error : ""
+            title: I18n.tr("Radio")
+            meta: Radio.state === "stopped" ? I18n.tr("ferma") : Radio.name
+            detail: Radio.state === "starting" ? I18n.tr("connessione…") : Radio.state === "playing" ? I18n.tr("in onda") : Radio.state === "error" ? Radio.error : ""
             trailing: Component {
                 ToggleSwitch {
                     visible: Radio.playing
@@ -134,7 +134,7 @@ PanelHost {
                 anchors { left: parent.left; right: parent.right; leftMargin: Theme.padding; rightMargin: Theme.padding; verticalCenter: parent.verticalCenter }
                 elide: Text.ElideRight
                 color: panel.query === "" ? Theme.dim : Theme.foreground
-                text: panel.query === "" ? "Digita per cercare…" : panel.query
+                text: panel.query === "" ? I18n.tr("Digita per cercare…") : panel.query
             }
             PanelSeparator { anchors.bottom: parent.bottom }
         }
@@ -194,7 +194,7 @@ PanelHost {
                 elide: Text.ElideRight
                 font.pixelSize: Theme.fontSize - 2
                 color: Theme.dim
-                text: "Invio ascolta / ferma · digita per filtrare · ↑/↓ scorri · Esc " + (panel.query !== "" ? "cancella il filtro" : "chiude")
+                text: panel.query !== "" ? I18n.tr("Invio ascolta / ferma · digita per filtrare · ↑/↓ scorri · Esc cancella il filtro") : I18n.tr("Invio ascolta / ferma · digita per filtrare · ↑/↓ scorri · Esc chiude")
             }
         }
     }

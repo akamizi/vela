@@ -29,10 +29,10 @@ PanelHost {
         return e ? e.name : "";
     }
     readonly property var allRows: {
-        if (!SwayBackend.active) return [{ kind: "message", text: "Nessun backend per questo compositor", key: "m:none" }];
+        if (!SwayBackend.active) return [{ kind: "message", text: I18n.tr("Nessun backend per questo compositor"), key: "m:none" }];
         var loaded = DesktopEntries.applications.values.length;   // rilegge i nomi quando l'elenco delle app è pronto
-        var rows = Shortcuts.build(SwayBackend.userConfig, Config.sway.keybindings, panel.programName);
-        if (rows.length === 0) rows = [{ kind: "message", text: "Nessuna scorciatoia trovata nel config di Sway", key: "m:empty" }];
+        var rows = Shortcuts.build(SwayBackend.userConfig, Config.sway.keybindings, panel.programName, I18n.tr);
+        if (rows.length === 0) rows = [{ kind: "message", text: I18n.tr("Nessuna scorciatoia trovata nel config di Sway"), key: "m:empty" }];
         return rows;
     }
     readonly property var rows: filter(allRows, query)
@@ -50,7 +50,7 @@ PanelHost {
             if (pending) { out.push(pending); pending = null; }
             out.push(r);
         });
-        if (out.length === 0) out.push({ kind: "message", text: "Nessuna scorciatoia corrisponde", key: "m:nomatch" });
+        if (out.length === 0) out.push({ kind: "message", text: I18n.tr("Nessuna scorciatoia corrisponde"), key: "m:nomatch" });
         return out;
     }
 
@@ -124,9 +124,9 @@ PanelHost {
             id: hero
             icon: Icons.keyboard
             iconColor: Theme.accent
-            title: "Scorciatoie"
-            meta: Compositors.active ? Compositors.active.name : "compositor"
-            detail: panel.bindCount > 0 ? panel.bindCount + " combinazioni" : ""
+            title: I18n.tr("Scorciatoie")
+            meta: Compositors.active ? Compositors.active.name : I18n.tr("compositor")
+            detail: panel.bindCount > 0 ? I18n.tr("%1 combinazioni", panel.bindCount) : ""
         }
         PanelSeparator { id: sep; anchors.top: hero.bottom }
 
@@ -139,7 +139,7 @@ PanelHost {
                 anchors { left: parent.left; right: parent.right; leftMargin: Theme.padding; rightMargin: Theme.padding; verticalCenter: parent.verticalCenter }
                 elide: Text.ElideRight
                 color: panel.query === "" ? Theme.dim : Theme.foreground
-                text: panel.query === "" ? "Digita per cercare…" : panel.query
+                text: panel.query === "" ? I18n.tr("Digita per cercare…") : panel.query
             }
             PanelSeparator { anchors.bottom: parent.bottom }
         }
@@ -220,7 +220,7 @@ PanelHost {
                 elide: Text.ElideRight
                 font.pixelSize: Theme.fontSize - 2
                 color: Theme.dim
-                text: "Digita per filtrare · ↑/↓ scorri · Esc " + (panel.query !== "" ? "cancella il filtro" : "chiude")
+                text: panel.query !== "" ? I18n.tr("Digita per filtrare · ↑/↓ scorri · Esc cancella il filtro") : I18n.tr("Digita per filtrare · ↑/↓ scorri · Esc chiude")
             }
         }
     }

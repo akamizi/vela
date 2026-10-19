@@ -5,6 +5,7 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Networking
+import "../core"
 
 Singleton {
     id: root
@@ -58,17 +59,17 @@ Singleton {
     property bool needsPassword: false     // l'ultima connessione è fallita per password mancante o errata
 
     readonly property var reasons: ({
-        NoSecrets: "Password mancante o errata",
-        WifiAuthTimeout: "Autenticazione scaduta",
-        WifiClientFailed: "Connessione non riuscita",
-        WifiNetworkLost: "Rete non più raggiungibile",
-        WifiClientDisconnected: "Disconnesso dalla rete"
+        NoSecrets: I18n.tr("Password mancante o errata"),
+        WifiAuthTimeout: I18n.tr("Autenticazione scaduta"),
+        WifiClientFailed: I18n.tr("Connessione non riuscita"),
+        WifiNetworkLost: I18n.tr("Rete non più raggiungibile"),
+        WifiClientDisconnected: I18n.tr("Disconnesso dalla rete")
     })
 
     function onFailed(network, reason) {
         errorNetwork = network.name;
         needsPassword = (reason === ConnectionFailReason.NoSecrets);
-        error = reasons[ConnectionFailReason.toString(reason)] || "Connessione non riuscita";
+        error = reasons[ConnectionFailReason.toString(reason)] || I18n.tr("Connessione non riuscita");
         errorClear.restart();
     }
     function clearError() { error = ""; errorNetwork = ""; needsPassword = false; }

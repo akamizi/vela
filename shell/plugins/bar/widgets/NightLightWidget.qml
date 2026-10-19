@@ -8,7 +8,7 @@ import "../../../ui"
 // Luce notturna (visibile solo se attiva); clic = disattiva.
 BarItem {
     visible: Toggles.night
-    tooltip: "Luce notturna attiva"
+    tooltip: I18n.tr("Luce notturna attiva")
     onClicked: Toggles.toggleNight()
     BarIcon { text: Icons.night; color: Theme.accent }
 }

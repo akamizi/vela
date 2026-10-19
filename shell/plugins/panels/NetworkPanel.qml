@@ -27,30 +27,30 @@ PanelHost {
     // --- elenco -------------------------------------------------------------------
     function buildRows() {
         var out = [];
-        out.push({ kind: "header", label: "Wi-Fi", key: "h-wifi" });
+        out.push({ kind: "header", label: I18n.tr("Wi-Fi"), key: "h-wifi" });
         if (Wifi.available) {
             if (!Wifi.hardwareEnabled) {
-                out.push({ kind: "message", text: "Wi-Fi disattivato dall'hardware (interruttore o rfkill)", tone: "warn", key: "m-hw" });
+                out.push({ kind: "message", text: I18n.tr("Wi-Fi disattivato dall'hardware (interruttore o rfkill)"), tone: "warn", key: "m-hw" });
             } else if (!Wifi.enabled) {
-                out.push({ kind: "message", text: "Wi-Fi spento: premi Spazio per accenderlo", tone: "dim", key: "m-off" });
+                out.push({ kind: "message", text: I18n.tr("Wi-Fi spento: premi Spazio per accenderlo"), tone: "dim", key: "m-off" });
             } else {
                 var nets = Wifi.networks;
                 nets.forEach(function (e) { out.push({ kind: "wifi", e: e, key: "wifi:" + e.name }); });
-                if (nets.length === 0) out.push({ kind: "message", text: "Ricerca delle reti…", tone: "dim", key: "m-scan" });
+                if (nets.length === 0) out.push({ kind: "message", text: I18n.tr("Ricerca delle reti…"), tone: "dim", key: "m-scan" });
             }
         } else {
-            out.push({ kind: "message", text: "Nessuna scheda Wi-Fi", tone: "dim", key: "m-nowifi" });
+            out.push({ kind: "message", text: I18n.tr("Nessuna scheda Wi-Fi"), tone: "dim", key: "m-nowifi" });
         }
         if (Wifi.error !== "")
             out.push({ kind: "message", text: (Wifi.errorNetwork ? Wifi.errorNetwork + ": " : "") + Wifi.error, tone: "error", key: "m-err" });
         if (note !== "") out.push({ kind: "message", text: note, tone: "warn", key: "m-note" });
 
         if (Wifi.wired.length > 0) {
-            out.push({ kind: "header", label: "Cavo", key: "h-wired" });
+            out.push({ kind: "header", label: I18n.tr("Cavo"), key: "h-wired" });
             Wifi.wired.forEach(function (w) { out.push({ kind: "wired", w: w, key: "wired:" + w.name }); });
         }
         if (Vpn.known.length > 0) {
-            out.push({ kind: "header", label: "VPN", key: "h-vpn" });
+            out.push({ kind: "header", label: I18n.tr("VPN"), key: "h-vpn" });
             Vpn.known.forEach(function (n) { out.push({ kind: "vpn", name: n, active: Vpn.isActive(n), key: "vpn:" + n }); });
         }
         return out;
@@ -92,7 +92,7 @@ PanelHost {
         if (e.connecting) return;
         if (e.connected) Wifi.disconnect(e);
         else if (e.known) Wifi.connect(e);
-        else if (e.enterprise) { note = "Rete aziendale: configurarla con nm-connection-editor"; noteClear.restart(); }
+        else if (e.enterprise) { note = I18n.tr("Rete aziendale: configurarla con nm-connection-editor"); noteClear.restart(); }
         else if (e.secured) startPrompt(e);
         else Wifi.connect(e);
     }
@@ -186,8 +186,8 @@ PanelHost {
             icon: panel.net.kind === "wifi" ? Icons.pick(Icons.wifi, panel.net.signal)
                 : panel.net.kind === "ethernet" ? Icons.ethernet : Icons.wifiOff
             iconColor: panel.net.kind === "none" ? Theme.muted : Theme.accent
-            title: "Rete"
-            meta: panel.net.kind === "none" ? "disconnesso" : (panel.net.name || panel.net.device)
+            title: I18n.tr("Rete")
+            meta: panel.net.kind === "none" ? I18n.tr("disconnesso") : (panel.net.name || panel.net.device)
             detail: panel.vpnActive > 0 ? "VPN" + (panel.vpnActive > 1 ? " ×" + panel.vpnActive : "") : ""
             trailing: Component {
                 ToggleSwitch {
@@ -207,7 +207,7 @@ PanelHost {
             BarText {
                 id: promptLabel
                 width: parent.width
-                text: panel.prompt ? "Password per " + panel.prompt.name : ""
+                text: panel.prompt ? I18n.tr("Password per %1", panel.prompt.name) : ""
                 elide: Text.ElideRight
                 color: Theme.muted
             }
@@ -283,7 +283,7 @@ PanelHost {
                     title: entry.wifi ? entry.wifi.name : ""
                     bold: entry.wifi ? entry.wifi.connected : false
                     selected: entry.wifi ? entry.wifi.connected : false
-                    trailingText: !entry.wifi ? "" : entry.wifi.connecting ? "connessione…" : entry.wifi.connected ? "connessa" : entry.wifi.known ? "salvata" : ""
+                    trailingText: !entry.wifi ? "" : entry.wifi.connecting ? I18n.tr("connessione…") : entry.wifi.connected ? I18n.tr("connessa") : entry.wifi.known ? I18n.tr("salvata") : ""
                     trailingColor: entry.wifi && entry.wifi.connected ? Theme.accent : Theme.muted
                     trailing: Component {
                         BarIcon { visible: entry.wifi && entry.wifi.secured; text: Icons.lock; color: Theme.muted; font.pixelSize: Theme.fontSize }
@@ -299,7 +299,7 @@ PanelHost {
                     icon: Icons.ethernet
                     iconColor: entry.wired && entry.wired.connected ? Theme.accent : Theme.muted
                     title: entry.wired ? entry.wired.name : ""
-                    trailingText: !entry.wired ? "" : entry.wired.connected ? "connesso" : entry.wired.link ? "collegato" : "scollegato"
+                    trailingText: !entry.wired ? "" : entry.wired.connected ? I18n.tr("connesso") : entry.wired.link ? I18n.tr("collegato") : I18n.tr("scollegato")
                     trailingColor: entry.wired && entry.wired.connected ? Theme.accent : Theme.muted
                     enabled: false
                 }
@@ -330,9 +330,9 @@ PanelHost {
                 elide: Text.ElideRight
                 font.pixelSize: Theme.fontSize - 2
                 color: panel.forgetting ? Theme.warning : Theme.dim
-                text: panel.forgetting ? "Dimenticare «" + panel.forgetting.name + "»? Invio = sì, Esc = no"
-                    : panel.prompt ? "Invio = connetti · Esc = annulla"
-                    : "Invio connetti · Spazio Wi-Fi on/off · Canc dimentica"
+                text: panel.forgetting ? I18n.tr("Dimenticare «%1»? Invio = sì, Esc = no", panel.forgetting.name)
+                    : panel.prompt ? I18n.tr("Invio = connetti · Esc = annulla")
+                    : I18n.tr("Invio connetti · Spazio Wi-Fi on/off · Canc dimentica")
             }
         }
     }

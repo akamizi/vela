@@ -26,14 +26,14 @@ PanelHost {
     property int tab: 0                       // indice in `tabs`
     // Le categorie del compositor compaiono solo se il compositor attivo ha un backend che le gestisce.
     readonly property var tabs: {
-        var t = [{ id: "bar", label: "Barra" }, { id: "theme", label: "Tema" }, { id: "weather", label: "Meteo" },
-                 { id: "idle", label: "Blocco e inattività" }, { id: "apps", label: "App predefinite" }, { id: "radio", label: "Radio" }];
+        var t = [{ id: "bar", label: I18n.tr("Barra") }, { id: "theme", label: I18n.tr("Tema") }, { id: "weather", label: I18n.tr("Meteo") },
+                 { id: "idle", label: I18n.tr("Blocco e inattività") }, { id: "apps", label: I18n.tr("App predefinite") }, { id: "radio", label: I18n.tr("Radio") }];
         if (Compositors.activeHasBackend && SwayBackend.active) {
-            t.push({ id: "outputs", label: "Schermi" }, { id: "input", label: "Tastiera e touchpad" }, { id: "wallpaper", label: "Sfondo" },
-                   { id: "keys", label: "Scorciatoie" }, { id: "autostart", label: "Avvio automatico" },
-                   { id: "rules", label: "Regole delle finestre" }, { id: "gaps", label: "Bordi e spazi" });
+            t.push({ id: "outputs", label: I18n.tr("Schermi") }, { id: "input", label: I18n.tr("Tastiera e touchpad") }, { id: "wallpaper", label: I18n.tr("Sfondo") },
+                   { id: "keys", label: I18n.tr("Scorciatoie") }, { id: "autostart", label: I18n.tr("Avvio automatico") },
+                   { id: "rules", label: I18n.tr("Regole delle finestre") }, { id: "gaps", label: I18n.tr("Bordi e spazi") });
         }
-        t.push({ id: "compositor", label: "Compositor" }, { id: "about", label: "Informazioni" });
+        t.push({ id: "compositor", label: I18n.tr("Compositor") }, { id: "about", label: I18n.tr("Informazioni") });
         return t;
     }
     readonly property var tabNames: tabs.map(function (t) { return t.label; })
@@ -50,7 +50,7 @@ PanelHost {
     function number(file, path, label, min, max, step, dec, fallback) {
         var v = Settings.get(file, path), unset = (v === null || v === undefined);
         return { kind: "number", file: file, path: path, label: label, min: min, max: max, step: step, dec: dec,
-                 value: unset ? (fallback !== undefined ? fallback : min) : v, text: unset ? "predefinito" : fmt(v, dec),
+                 value: unset ? (fallback !== undefined ? fallback : min) : v, text: unset ? I18n.tr("predefinito") : fmt(v, dec),
                  over: Settings.overridden(file, path), key: file + ":" + path };
     }
     // Righe che non scrivono in settings.jsonc ma chiamano `commit` (es. gli schermi, con conferma).
@@ -64,7 +64,7 @@ PanelHost {
         return { kind: "choice", label: label, options: options, value: value, text: t, commit: commit, key: key };
     }
     function choice(file, path, label, options) {
-        var v = Settings.get(file, path), t = (v === null || v === undefined) ? "predefinito" : String(v);
+        var v = Settings.get(file, path), t = (v === null || v === undefined) ? I18n.tr("predefinito") : String(v);
         options.forEach(function (o) { if (o.v === v) t = o.t; });
         return { kind: "choice", file: file, path: path, label: label, options: options, value: v, text: t,
                  over: Settings.overridden(file, path), key: file + ":" + path };
@@ -76,22 +76,22 @@ PanelHost {
     }
     function textRow(file, path, label) {
         var v = Settings.get(file, path), unset = (v === null || v === undefined || v === "");
-        return { kind: "text", file: file, path: path, label: label, value: unset ? "" : v, text: unset ? "predefinito" : v,
+        return { kind: "text", file: file, path: path, label: label, value: unset ? "" : v, text: unset ? I18n.tr("predefinito") : v,
                  over: Settings.overridden(file, path), key: file + ":" + path };
     }
     function header(label) { return { kind: "header", label: label, key: "h:" + label }; }
 
     readonly property var zoneOrder: ["left", "center", "right", "hidden"]
-    readonly property var zoneLabels: ({ left: "Sinistra", center: "Centro", right: "Destra", hidden: "Nascosto" })
+    readonly property var zoneLabels: ({ left: I18n.tr("Sinistra"), center: I18n.tr("Centro"), right: I18n.tr("Destra"), hidden: I18n.tr("Nascosto") })
 
     function barRows() {
-        var out = [header("Aspetto")];
-        out.push(choice("shell", "bar.position", "Posizione", [{ v: "top", t: "in alto" }, { v: "bottom", t: "in basso" }]));
-        out.push(number("theme", "layout.barHeight", "Altezza", 18, 48, 2, 0));
-        out.push(number("theme", "font.barSize", "Dimensione del testo nella barra", 9, 22, 1, 0));
-        out.push(number("theme", "layout.barRadius", "Angoli della barra", 0, 16, 1, 0));
-        out.push(number("theme", "barOpacity", "Trasparenza dello sfondo (opacità)", 0, 1, 0.05, 2));
-        out.push(header("Elementi"));
+        var out = [header(I18n.tr("Aspetto"))];
+        out.push(choice("shell", "bar.position", I18n.tr("Posizione"), [{ v: "top", t: I18n.tr("in alto") }, { v: "bottom", t: I18n.tr("in basso") }]));
+        out.push(number("theme", "layout.barHeight", I18n.tr("Altezza"), 18, 48, 2, 0));
+        out.push(number("theme", "font.barSize", I18n.tr("Dimensione del testo nella barra"), 9, 22, 1, 0));
+        out.push(number("theme", "layout.barRadius", I18n.tr("Angoli della barra"), 0, 16, 1, 0));
+        out.push(number("theme", "barOpacity", I18n.tr("Trasparenza dello sfondo (opacità)"), 0, 1, 0.05, 2));
+        out.push(header(I18n.tr("Elementi")));
         var mods = Config.shell.bar.modules, used = {};
         ["left", "center", "right"].forEach(function (z) {
             (mods[z] || []).forEach(function (n) {
@@ -102,45 +102,45 @@ PanelHost {
         BarModules.names.forEach(function (n) {
             if (!used[n]) out.push({ kind: "module", name: n, zone: "hidden", text: zoneLabels.hidden, key: "mod:" + n });
         });
-        out.push({ kind: "action", label: "Ripristina gli elementi di default", act: "resetModules", key: "a:resetModules" });
-        out.push({ kind: "action", label: "Ripristina questa scheda", act: "resetTab", key: "a:resetTab" });
+        out.push({ kind: "action", label: I18n.tr("Ripristina gli elementi di default"), act: "resetModules", key: "a:resetModules" });
+        out.push({ kind: "action", label: I18n.tr("Ripristina questa scheda"), act: "resetTab", key: "a:resetTab" });
         return out;
     }
 
     function themeRows() {
-        var out = [header("Preset")];
-        out.push({ kind: "action", label: "Scuro (predefinito)", act: "presetDark", key: "a:dark" });
-        out.push({ kind: "action", label: "Chiaro", act: "presetLight", key: "a:light" });
-        out.push(header("Colori"));
-        var names = [["background", "Sfondo"], ["surface", "Superficie"], ["border", "Bordo"], ["foreground", "Testo"],
-                     ["muted", "Testo attenuato"], ["dim", "Testo debole"], ["accent", "Accento"],
-                     ["warning", "Avviso"], ["error", "Errore"]];
+        var out = [header(I18n.tr("Preset"))];
+        out.push({ kind: "action", label: I18n.tr("Scuro (predefinito)"), act: "presetDark", key: "a:dark" });
+        out.push({ kind: "action", label: I18n.tr("Chiaro"), act: "presetLight", key: "a:light" });
+        out.push(header(I18n.tr("Colori")));
+        var names = [["background", I18n.tr("Sfondo")], ["surface", I18n.tr("Superficie")], ["border", I18n.tr("Bordo")], ["foreground", I18n.tr("Testo")],
+                     ["muted", I18n.tr("Testo attenuato")], ["dim", I18n.tr("Testo debole")], ["accent", I18n.tr("Accento")],
+                     ["warning", I18n.tr("Avviso")], ["error", I18n.tr("Errore")]];
         names.forEach(function (n) { out.push(color("theme", "colors." + n[0], n[1])); });
-        out.push(header("Carattere e forma"));
-        out.push(textRow("theme", "font.family", "Carattere"));
-        out.push(number("theme", "font.size", "Dimensione del testo (pannelli, menu, notifiche)", 9, 22, 1, 0));
-        out.push(number("theme", "layout.radius", "Angoli di pannelli, menu e notifiche", 0, 16, 1, 0));
-        out.push({ kind: "action", label: "Ripristina questa scheda", act: "resetTab", key: "a:resetTab" });
+        out.push(header(I18n.tr("Carattere e forma")));
+        out.push(textRow("theme", "font.family", I18n.tr("Carattere")));
+        out.push(number("theme", "font.size", I18n.tr("Dimensione del testo (pannelli, menu, notifiche)"), 9, 22, 1, 0));
+        out.push(number("theme", "layout.radius", I18n.tr("Angoli di pannelli, menu e notifiche"), 0, 16, 1, 0));
+        out.push({ kind: "action", label: I18n.tr("Ripristina questa scheda"), act: "resetTab", key: "a:resetTab" });
         return out;
     }
 
     function weatherRows() {
         var w = Config.shell.weather;
-        var out = [header("Meteo")];
+        var out = [header(I18n.tr("Meteo"))];
         var on = typeof w.latitude === "number" && typeof w.longitude === "number";
-        out.push(info("Stato", on ? "attivo" : "spento: scegli una città", on ? "accent" : "warn"));
-        out.push({ kind: "search", label: "Città", text: w.placeName ? w.placeName : (on ? "coordinate impostate" : "non impostata"),
+        out.push(info(I18n.tr("Stato"), on ? I18n.tr("attivo") : I18n.tr("spento: scegli una città"), on ? "accent" : "warn"));
+        out.push({ kind: "search", label: I18n.tr("Città"), text: w.placeName ? w.placeName : (on ? "coordinate impostate" : "non impostata"),
                    over: Settings.overridden("shell", "weather.placeName"), key: "search:city" });
-        out.push(choice("shell", "weather.units", "Unità di misura", [{ v: "metric", t: "metriche (°C)" }, { v: "imperial", t: "imperiali (°F)" }]));
-        if (Geocoding.busy) out.push(info("Ricerca di «" + Geocoding.query + "»", "in corso…"));
-        else if (Geocoding.error !== "") out.push(info("Ricerca di «" + Geocoding.query + "»", Geocoding.error, "warn"));
+        out.push(choice("shell", "weather.units", I18n.tr("Unità di misura"), [{ v: "metric", t: I18n.tr("metriche (°C)") }, { v: "imperial", t: I18n.tr("imperiali (°F)") }]));
+        if (Geocoding.busy) out.push(info(I18n.tr("Ricerca di «%1»", Geocoding.query), I18n.tr("in corso…")));
+        else if (Geocoding.error !== "") out.push(info(I18n.tr("Ricerca di «%1»", Geocoding.query), Geocoding.error, "warn"));
         if (Geocoding.results.length > 0) {
-            out.push(header("Risultati per «" + Geocoding.query + "»"));
+            out.push(header(I18n.tr("Risultati per «%1»", Geocoding.query)));
             Geocoding.results.forEach(function (r, i) {
                 out.push({ kind: "place", label: r.label, text: r.lat.toFixed(2) + ", " + r.lon.toFixed(2), place: r, key: "place:" + i });
             });
         }
-        out.push({ kind: "action", label: "Ripristina questa scheda", act: "resetTab", key: "a:resetTab" });
+        out.push({ kind: "action", label: I18n.tr("Ripristina questa scheda"), act: "resetTab", key: "a:resetTab" });
         return out;
     }
 
@@ -152,80 +152,80 @@ PanelHost {
     function outputsRows() {
         var out = [];
         if (SwayBackend.pending) {
-            out.push(header("Conferma"));
-            out.push(info("Mantenere queste impostazioni?", "tra " + SwayBackend.countdown + " s si torna indietro", "warn"));
-            out.push({ kind: "action", label: "Mantieni", act: "keepOutputs", key: "a:keep" });
-            out.push({ kind: "action", label: "Ripristina ora", act: "revertOutputs", key: "a:revert" });
+            out.push(header(I18n.tr("Conferma")));
+            out.push(info(I18n.tr("Mantenere queste impostazioni?"), I18n.tr("tra %1 s si torna indietro", SwayBackend.countdown), "warn"));
+            out.push({ kind: "action", label: I18n.tr("Mantieni"), act: "keepOutputs", key: "a:keep" });
+            out.push({ kind: "action", label: I18n.tr("Ripristina ora"), act: "revertOutputs", key: "a:revert" });
         }
         var outs = SwayBackend.outputs, activeCount = outs.filter(function (o) { return o.active; }).length;
         outs.forEach(function (o) {
             var n = o.name, k = "o:" + n + ":";
             out.push(header(n + (o.label ? " — " + o.label : "")));
             if (o.active) {
-                out.push(choiceC(k + "mode", "Risoluzione e frequenza", uniq(o.modes).map(function (m) { return { v: m, t: m }; }), o.mode,
+                out.push(choiceC(k + "mode", I18n.tr("Risoluzione e frequenza"), uniq(o.modes).map(function (m) { return { v: m, t: m }; }), o.mode,
                                  function (v) { SwayBackend.setOutput(n, { mode: v }); }));
-                out.push(numberC(k + "scale", "Scala", 0.5, 3, 0.25, 2, o.scale, function (v) { SwayBackend.setOutput(n, { scale: v }); }));
-                out.push(choiceC(k + "transform", "Rotazione", [{ v: "normal", t: "normale" }, { v: "90", t: "90°" }, { v: "180", t: "180°" }, { v: "270", t: "270°" }],
+                out.push(numberC(k + "scale", I18n.tr("Scala"), 0.5, 3, 0.25, 2, o.scale, function (v) { SwayBackend.setOutput(n, { scale: v }); }));
+                out.push(choiceC(k + "transform", I18n.tr("Rotazione"), [{ v: "normal", t: I18n.tr("normale") }, { v: "90", t: "90°" }, { v: "180", t: "180°" }, { v: "270", t: "270°" }],
                                  o.transform, function (v) { SwayBackend.setOutput(n, { transform: v }); }));
                 if (outs.length > 1) {
-                    out.push(numberC(k + "x", "Posizione orizzontale", -10000, 20000, 10, 0, o.x, function (v) { SwayBackend.setOutput(n, { x: v }); }));
-                    out.push(numberC(k + "y", "Posizione verticale", -10000, 20000, 10, 0, o.y, function (v) { SwayBackend.setOutput(n, { y: v }); }));
+                    out.push(numberC(k + "x", I18n.tr("Posizione orizzontale"), -10000, 20000, 10, 0, o.x, function (v) { SwayBackend.setOutput(n, { x: v }); }));
+                    out.push(numberC(k + "y", I18n.tr("Posizione verticale"), -10000, 20000, 10, 0, o.y, function (v) { SwayBackend.setOutput(n, { y: v }); }));
                 }
             }
             // Con un solo schermo acceso non si può spegnere.
             if (outs.length > 1 && (!o.active || activeCount > 1))
-                out.push(choiceC(k + "enabled", "Schermo", [{ v: true, t: "acceso" }, { v: false, t: "spento" }], o.active,
+                out.push(choiceC(k + "enabled", I18n.tr("Schermo"), [{ v: true, t: I18n.tr("acceso") }, { v: false, t: I18n.tr("spento") }], o.active,
                                  function (v) { SwayBackend.setOutput(n, { enabled: v }); }));
         });
-        if (outs.length === 0) out.push(info("Schermi", "nessuno rilevato", "warn"));
-        if (SwayBackend.lastError !== "") out.push(info("Errore di Sway", SwayBackend.lastError, "warn"));
-        out.push(header("Scelte salvate"));
-        out.push({ kind: "action", label: "Dimentica le impostazioni salvate degli schermi", act: "resetTab", key: "a:resetTab" });
+        if (outs.length === 0) out.push(info(I18n.tr("Schermi"), I18n.tr("nessuno rilevato"), "warn"));
+        if (SwayBackend.lastError !== "") out.push(info(I18n.tr("Errore di Sway"), SwayBackend.lastError, "warn"));
+        out.push(header(I18n.tr("Scelte salvate")));
+        out.push({ kind: "action", label: I18n.tr("Dimentica le impostazioni salvate degli schermi"), act: "resetTab", key: "a:resetTab" });
         return out;
     }
 
-    readonly property var onOff: [{ v: "enabled", t: "sì" }, { v: "disabled", t: "no" }]
+    readonly property var onOff: [{ v: "enabled", t: I18n.tr("sì") }, { v: "disabled", t: I18n.tr("no") }]
 
     function inputRows() {
-        var out = [header("Tastiera")];
-        out.push(textRow("sway", "input.keyboard.layout", "Layout (es. it oppure it,us)"));
-        out.push(textRow("sway", "input.keyboard.variant", "Variante"));
-        out.push(textRow("sway", "input.keyboard.options", "Opzioni (es. grp:alt_shift_toggle)"));
-        out.push(number("sway", "input.keyboard.repeatDelay", "Ritardo di ripetizione (ms)", 100, 1000, 50, 0, 600));
-        out.push(number("sway", "input.keyboard.repeatRate", "Ripetizioni al secondo", 5, 60, 1, 0, 25));
-        out.push(header("Touchpad"));
+        var out = [header(I18n.tr("Tastiera"))];
+        out.push(textRow("sway", "input.keyboard.layout", I18n.tr("Layout (es. it oppure it,us)")));
+        out.push(textRow("sway", "input.keyboard.variant", I18n.tr("Variante")));
+        out.push(textRow("sway", "input.keyboard.options", I18n.tr("Opzioni (es. grp:alt_shift_toggle)")));
+        out.push(number("sway", "input.keyboard.repeatDelay", I18n.tr("Ritardo di ripetizione (ms)"), 100, 1000, 50, 0, 600));
+        out.push(number("sway", "input.keyboard.repeatRate", I18n.tr("Ripetizioni al secondo"), 5, 60, 1, 0, 25));
+        out.push(header(I18n.tr("Touchpad")));
         if (SwayBackend.hasTouchpad) {
-            out.push(choice("sway", "input.touchpad.tap", "Tocco per cliccare", onOff));
-            out.push(choice("sway", "input.touchpad.naturalScroll", "Scorrimento naturale", onOff));
-            out.push(choice("sway", "input.touchpad.disableWhileTyping", "Disattiva mentre si scrive", onOff));
-            out.push(number("sway", "input.touchpad.accel", "Velocità del puntatore", -1, 1, 0.1, 1, 0));
+            out.push(choice("sway", "input.touchpad.tap", I18n.tr("Tocco per cliccare"), onOff));
+            out.push(choice("sway", "input.touchpad.naturalScroll", I18n.tr("Scorrimento naturale"), onOff));
+            out.push(choice("sway", "input.touchpad.disableWhileTyping", I18n.tr("Disattiva mentre si scrive"), onOff));
+            out.push(number("sway", "input.touchpad.accel", I18n.tr("Velocità del puntatore"), -1, 1, 0.1, 1, 0));
         } else {
-            out.push(info("Touchpad", "nessuno rilevato"));
+            out.push(info(I18n.tr("Touchpad"), I18n.tr("nessuno rilevato")));
         }
-        if (SwayBackend.lastError !== "") out.push(info("Errore di Sway", SwayBackend.lastError, "warn"));
-        out.push({ kind: "action", label: "Ripristina questa scheda", act: "resetTab", key: "a:resetTab" });
+        if (SwayBackend.lastError !== "") out.push(info(I18n.tr("Errore di Sway"), SwayBackend.lastError, "warn"));
+        out.push({ kind: "action", label: I18n.tr("Ripristina questa scheda"), act: "resetTab", key: "a:resetTab" });
         return out;
     }
 
     function wallpaperRows() {
-        var out = [header("Sfondo")];
-        out.push(textRow("sway", "wallpaper.path", "Immagine (percorso)"));
-        out.push(choice("sway", "wallpaper.mode", "Adattamento", [{ v: "fill", t: "riempi" }, { v: "fit", t: "adatta" }, { v: "stretch", t: "allunga" },
+        var out = [header(I18n.tr("Sfondo"))];
+        out.push(textRow("sway", "wallpaper.path", I18n.tr("Immagine (percorso)")));
+        out.push(choice("sway", "wallpaper.mode", I18n.tr("Adattamento"), [{ v: "fill", t: "riempi" }, { v: "fit", t: "adatta" }, { v: "stretch", t: "allunga" },
                                                                  { v: "center", t: "centra" }, { v: "tile", t: "affianca" }]));
-        out.push(color("sway", "wallpaper.color", "Colore (senza immagine)"));
-        if (SwayBackend.lastError !== "") out.push(info("Errore di Sway", SwayBackend.lastError, "warn"));
-        out.push({ kind: "action", label: "Ripristina questa scheda", act: "resetTab", key: "a:resetTab" });
+        out.push(color("sway", "wallpaper.color", I18n.tr("Colore (senza immagine)")));
+        if (SwayBackend.lastError !== "") out.push(info(I18n.tr("Errore di Sway"), SwayBackend.lastError, "warn"));
+        out.push({ kind: "action", label: I18n.tr("Ripristina questa scheda"), act: "resetTab", key: "a:resetTab" });
         return out;
     }
 
     function persistenceRows() {
-        var out = [header("Persistenza al login (Sway)")];
-        out.push(info("File generato da Vela", SwayBackend.confPath));
+        var out = [header(I18n.tr("Persistenza al login (Sway)"))];
+        out.push(info(I18n.tr("File generato da Vela"), SwayBackend.confPath));
         if (SwayBackend.hasInclude) {
-            out.push(info("include nel config di Sway", "presente", "accent"));
+            out.push(info(I18n.tr("include nel config di Sway"), I18n.tr("presente"), "accent"));
         } else {
-            out.push(info("include nel config di Sway", "mancante: gli schermi non si ricordano al login", "warn"));
-            out.push({ kind: "action", label: "Aggiungi la riga include al config di Sway (con copia di sicurezza)", act: "addInclude", key: "a:include" });
+            out.push(info(I18n.tr("include nel config di Sway"), I18n.tr("mancante: gli schermi non si ricordano al login"), "warn"));
+            out.push({ kind: "action", label: I18n.tr("Aggiungi la riga include al config di Sway (con copia di sicurezza)"), act: "addInclude", key: "a:include" });
         }
         return out;
     }
@@ -235,26 +235,26 @@ PanelHost {
     function setList(name, arr) { Settings.set("sway", name, arr); }
 
     function keysRows() {
-        var out = [header("Scorciatoie di Vela")];
+        var out = [header(I18n.tr("Scorciatoie di Vela"))];
         var mine = Config.sway.keybindings;
         mine.forEach(function (b) {
             out.push({ kind: "bind", own: true, combo: b.combo, command: b.command, label: b.combo,
-                       text: b.command ? b.command : "disattivata", key: "kb:" + b.combo });
+                       text: b.command ? b.command : I18n.tr("disattivata"), key: "kb:" + b.combo });
         });
-        if (mine.length === 0) out.push(info("Nessuna", "aggiungine una o cambia una del config di Sway"));
-        out.push({ kind: "action", label: "Aggiungi una scorciatoia", act: "addBind", key: "a:addbind" });
+        if (mine.length === 0) out.push(info(I18n.tr("Nessuna"), I18n.tr("aggiungine una o cambia una del config di Sway")));
+        out.push({ kind: "action", label: I18n.tr("Aggiungi una scorciatoia"), act: "addBind", key: "a:addbind" });
         var theirs = SwayBackend.userConfig.binds;
-        out.push(header("Dal config di Sway (la tua scelta sostituisce quella del config)"));
+        out.push(header(I18n.tr("Dal config di Sway (la tua scelta sostituisce quella del config)")));
         var vars = SwayBackend.userConfig.vars;
         theirs.forEach(function (b) {
             var n = SwayConf.normalize(b.combo, vars);
             var over = mine.some(function (m) { return SwayConf.normalize(m.combo, vars) === n; });
             out.push({ kind: "bind", own: false, combo: b.combo, command: b.command, label: b.combo,
-                       text: (over ? "sostituita · " : "") + b.command, over: over, key: "ub:" + b.combo });
+                       text: (over ? I18n.tr("sostituita") + " · " : "") + b.command, over: over, key: "ub:" + b.combo });
         });
-        if (theirs.length === 0) out.push(info("Config di Sway", "nessuna scorciatoia trovata"));
-        if (SwayBackend.lastError !== "") out.push(info("Errore di Sway", SwayBackend.lastError, "warn"));
-        out.push({ kind: "action", label: "Ripristina questa scheda", act: "resetTab", key: "a:resetTab" });
+        if (theirs.length === 0) out.push(info(I18n.tr("Config di Sway"), I18n.tr("nessuna scorciatoia trovata")));
+        if (SwayBackend.lastError !== "") out.push(info(I18n.tr("Errore di Sway"), SwayBackend.lastError, "warn"));
+        out.push({ kind: "action", label: I18n.tr("Ripristina questa scheda"), act: "resetTab", key: "a:resetTab" });
         return out;
     }
 
@@ -263,27 +263,27 @@ PanelHost {
     function stations() { return (Config.shell.radio.stations || []).map(function (s) { return { name: s.name, url: s.url }; }); }
     function setStations(a) { Settings.set("shell", "radio.stations", a); }
     function radioRows() {
-        var out = [header("Stazioni")];
+        var out = [header(I18n.tr("Stazioni"))];
         stations().forEach(function (st, i) { out.push({ kind: "station", idx: i, label: st.name, text: st.url, key: "rs:" + st.url }); });
-        if (Config.shell.radio.stations.length === 0) out.push(info("Nessuna", "aggiungine una"));
-        out.push({ kind: "action", label: "Aggiungi una stazione", act: "addStation", key: "a:addstation" });
-        out.push(info("Ordine", "Maiusc+↑/↓ sposta la stazione selezionata"));
-        out.push({ kind: "action", label: "Ripristina questa scheda", act: "resetTab", key: "a:resetTab" });
+        if (Config.shell.radio.stations.length === 0) out.push(info(I18n.tr("Nessuna"), I18n.tr("aggiungine una")));
+        out.push({ kind: "action", label: I18n.tr("Aggiungi una stazione"), act: "addStation", key: "a:addstation" });
+        out.push(info(I18n.tr("Ordine"), I18n.tr("Maiusc+↑/↓ sposta la stazione selezionata")));
+        out.push({ kind: "action", label: I18n.tr("Ripristina questa scheda"), act: "resetTab", key: "a:resetTab" });
         return out;
     }
-    function urlProblem(t) { return Radio.validUrl(t) ? "" : "Indirizzo non valido: deve iniziare con http:// o https://"; }
+    function urlProblem(t) { return Radio.validUrl(t) ? "" : I18n.tr("Indirizzo non valido: deve iniziare con http:// o https://"); }
     function addStation() {
         startSteps([
-            { label: "Nome della stazione" },
-            { label: function (a) { return "Indirizzo del flusso di " + a[0] + " (http://…)"; }, validate: urlProblem }
+            { label: I18n.tr("Nome della stazione") },
+            { label: function (a) { return I18n.tr("Indirizzo del flusso di %1 (http://…)", a[0]); }, validate: urlProblem }
         ], function (a) { var l = stations(); l.push({ name: a[0], url: a[1] }); setStations(l); });
     }
     function editStation(r) {
         var st = stations()[r.idx];
         if (!st) return;
         startSteps([
-            { label: "Nome della stazione", initial: st.name },
-            { label: "Indirizzo del flusso", initial: st.url, validate: urlProblem }
+            { label: I18n.tr("Nome della stazione"), initial: st.name },
+            { label: I18n.tr("Indirizzo del flusso"), initial: st.url, validate: urlProblem }
         ], function (a) { var l = stations(); l[r.idx] = { name: a[0], url: a[1] }; setStations(l); });
     }
     function moveStation(r, dir) {
@@ -294,37 +294,37 @@ PanelHost {
     }
 
     function autostartRows() {
-        var out = [header("Avviati da Vela")];
+        var out = [header(I18n.tr("Avviati da Vela"))];
         Config.sway.autostart.forEach(function (c, i) { out.push({ kind: "auto", idx: i, label: c, text: "", key: "au:" + i + ":" + c }); });
-        if (Config.sway.autostart.length === 0) out.push(info("Nessuno", "aggiungine uno"));
-        out.push({ kind: "action", label: "Aggiungi un programma", act: "addAuto", key: "a:addauto" });
-        if (!SwayBackend.hasInclude) out.push(info("Attenzione", "serve l'include nel config di Sway (categoria Compositor)", "warn"));
-        out.push(header("Dal config di Sway (sola lettura)"));
-        SwayBackend.userConfig.execs.forEach(function (e, i) { out.push(info(e.command, e.always ? "a ogni reload" : "all'avvio")); });
-        out.push({ kind: "action", label: "Ripristina questa scheda", act: "resetTab", key: "a:resetTab" });
+        if (Config.sway.autostart.length === 0) out.push(info(I18n.tr("Nessuno"), I18n.tr("aggiungine uno")));
+        out.push({ kind: "action", label: I18n.tr("Aggiungi un programma"), act: "addAuto", key: "a:addauto" });
+        if (!SwayBackend.hasInclude) out.push(info(I18n.tr("Attenzione"), I18n.tr("serve l'include nel config di Sway (categoria Compositor)"), "warn"));
+        out.push(header(I18n.tr("Dal config di Sway (sola lettura)")));
+        SwayBackend.userConfig.execs.forEach(function (e, i) { out.push(info(e.command, e.always ? I18n.tr("a ogni reload") : I18n.tr("all'avvio"))); });
+        out.push({ kind: "action", label: I18n.tr("Ripristina questa scheda"), act: "resetTab", key: "a:resetTab" });
         return out;
     }
 
     function rulesRows() {
-        var out = [header("Regole di Vela")];
+        var out = [header(I18n.tr("Regole di Vela"))];
         Config.sway.rules.forEach(function (rl, i) { out.push({ kind: "rule", idx: i, label: rl.criteria, text: rl.command, key: "ru:" + i + ":" + rl.criteria }); });
-        if (Config.sway.rules.length === 0) out.push(info("Nessuna", "aggiungine una (es. [app_id=\"foot\"] floating enable)"));
-        out.push({ kind: "action", label: "Aggiungi una regola", act: "addRule", key: "a:addrule" });
-        out.push(header("Dal config di Sway (sola lettura)"));
+        if (Config.sway.rules.length === 0) out.push(info(I18n.tr("Nessuna"), I18n.tr("aggiungine una (es. [app_id=\"foot\"] floating enable)")));
+        out.push({ kind: "action", label: I18n.tr("Aggiungi una regola"), act: "addRule", key: "a:addrule" });
+        out.push(header(I18n.tr("Dal config di Sway (sola lettura)")));
         SwayBackend.userConfig.rules.forEach(function (rl) { out.push(info(rl.criteria, rl.command)); });
-        out.push({ kind: "action", label: "Ripristina questa scheda", act: "resetTab", key: "a:resetTab" });
+        out.push({ kind: "action", label: I18n.tr("Ripristina questa scheda"), act: "resetTab", key: "a:resetTab" });
         return out;
     }
 
     function gapsRows() {
-        var out = [header("Finestre")];
-        out.push(number("sway", "gaps.inner", "Spazio tra le finestre (px)", 0, 50, 1, 0, 0));
-        out.push(number("sway", "gaps.outer", "Spazio dal bordo dello schermo (px)", 0, 50, 1, 0, 0));
-        out.push(number("sway", "gaps.border", "Spessore del bordo (px, finestre nuove)", 0, 10, 1, 0, 1));
-        out.push(choice("sway", "gaps.smartGaps", "Niente spazi con una sola finestra", [{ v: "on", t: "sì" }, { v: "off", t: "no" }, { v: "inverse_outer", t: "solo esterni" }]));
-        out.push(choice("sway", "gaps.smartBorders", "Niente bordi con una sola finestra", [{ v: "on", t: "sì" }, { v: "off", t: "no" }, { v: "no_gaps", t: "solo senza spazi" }]));
-        if (SwayBackend.lastError !== "") out.push(info("Errore di Sway", SwayBackend.lastError, "warn"));
-        out.push({ kind: "action", label: "Ripristina questa scheda", act: "resetTab", key: "a:resetTab" });
+        var out = [header(I18n.tr("Finestre"))];
+        out.push(number("sway", "gaps.inner", I18n.tr("Spazio tra le finestre (px)"), 0, 50, 1, 0, 0));
+        out.push(number("sway", "gaps.outer", I18n.tr("Spazio dal bordo dello schermo (px)"), 0, 50, 1, 0, 0));
+        out.push(number("sway", "gaps.border", I18n.tr("Spessore del bordo (px, finestre nuove)"), 0, 10, 1, 0, 1));
+        out.push(choice("sway", "gaps.smartGaps", I18n.tr("Niente spazi con una sola finestra"), [{ v: "on", t: I18n.tr("sì") }, { v: "off", t: I18n.tr("no") }, { v: "inverse_outer", t: I18n.tr("solo esterni") }]));
+        out.push(choice("sway", "gaps.smartBorders", I18n.tr("Niente bordi con una sola finestra"), [{ v: "on", t: I18n.tr("sì") }, { v: "off", t: I18n.tr("no") }, { v: "no_gaps", t: I18n.tr("solo senza spazi") }]));
+        if (SwayBackend.lastError !== "") out.push(info(I18n.tr("Errore di Sway"), SwayBackend.lastError, "warn"));
+        out.push({ kind: "action", label: I18n.tr("Ripristina questa scheda"), act: "resetTab", key: "a:resetTab" });
         return out;
     }
 
@@ -347,8 +347,8 @@ PanelHost {
     }
     function stepSubmit() {
         var st = steps[stepIndex], t = field.text.trim();
-        if (t === "" && !st.allowEmpty) { note = "Valore vuoto"; return; }
-        if (t !== "" && !SwayBackend.oneLine(t)) { note = "Solo una riga, senza caratteri di controllo"; return; }
+        if (t === "" && !st.allowEmpty) { note = I18n.tr("Valore vuoto"); return; }
+        if (t !== "" && !SwayBackend.oneLine(t)) { note = I18n.tr("Solo una riga, senza caratteri di controllo"); return; }
         if (st.validate) { var err = st.validate(t); if (err) { note = err; return; } }
         answers = answers.concat([t]);
         note = st.after ? st.after(answers) : "";
@@ -374,29 +374,29 @@ PanelHost {
         setList("keybindings", a);
     }
     function editBind(r) {
-        startSteps([{ label: "Comando per " + r.combo + " (vuoto = disattiva)", initial: r.own ? (r.command || "") : r.command, allowEmpty: true }],
+        startSteps([{ label: I18n.tr("Comando per %1 (vuoto = disattiva)", r.combo), initial: r.own ? (r.command || "") : r.command, allowEmpty: true }],
                    function (a) { upsertBind(r.combo, a[0]); });
     }
     function addBind() {
         startSteps([
-            { label: "Combinazione (es. $mod+Shift+e)", validate: function (t) { return /^[A-Za-z0-9_$+\-]+$/.test(t) ? "" : "Combinazione non valida: usare nomi come $mod+Shift+e"; },
+            { label: I18n.tr("Combinazione (es. $mod+Shift+e)"), validate: function (t) { return /^[A-Za-z0-9_$+\-]+$/.test(t) ? "" : I18n.tr("Combinazione non valida: usare nomi come $mod+Shift+e"); },
               after: function (a) {
                   var c = SwayBackend.conflictFor(a[0], "");
-                  return c ? "Attenzione: «" + a[0] + "» è già assegnata a «" + c.command + "» (" + (c.source === "sway" ? "config di Sway" : "Vela") + "): sarà sostituita" : "";
+                  return c ? I18n.tr("Attenzione: «%1» è già assegnata a «%2» (%3): sarà sostituita", a[0], c.command, c.source === "sway" ? I18n.tr("config di Sway") : "Vela") : "";
               } },
-            { label: function (a) { return "Comando per " + a[0] + " (es. exec foot)"; } }
+            { label: function (a) { return I18n.tr("Comando per %1 (es. exec foot)", a[0]); } }
         ], function (a) { upsertBind(a[0], a[1]); });
     }
-    function addAuto() { startSteps([{ label: "Programma da avviare (es. nm-applet --indicator)" }], function (a) { var l = list("autostart"); l.push(a[0]); setList("autostart", l); }); }
-    function editAuto(r) { startSteps([{ label: "Programma da avviare", initial: r.label }], function (a) { var l = list("autostart"); l[r.idx] = a[0]; setList("autostart", l); }); }
+    function addAuto() { startSteps([{ label: I18n.tr("Programma da avviare (es. nm-applet --indicator)") }], function (a) { var l = list("autostart"); l.push(a[0]); setList("autostart", l); }); }
+    function editAuto(r) { startSteps([{ label: I18n.tr("Programma da avviare"), initial: r.label }], function (a) { var l = list("autostart"); l[r.idx] = a[0]; setList("autostart", l); }); }
     function addRule() {
         startSteps([
-            { label: "Criteri (es. app_id=\"foot\")" },
-            { label: function (a) { return "Comando per [" + a[0].replace(/^\[|\]$/g, "") + "] (es. floating enable)"; } }
+            { label: I18n.tr("Criteri (es. app_id=\"foot\")") },
+            { label: function (a) { return I18n.tr("Comando per [%1] (es. floating enable)", a[0].replace(/^\[|\]$/g, "")); } }
         ], function (a) { var l = list("rules"); l.push({ criteria: a[0], command: a[1] }); setList("rules", l); });
     }
     function editRule(r) {
-        startSteps([{ label: "Comando per " + r.label, initial: r.text }], function (a) { var l = list("rules"); l[r.idx] = { criteria: l[r.idx].criteria, command: a[0] }; setList("rules", l); });
+        startSteps([{ label: I18n.tr("Comando per %1", r.label), initial: r.text }], function (a) { var l = list("rules"); l[r.idx] = { criteria: l[r.idx].criteria, command: a[0] }; setList("rules", l); });
     }
     function removeAt(name, idx) { var l = list(name); l.splice(idx, 1); setList(name, l); }
     function removeBind(combo) { setList("keybindings", list("keybindings").filter(function (b) { return b.combo !== combo; })); }
@@ -405,42 +405,42 @@ PanelHost {
     function minutesRow(path, label, fallback) {
         var r = number("shell", path, label, 0, 240, 1, 0, fallback);
         var v = Settings.get("shell", path);
-        r.text = v === 0 ? "mai" : (typeof v === "number" ? v + " min" : "predefinito");
+        r.text = v === 0 ? I18n.tr("mai") : (typeof v === "number" ? I18n.tr("%1 min", v) : I18n.tr("predefinito"));
         return r;
     }
 
     function appsRows() {
-        var out = [header("Applicazioni predefinite")];
+        var out = [header(I18n.tr("Applicazioni predefinite"))];
         DefaultApps.groups.forEach(function (g) {
             var cands = DefaultApps.candidates[g.id] || [];
             var cur = DefaultApps.current[g.id] || "";
-            if (cands.length === 0) { out.push(info(g.label, "nessuna applicazione trovata")); return; }
+            if (cands.length === 0) { out.push(info(g.label, I18n.tr("nessuna applicazione trovata"))); return; }
             var found = cands.some(function (c) { return c.id === cur; });
             var row = choiceC("app:" + g.id, g.label, cands.map(function (c) { return { v: c.id, t: c.name }; }), found ? cur : "",
                               function (v) { DefaultApps.set(g.id, v); });
-            if (!found) row.text = cur !== "" ? DefaultApps.nameOf(cur) : "non impostata";
+            if (!found) row.text = cur !== "" ? DefaultApps.nameOf(cur) : I18n.tr("non impostata");
             out.push(row);
         });
-        out.push(info("Nota", "scrive ~/.config/mimeapps.list (xdg-mime e xdg-settings)"));
+        out.push(info(I18n.tr("Nota"), I18n.tr("scrive ~/.config/mimeapps.list (xdg-mime e xdg-settings)")));
         return out;
     }
 
     function idleRows() {
-        var out = [header("Inattività")];
-        out.push(info("Stato", Idle.enabled ? "gestita da Vela" : "spenta (la gestisce altro, se presente)", Idle.enabled ? "accent" : ""));
-        out.push(choice("shell", "idle.enabled", "Gestione dell'inattività di Vela", [{ v: true, t: "attiva" }, { v: false, t: "spenta" }]));
+        var out = [header(I18n.tr("Inattività"))];
+        out.push(info(I18n.tr("Stato"), Idle.enabled ? I18n.tr("gestita da Vela") : I18n.tr("spenta (la gestisce altro, se presente)"), Idle.enabled ? "accent" : ""));
+        out.push(choice("shell", "idle.enabled", I18n.tr("Gestione dell'inattività di Vela"), [{ v: true, t: "attiva" }, { v: false, t: "spenta" }]));
         if (Idle.enabled && Idle.externalRunning)
-            out.push(info("Attenzione", "swayidle è in esecuzione: rischio di doppioni, va fermato", "warn"));
-        out.push(minutesRow("idle.lockMinutes", "Blocca lo schermo dopo", 5));
-        out.push(minutesRow("idle.screenOffMinutes", "Spegni lo schermo dopo", 10));
-        out.push(minutesRow("idle.suspendMinutes", "Sospendi dopo", 30));
-        out.push(choice("shell", "idle.suspendOnlyOnBattery", "Sospensione", [{ v: true, t: "solo a batteria" }, { v: false, t: "sempre" }]));
-        out.push(header("Blocco"));
+            out.push(info(I18n.tr("Attenzione"), I18n.tr("swayidle è in esecuzione: rischio di doppioni, va fermato"), "warn"));
+        out.push(minutesRow("idle.lockMinutes", I18n.tr("Blocca lo schermo dopo"), 5));
+        out.push(minutesRow("idle.screenOffMinutes", I18n.tr("Spegni lo schermo dopo"), 10));
+        out.push(minutesRow("idle.suspendMinutes", I18n.tr("Sospendi dopo"), 30));
+        out.push(choice("shell", "idle.suspendOnlyOnBattery", I18n.tr("Sospensione"), [{ v: true, t: I18n.tr("solo a batteria") }, { v: false, t: I18n.tr("sempre") }]));
+        out.push(header(I18n.tr("Blocco")));
         var lc = Idle.lockCommand.join(" ");
-        out.push({ kind: "text", file: "shell", path: "idle.lockCommand", label: "Comando di blocco", value: lc, text: lc,
+        out.push({ kind: "text", file: "shell", path: "idle.lockCommand", label: I18n.tr("Comando di blocco"), value: lc, text: lc,
                    over: Settings.overridden("shell", "idle.lockCommand"), key: "shell:idle.lockCommand" });
-        out.push({ kind: "action", label: "Blocca ora", act: "lockNow", key: "a:locknow" });
-        out.push({ kind: "action", label: "Ripristina questa scheda", act: "resetTab", key: "a:resetTab" });
+        out.push({ kind: "action", label: I18n.tr("Blocca ora"), act: "lockNow", key: "a:locknow" });
+        out.push({ kind: "action", label: I18n.tr("Ripristina questa scheda"), act: "resetTab", key: "a:resetTab" });
         return out;
     }
 
@@ -451,43 +451,43 @@ PanelHost {
         blockLoading: true
         printErrors: false
     }
-    readonly property string version: { try { return versionFile.text().trim() || "sconosciuta"; } catch (e) { return "sconosciuta"; } }
+    readonly property string version: { try { return versionFile.text().trim() || I18n.tr("sconosciuta"); } catch (e) { return I18n.tr("sconosciuta"); } }
 
     function aboutRows() {
         var out = [{ kind: "logo", key: "logo" }];
-        out.push(header("Informazioni"));
-        out.push(info("Versione", version));
-        out.push(info("Licenza", "EUPL-1.2"));
-        out.push(info("Compositor", Compositors.active ? Compositors.active.name : "non riconosciuto"));
-        out.push(info("Configurazione", Config.userDir));
-        out.push(header("Progetto"));
-        out.push(info("Indirizzo", homeUrl.replace("https://", "")));
-        out.push({ kind: "action", label: "Apri la pagina del progetto", act: "openHome", key: "a:home" });
-        out.push({ kind: "action", label: "Apri le note di rilascio", act: "openReleases", key: "a:releases" });
+        out.push(header(I18n.tr("Informazioni")));
+        out.push(info(I18n.tr("Versione"), version));
+        out.push(info(I18n.tr("Licenza"), "EUPL-1.2"));
+        out.push(info(I18n.tr("Compositor"), Compositors.active ? Compositors.active.name : I18n.tr("non riconosciuto")));
+        out.push(info(I18n.tr("Configurazione"), Config.userDir));
+        out.push(header(I18n.tr("Progetto")));
+        out.push(info(I18n.tr("Indirizzo"), homeUrl.replace("https://", "")));
+        out.push({ kind: "action", label: I18n.tr("Apri la pagina del progetto"), act: "openHome", key: "a:home" });
+        out.push({ kind: "action", label: I18n.tr("Apri le note di rilascio"), act: "openReleases", key: "a:releases" });
         return out;
     }
 
     function info(label, text, tone) { return { kind: "info", label: label, text: text, tone: tone || "", key: "i:" + label }; }
 
     function compositorRows() {
-        var out = [header("Compositor rilevati")];
+        var out = [header(I18n.tr("Compositor rilevati"))];
         Compositors.compositors.forEach(function (c) {
             var st = [];
-            st.push(c.installed ? "installato" : "non installato");
-            if (c.running) st.push("in esecuzione");
-            if (c.active) st.push("sessione attuale");
+            st.push(c.installed ? I18n.tr("installato") : I18n.tr("non installato"));
+            if (c.running) st.push(I18n.tr("in esecuzione"));
+            if (c.active) st.push(I18n.tr("sessione attuale"));
             out.push(info(c.name, st.join(" · "), c.active ? "accent" : ""));
         });
         var a = Compositors.active;
         if (a === null) {
-            out.push(info("Sessione", "compositor non riconosciuto", "warn"));
+            out.push(info(I18n.tr("Sessione"), I18n.tr("compositor non riconosciuto"), "warn"));
             return out;
         }
-        out.push(header("Backend di Vela per " + a.name));
-        out.push(info("Stato", a.backend ? "disponibile" : "non ancora disponibile: barra e impostazioni limitate", a.backend ? "" : "warn"));
-        out.push(info("File di configurazione", a.config));
-        if (Compositors.categories.length > 0) out.push(header("Categorie di impostazioni"));
-        Compositors.categories.forEach(function (c) { out.push(info(c.label, c.available ? "disponibile" : "in arrivo", c.available ? "accent" : "")); });
+        out.push(header(I18n.tr("Backend di Vela per %1", a.name)));
+        out.push(info(I18n.tr("Stato"), a.backend ? I18n.tr("disponibile") : I18n.tr("non ancora disponibile: barra e impostazioni limitate"), a.backend ? "" : "warn"));
+        out.push(info(I18n.tr("File di configurazione"), a.config));
+        if (Compositors.categories.length > 0) out.push(header(I18n.tr("Categorie di impostazioni")));
+        Compositors.categories.forEach(function (c) { out.push(info(c.label, c.available ? I18n.tr("disponibile") : I18n.tr("in arrivo"), c.available ? "accent" : "")); });
         if (a.id === "sway" && SwayBackend.active) out = out.concat(persistenceRows());
         return out;
     }
@@ -643,7 +643,7 @@ PanelHost {
         else if (r.act === "keepOutputs") SwayBackend.confirm();
         else if (r.act === "revertOutputs") SwayBackend.revert();
         else if (r.act === "addInclude")
-            pendingConfirm = { text: "Aggiungere la riga include a " + SwayBackend.swayConfigPath + " (copia: config.bak-vela-include)? Invio = sì, Esc = no",
+            pendingConfirm = { text: I18n.tr("Aggiungere la riga include a %1 (copia: config.bak-vela-include)? Invio = sì, Esc = no", SwayBackend.swayConfigPath),
                                fn: function () { SwayBackend.addInclude(); } };
     }
 
@@ -659,13 +659,13 @@ PanelHost {
         var r = editing, t = field.text.trim();
         if (r.kind === "color") {
             if (/^[0-9a-fA-F]{6}$/.test(t)) t = "#" + t;
-            if (!/^#[0-9a-fA-F]{6}$/.test(t)) { note = "Colore non valido: usare #rrggbb"; return; }
+            if (!/^#[0-9a-fA-F]{6}$/.test(t)) { note = I18n.tr("Colore non valido: usare #rrggbb"); return; }
             t = t.toLowerCase();
         } else if (r.file === "sway") {
             if (t === "") { Settings.reset(r.file, r.path); cancelEdit(); return; }       // vuoto = predefinito
             if (r.path === "wallpaper.path") t = t.replace(/^~\//, Quickshell.env("HOME") + "/");
-            if (!SwayBackend.safe(t)) { note = "Caratteri non ammessi (niente virgolette, $ o ;)"; return; }
-        } else if (t === "") { note = "Valore vuoto"; return; }
+            if (!SwayBackend.safe(t)) { note = I18n.tr("Caratteri non ammessi (niente virgolette, $ o ;)"); return; }
+        } else if (t === "") { note = I18n.tr("Valore vuoto"); return; }
         if (r.kind === "search") { Geocoding.search(t); cancelEdit(); return; }
         if (r.path === "idle.lockCommand") {                 // array di argomenti, separati da spazi
             Settings.set("shell", "idle.lockCommand", t.split(/\s+/).filter(function (x) { return x !== ""; }));
@@ -755,7 +755,7 @@ PanelHost {
             Rectangle { anchors.right: parent.right; width: 1; height: parent.height; color: Theme.border }
             BarText {
                 anchors { left: parent.left; leftMargin: Theme.padding; top: parent.top; topMargin: Theme.padding }
-                text: "Impostazioni"
+                text: I18n.tr("Impostazioni")
                 font.bold: true
             }
             Column {
@@ -970,14 +970,14 @@ PanelHost {
                         width: applyLabel.implicitWidth + Theme.padding * 2; height: Theme.rowHeight - 6
                         radius: Theme.radius
                         color: Theme.accent
-                        BarText { id: applyLabel; anchors.centerIn: parent; text: "Applica"; color: Theme.background }
+                        BarText { id: applyLabel; anchors.centerIn: parent; text: I18n.tr("Applica"); color: Theme.background }
                         TapHandler { onTapped: panel.submitEdit() }
                     }
                     Rectangle {
                         width: cancelLabel.implicitWidth + Theme.padding * 2; height: Theme.rowHeight - 6
                         radius: Theme.radius
                         color: Theme.border
-                        BarText { id: cancelLabel; anchors.centerIn: parent; text: "Annulla" }
+                        BarText { id: cancelLabel; anchors.centerIn: parent; text: I18n.tr("Annulla") }
                         TapHandler { onTapped: panel.cancelEdit() }
                     }
                 }
@@ -1014,8 +1014,8 @@ PanelHost {
                     anchors.centerIn: parent
                     spacing: Theme.spacing
                     VelaLogo { size: 96; anchors.horizontalCenter: parent.horizontalCenter }
-                    BarText { text: "Vela"; font.bold: true; font.pixelSize: Theme.fontSize + 8; anchors.horizontalCenter: parent.horizontalCenter }
-                    BarText { text: "Shell desktop per Sway su Void Linux"; color: Theme.muted; anchors.horizontalCenter: parent.horizontalCenter }
+                    BarText { text: I18n.tr("Vela"); font.bold: true; font.pixelSize: Theme.fontSize + 8; anchors.horizontalCenter: parent.horizontalCenter }
+                    BarText { text: I18n.tr("Shell desktop per Sway su Void Linux"); color: Theme.muted; anchors.horizontalCenter: parent.horizontalCenter }
                 }
 
                 Component {
@@ -1065,20 +1065,20 @@ PanelHost {
                 color: panel.confirmReset || panel.pendingConfirm || panel.note !== "" ? Theme.warning : Theme.dim
                 text: {
                     if (panel.note !== "") return panel.note;
-                    if (panel.confirmReset) return "Ripristinare questa scheda? Invio = sì, Esc = no";
+                    if (panel.confirmReset) return I18n.tr("Ripristinare questa scheda? Invio = sì, Esc = no");
                     if (panel.pendingConfirm) return panel.pendingConfirm.text;
-                    if (panel.editing) return "Invio = applica · Esc = annulla";
+                    if (panel.editing) return I18n.tr("Invio = applica · Esc = annulla");
                     var r = panel.current();
-                    if (panel.tabId === "compositor" && !(panel.current() && panel.current().kind === "action")) return "Informazioni sul compositor · Tab categoria · Esc chiudi";
-                    if (r && r.kind === "bind") return "Invio = cambia il comando · Canc " + (r.own ? "rimuove" : "toglie la sostituzione") + " · Tab categoria";
-                    if (r && (r.kind === "auto" || r.kind === "rule")) return "Invio = modifica · Canc rimuove · Tab categoria";
-                    if (r && r.kind === "station") return "Invio = modifica · Canc rimuove · Maiusc+↑/↓ ordine · Tab categoria";
-                    if (r && r.kind === "search") return "Invio = cerca una città · Canc ripristina · Tab categoria";
-                    if (r && r.kind === "place") return "Invio = scegli questa città · Tab categoria";
-                    if (r && r.kind === "module") return "←/→ zona · Maiusc+↑/↓ ordine · Canc ripristina · Tab scheda";
-                    if (r && (r.kind === "number" || r.kind === "choice")) return "←/→ cambia · Canc ripristina · Tab scheda · Esc chiudi";
-                    if (r && (r.kind === "color" || r.kind === "text")) return "Invio = modifica · Canc ripristina · Tab scheda";
-                    return "Invio = applica · Tab scheda · Esc chiudi";
+                    if (panel.tabId === "compositor" && !(panel.current() && panel.current().kind === "action")) return I18n.tr("Informazioni sul compositor · Tab categoria · Esc chiudi");
+                    if (r && r.kind === "bind") return r.own ? I18n.tr("Invio = cambia il comando · Canc rimuove · Tab categoria") : I18n.tr("Invio = cambia il comando · Canc toglie la sostituzione · Tab categoria");
+                    if (r && (r.kind === "auto" || r.kind === "rule")) return I18n.tr("Invio = modifica · Canc rimuove · Tab categoria");
+                    if (r && r.kind === "station") return I18n.tr("Invio = modifica · Canc rimuove · Maiusc+↑/↓ ordine · Tab categoria");
+                    if (r && r.kind === "search") return I18n.tr("Invio = cerca una città · Canc ripristina · Tab categoria");
+                    if (r && r.kind === "place") return I18n.tr("Invio = scegli questa città · Tab categoria");
+                    if (r && r.kind === "module") return I18n.tr("←/→ zona · Maiusc+↑/↓ ordine · Canc ripristina · Tab scheda");
+                    if (r && (r.kind === "number" || r.kind === "choice")) return I18n.tr("←/→ cambia · Canc ripristina · Tab scheda · Esc chiudi");
+                    if (r && (r.kind === "color" || r.kind === "text")) return I18n.tr("Invio = modifica · Canc ripristina · Tab scheda");
+                    return I18n.tr("Invio = applica · Tab scheda · Esc chiudi");
                 }
             }
         }

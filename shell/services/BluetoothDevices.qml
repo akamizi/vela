@@ -5,6 +5,7 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Bluetooth
+import "../core"
 
 Singleton {
     id: root
@@ -60,7 +61,7 @@ Singleton {
             }
             function onPairingChanged() {
                 if (!modelData.pairing && !modelData.paired && root.pendingAddress === modelData.address)
-                    root.fail("Accoppiamento non riuscito (il dispositivo potrebbe richiedere un PIN)");
+                    root.fail(I18n.tr("Accoppiamento non riuscito (il dispositivo potrebbe richiedere un PIN)"));
             }
         }
     }

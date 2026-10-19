@@ -1,0 +1,56 @@
+#!/usr/bin/env python3
+# Copyright (C) 2026 Maurizio Cavalletti — Licensed under the EUPL-1.2
+# Strumento per chi traduce (D-028). Elenca i testi traducibili del codice (I18n.tr("…") nel QML/JS e le
+# etichette del menu di default) e li confronta con i cataloghi in i18n/.
+#   scripts/i18n-extract                 elenca le chiavi
+#   scripts/i18n-extract --check en      mostra le voci mancanti e quelle non più usate in i18n/en.json
+#   scripts/i18n-extract --update en     aggiunge le voci mancanti (valore vuoto = non tradotta) e ordina il file
+import json, os, re, sys
+
+root = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
+STR = r'"((?:[^"\\]|\\.)*)"'
+
+def unescape(s):
+    return json.loads('"' + s + '"')
+
+def keys():
+    found = {}
+    pat = re.compile(r"(?:I18n\.)?\btr\(\s*" + STR)
+    for base, _, files in os.walk(os.path.join(root, "shell")):
+        for f in files:
+            if f.endswith((".qml", ".js")):
+                path = os.path.join(base, f)
+                for m in pat.finditer(open(path, encoding="utf-8").read()):
+                    found.setdefault(unescape(m.group(1)), os.path.relpath(path, root))
+    menu = os.path.join(root, "config/defaults/menu.jsonc")
+    for m in re.finditer(r'"label"\s*:\s*' + STR, open(menu, encoding="utf-8").read()):
+        found.setdefault(unescape(m.group(1)), "config/defaults/menu.jsonc")
+    return found
+
+def load(lang):
+    path = os.path.join(root, "i18n", lang + ".json")
+    return path, (json.load(open(path, encoding="utf-8")) if os.path.exists(path) else {})
+
+args = sys.argv[1:]
+found = keys()
+if not args:
+    for k in sorted(found):
+        print(k)
+elif args[0] in ("--check", "--update") and len(args) == 2:
+    path, cat = load(args[1])
+    missing = [k for k in sorted(found) if k not in cat]
+    empty = [k for k in sorted(found) if cat.get(k) == ""]
+    unused = [k for k in sorted(cat) if k not in found]
+    if args[0] == "--update":
+        for k in missing:
+            cat[k] = ""
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        json.dump(dict(sorted(cat.items())), open(path, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
+        open(path, "a").write("\n")
+        print("%d voci aggiunte, %d da tradurre" % (len(missing), len(empty) + len(missing)))
+    else:
+        print("%s: %d chiavi nel codice, %d mancanti, %d da tradurre, %d non più usate" % (args[1], len(found), len(missing), len(empty), len(unused)))
+        for k in missing: print("  manca:", k)
+        for k in unused: print("  inutilizzata:", k)
+else:
+    sys.exit(__doc__)

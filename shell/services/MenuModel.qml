@@ -96,9 +96,9 @@ Singleton {
         (function walk(list, labels) {
             var vis = visible(list);
             for (var i = 0; i < vis.length; i++) {
-                var it = vis[i], here = labels.concat([it.label]);
+                var it = vis[i], here = labels.concat([I18n.tr(it.label)]);
                 if (isSubmenu(it)) walk(it.children, here);
-                else out.push({ item: it, label: it.label, sub: labels.join(" › ") });
+                else out.push({ item: it, label: I18n.tr(it.label), sub: labels.join(" › ") });
             }
         })(items, []);
         return out;

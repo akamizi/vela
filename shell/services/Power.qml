@@ -4,6 +4,7 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Services.UPower
+import "../core"
 
 Singleton {
     id: root
@@ -24,9 +25,9 @@ Singleton {
 
     // Profili selezionabili, dal più parco al più veloce (le prestazioni solo se il demone le offre).
     readonly property var profiles: {
-        var out = [{ value: PowerProfile.PowerSaver, label: "Risparmio energetico", desc: "Più autonomia, prestazioni ridotte" },
-                   { value: PowerProfile.Balanced, label: "Bilanciato", desc: "Il compromesso di tutti i giorni" }];
-        if (PowerProfiles.hasPerformanceProfile) out.push({ value: PowerProfile.Performance, label: "Prestazioni", desc: "Massima velocità, più consumi e calore" });
+        var out = [{ value: PowerProfile.PowerSaver, label: I18n.tr("Risparmio energetico"), desc: I18n.tr("Più autonomia, prestazioni ridotte") },
+                   { value: PowerProfile.Balanced, label: I18n.tr("Bilanciato"), desc: I18n.tr("Il compromesso di tutti i giorni") }];
+        if (PowerProfiles.hasPerformanceProfile) out.push({ value: PowerProfile.Performance, label: I18n.tr("Prestazioni"), desc: I18n.tr("Massima velocità, più consumi e calore") });
         return out;
     }
     readonly property string profileLabel: {

@@ -46,10 +46,10 @@ Singleton {
         [/^sleet/, Icons.weather.snowyRainy], [/^(lightsnow|snowshowers|snow)/, Icons.weather.snowy]
     ]
     readonly property var labelFor: [
-        [/^clearsky/, "sereno"], [/^fair/, "poco nuvoloso"], [/^partlycloudy/, "parz. nuvoloso"],
-        [/^cloudy/, "nuvoloso"], [/^fog/, "nebbia"], [/thunder/, "temporale"],
-        [/^rainshowers/, "rovesci"], [/^lightrain/, "pioggia debole"], [/^rain/, "pioggia"],
-        [/^sleet/, "nevischio"], [/^snow/, "neve"]
+        [/^clearsky/, I18n.tr("sereno")], [/^fair/, I18n.tr("poco nuvoloso")], [/^partlycloudy/, I18n.tr("parz. nuvoloso")],
+        [/^cloudy/, I18n.tr("nuvoloso")], [/^fog/, I18n.tr("nebbia")], [/thunder/, I18n.tr("temporale")],
+        [/^rainshowers/, I18n.tr("rovesci")], [/^lightrain/, I18n.tr("pioggia debole")], [/^rain/, I18n.tr("pioggia")],
+        [/^sleet/, I18n.tr("nevischio")], [/^snow/, I18n.tr("neve")]
     ]
 
     function lookup(table, symbol, fallback) {
@@ -78,7 +78,7 @@ Singleton {
         if (isStale) {
             var upd = json.properties.meta && json.properties.meta.updated_at;
             var age = upd ? Math.round((now - Date.parse(upd)) / 60000) : -1;
-            lines.push("⚠ dati dalla cache" + (age >= 0 ? " (" + age + " min fa)" : "") + " — rete non raggiungibile");
+            lines.push("⚠ " + I18n.tr("dati dalla cache") + (age >= 0 ? " (" + I18n.tr("%1 min fa", age) + ")" : "") + " — " + I18n.tr("rete non raggiungibile"));
         }
         for (var off = 1; off <= 3; off++) {
             var day = new Date(); day.setDate(day.getDate() + off);
@@ -107,7 +107,7 @@ Singleton {
             try { render(JSON.parse(cached.text()), true); return; } catch (e) {}
         }
         text = " N/D";
-        tooltip = "Errore nel recupero del meteo (yr.no)";
+        tooltip = I18n.tr("Errore nel recupero del meteo (yr.no)");
     }
 
     FileView { id: cached; path: root.cachePath; blockLoading: true; printErrors: false

@@ -160,6 +160,13 @@ aver fermato dunst/mako, perché un solo programma alla volta può possedere `or
 Testo sempre semplice, clic = chiudi, le notifiche critiche restano finché non si chiudono.
 "Non disturbare" (`vela ipc call toggles dnd` o la voce nel menu) scarta quelle non critiche.
 
+## Lingua
+
+Vela è in italiano; i testi sono traducibili (D-028). `language` in `~/.config/vela/shell.jsonc` (es. `"en"`; vuoto = lingua
+dell'ambiente, poi italiano). I cataloghi stanno in `i18n/<lingua>.json` (italiano → traduzione); i propri in
+`~/.config/vela/i18n/<lingua>.json`. Una voce mancante o vuota mostra l'italiano. Per tradurre: `scripts/i18n-extract --update xx`
+crea il catalogo con tutte le chiavi, poi si riempiono i valori.
+
 ## Pannello energia
 
 Clic sull'icona del profilo energetico (clic destro o rotellina = profilo successivo), menu Sistema › Energia o

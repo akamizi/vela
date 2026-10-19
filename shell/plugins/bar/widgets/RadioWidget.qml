@@ -8,7 +8,7 @@ import "../../../ui"
 // Web radio: visibile mentre una stazione suona (o dà errore). Clic = pannello, clic destro = ferma.
 BarItem {
     visible: Radio.state !== "stopped"
-    tooltip: Radio.state === "error" ? Radio.name + ": " + Radio.error : Radio.name + (Radio.state === "starting" ? " (connessione…)" : "")
+    tooltip: Radio.state === "error" ? Radio.name + ": " + Radio.error : Radio.name + (Radio.state === "starting" ? " (" + I18n.tr("connessione…") + ")" : "")
     onClicked: button => {
         if (button === Qt.RightButton) Radio.stop();
         else if (MenuModel.availablePanels.indexOf("radio") >= 0) Runtime.togglePanel("radio");

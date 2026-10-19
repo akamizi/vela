@@ -6,6 +6,7 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Io
+import "../core"
 
 Singleton {
     id: root
@@ -19,8 +20,8 @@ Singleton {
     ]
 
     readonly property var categoryLabels: ({
-        outputs: "Schermi", input: "Tastiera e touchpad", wallpaper: "Sfondo", keybindings: "Scorciatoie",
-        autostart: "Avvio automatico", rules: "Regole delle finestre", gaps: "Bordi e spazi tra le finestre"
+        outputs: I18n.tr("Schermi"), input: I18n.tr("Tastiera e touchpad"), wallpaper: I18n.tr("Sfondo"), keybindings: I18n.tr("Scorciatoie"),
+        autostart: I18n.tr("Avvio automatico"), rules: I18n.tr("Regole delle finestre"), gaps: I18n.tr("Bordi e spazi tra le finestre")
     })
 
     property var installed: ({})

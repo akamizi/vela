@@ -10,5 +10,5 @@ BarItem {
     visible: SystemStats.hasFan
     onClicked: SystemMonitor.open()
     BarText { text: Icons.fan; font.family: Theme.iconFamily; color: Theme.muted }
-    BarText { text: SystemStats.fanRpm + " RPM" }
+    BarText { text: I18n.tr("%1 RPM", SystemStats.fanRpm) }
 }

@@ -14,12 +14,12 @@ BarItem {
     visible: Power.hasBattery
     tooltip: {
         var s = Math.round(Power.percent) + "%";
-        if (Power.charging) s += " · in carica";
-        else if (Power.plugged) s += " · collegata";
+        if (Power.charging) s += " · " + I18n.tr("in carica");
+        else if (Power.plugged) s += " · " + I18n.tr("collegata");
         var t = Power.secondsLeft;
         if (t > 0 && !Power.plugged) {
             var h = Math.floor(t / 3600), m = Math.round((t % 3600) / 60);
-            s += " · " + (h > 0 ? h + " h " : "") + m + " min";
+            s += " · " + (h > 0 ? I18n.tr("%1 h %2 min", h, m) : I18n.tr("%1 min", m));
         }
         return s;
     }

@@ -8,7 +8,7 @@ import "../../../services"
 import "../../../ui"
 // Profilo energetico: clic = pannello, clic destro o rotellina = passa al successivo.
 BarItem {
-    tooltip: "Profilo energetico: " + Power.profileLabel
+    tooltip: I18n.tr("Profilo energetico: %1", Power.profileLabel)
     onClicked: button => {
         if (button === Qt.RightButton) Power.cycleProfile();
         else if (button === Qt.LeftButton && MenuModel.availablePanels.indexOf("power") >= 0) Runtime.togglePanel("power", mapToGlobal(width / 2, 0).x);

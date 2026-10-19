@@ -75,7 +75,7 @@ Singleton {
         stdout: StdioCollector {
             onStreamFinished: {
                 try {
-                    JSON.parse(text).forEach(function (r) { if (!r.success) root.lastError = r.error || "comando rifiutato da Sway"; });
+                    JSON.parse(text).forEach(function (r) { if (!r.success) root.lastError = r.error || I18n.tr("comando rifiutato da Sway"); });
                 } catch (e) {}
             }
         }
@@ -253,13 +253,13 @@ Singleton {
         var mine = Config.sway.keybindings;
         for (var i = 0; i < mine.length; i++)
             if (mine[i].combo !== ignoreVela && SwayConf.normalize(mine[i].combo, userConfig.vars) === n)
-                return { source: "vela", command: mine[i].command || "(disattivata)" };
+                return { source: "vela", command: mine[i].command || I18n.tr("(disattivata)") };
         for (var j = 0; j < userConfig.binds.length; j++)
             if (SwayConf.normalize(userConfig.binds[j].combo, userConfig.vars) === n)
                 return { source: "sway", command: userConfig.binds[j].command };
         return null;
     }
-    Process { id: backup; onExited: code => { if (code === 0) root.writeInclude(); else root.lastError = "copia di sicurezza non riuscita: config non modificato"; } }
+    Process { id: backup; onExited: code => { if (code === 0) root.writeInclude(); else root.lastError = I18n.tr("copia di sicurezza non riuscita: config non modificato"); } }
     function addInclude() {
         if (hasInclude) return;
         backup.command = ["cp", "--no-clobber", swayConfigPath, swayConfigPath + ".bak-vela-include"];

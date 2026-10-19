@@ -34,7 +34,7 @@ PanelWindow {
     function itemRow(item, subtitle) {
         var glyph = "";
         if (item.glyph && /^U\+[0-9A-Fa-f]+$/.test(item.glyph)) glyph = String.fromCodePoint(parseInt(item.glyph.slice(2), 16));
-        return { kind: "item", label: item.label, sub: subtitle || "", glyph: glyph, item: item,
+        return { kind: "item", label: I18n.tr(item.label), sub: subtitle || "", glyph: glyph, item: item,
                  submenu: MenuModel.isSubmenu(item), checked: MenuModel.checked(item) };
     }
 
@@ -45,7 +45,7 @@ PanelWindow {
         if (appsOnly) {
             out = Apps.search(q, 60);
         } else if (q === "") {
-            if (path.length > 0) out.push({ kind: "back", label: "Indietro", sub: "", glyph: Icons.cp(0xF004D) });
+            if (path.length > 0) out.push({ kind: "back", label: I18n.tr("Indietro"), sub: "", glyph: Icons.cp(0xF004D) });
             MenuModel.level(path).forEach(function (it) { out.push(itemRow(it, "")); });
         } else {
             var hits = [];
@@ -129,9 +129,9 @@ PanelWindow {
                     var list = MenuModel.items;
                     for (var i = 0; i < win.path.length; i++) {
                         var it = MenuModel.find(win.path.slice(0, i + 1));
-                        if (it) labels.push(it.label);
+                        if (it) labels.push(I18n.tr(it.label));
                     }
-                    if (win.appsView || Runtime.menuMode === "apps") labels.push("App");
+                    if (win.appsView || Runtime.menuMode === "apps") labels.push(I18n.tr("App"));
                     return labels.join(" › ") + (labels.length > 0 ? " ›" : "");
                 }
             }
@@ -153,7 +153,7 @@ PanelWindow {
                 Text {
                     visible: input.text === ""
                     anchors.verticalCenter: parent.verticalCenter
-                    text: "Cerca…"
+                    text: I18n.tr("Cerca…")
                     textFormat: Text.PlainText
                     color: Theme.dim
                     font: input.font
@@ -198,14 +198,14 @@ PanelWindow {
                 visible: win.confirming !== null
                 anchors { left: parent.left; leftMargin: Theme.padding; verticalCenter: parent.verticalCenter }
                 color: Theme.warning
-                text: win.confirming ? win.confirming.label + ": Invio = conferma, Esc = annulla" : ""
+                text: win.confirming ? I18n.tr("%1: Invio = conferma, Esc = annulla", I18n.tr(win.confirming.label)) : ""
             }
 
             BarText {
                 visible: win.confirming === null && win.rows.length === 0
                 anchors { left: parent.left; leftMargin: Theme.padding; verticalCenter: parent.verticalCenter }
                 color: Theme.muted
-                text: "Nessun risultato"
+                text: I18n.tr("Nessun risultato")
             }
 
             ListView {

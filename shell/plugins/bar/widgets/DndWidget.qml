@@ -8,7 +8,7 @@ import "../../../ui"
 // Non disturbare (visibile solo se attivo); clic = disattiva.
 BarItem {
     visible: Toggles.dnd
-    tooltip: "Non disturbare attivo"
+    tooltip: I18n.tr("Non disturbare attivo")
     onClicked: Toggles.toggleDnd()
     BarIcon { text: Icons.dnd; color: Theme.accent }
 }

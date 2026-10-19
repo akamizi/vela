@@ -10,7 +10,7 @@ BarItem {
     id: root
     readonly property var net: NetworkStatus.summary
     tooltip: net.kind === "wifi" ? net.name + " (" + Math.round(net.signal * 100) + "%)"
-           : net.kind === "ethernet" ? net.device : "Disconnesso"
+           : net.kind === "ethernet" ? net.device : I18n.tr("Disconnesso")
     onClicked: button => { if (button === Qt.LeftButton) Runtime.togglePanel("network", mapToGlobal(width / 2, 0).x); }
     BarIcon {
         text: root.net.kind === "wifi" ? Icons.pick(Icons.wifi, root.net.signal)
