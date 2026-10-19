@@ -26,7 +26,8 @@ PanelHost {
     property int tab: 0                       // indice in `tabs`
     // Le categorie del compositor compaiono solo se il compositor attivo ha un backend che le gestisce.
     readonly property var tabs: {
-        var t = [{ id: "bar", label: "Barra" }, { id: "theme", label: "Tema" }, { id: "weather", label: "Meteo" }];
+        var t = [{ id: "bar", label: "Barra" }, { id: "theme", label: "Tema" }, { id: "weather", label: "Meteo" },
+                 { id: "idle", label: "Blocco e inattività" }];
         if (Compositors.activeHasBackend && SwayBackend.active) {
             t.push({ id: "outputs", label: "Schermi" }, { id: "input", label: "Tastiera e touchpad" }, { id: "wallpaper", label: "Sfondo" },
                    { id: "keys", label: "Scorciatoie" }, { id: "autostart", label: "Avvio automatico" },
@@ -365,6 +366,33 @@ PanelHost {
     function removeAt(name, idx) { var l = list(name); l.splice(idx, 1); setList(name, l); }
     function removeBind(combo) { setList("keybindings", list("keybindings").filter(function (b) { return b.combo !== combo; })); }
 
+    // minuti con "mai" per lo zero
+    function minutesRow(path, label, fallback) {
+        var r = number("shell", path, label, 0, 240, 1, 0, fallback);
+        var v = Settings.get("shell", path);
+        r.text = v === 0 ? "mai" : (typeof v === "number" ? v + " min" : "predefinito");
+        return r;
+    }
+
+    function idleRows() {
+        var out = [header("Inattività")];
+        out.push(info("Stato", Idle.enabled ? "gestita da Vela" : "spenta (la gestisce altro, se presente)", Idle.enabled ? "accent" : ""));
+        out.push(choice("shell", "idle.enabled", "Gestione dell'inattività di Vela", [{ v: true, t: "attiva" }, { v: false, t: "spenta" }]));
+        if (Idle.enabled && Idle.externalRunning)
+            out.push(info("Attenzione", "swayidle è in esecuzione: rischio di doppioni, va fermato", "warn"));
+        out.push(minutesRow("idle.lockMinutes", "Blocca lo schermo dopo", 5));
+        out.push(minutesRow("idle.screenOffMinutes", "Spegni lo schermo dopo", 10));
+        out.push(minutesRow("idle.suspendMinutes", "Sospendi dopo", 30));
+        out.push(choice("shell", "idle.suspendOnlyOnBattery", "Sospensione", [{ v: true, t: "solo a batteria" }, { v: false, t: "sempre" }]));
+        out.push(header("Blocco"));
+        var lc = Idle.lockCommand.join(" ");
+        out.push({ kind: "text", file: "shell", path: "idle.lockCommand", label: "Comando di blocco", value: lc, text: lc,
+                   over: Settings.overridden("shell", "idle.lockCommand"), key: "shell:idle.lockCommand" });
+        out.push({ kind: "action", label: "Blocca ora", act: "lockNow", key: "a:locknow" });
+        out.push({ kind: "action", label: "Ripristina questa scheda", act: "resetTab", key: "a:resetTab" });
+        return out;
+    }
+
     readonly property string homeUrl: "https://github.com/akamizi/vela"
     FileView {
         id: versionFile
@@ -426,6 +454,7 @@ PanelHost {
         case "rules": return rulesRows();
         case "gaps": return gapsRows();
         case "about": return aboutRows();
+        case "idle": return idleRows();
         default: return compositorRows();
         }
     }
@@ -461,6 +490,7 @@ PanelHost {
         currentKey = ""; confirmReset = false; pendingConfirm = null;
         Qt.callLater(function () { list.positionViewAtBeginning(); });
         if (tabId === "compositor") Compositors.refresh();
+        if (tabId === "idle") Idle.checkExternal();
         if (tabId === "outputs" || tabId === "input" || tabId === "compositor" || tabId === "keys" || tabId === "autostart" || tabId === "rules") SwayBackend.refresh();
     }
 
@@ -516,6 +546,7 @@ PanelHost {
 
     function resetList() {
         switch (tabId) {
+        case "idle": return [["shell", "idle"]];
         case "bar": return [["shell", "bar.position"], ["shell", "bar.modules"], ["theme", "layout.barHeight"], ["theme", "layout.barRadius"], ["theme", "font.barSize"], ["theme", "barOpacity"]];
         case "weather": return [["shell", "weather.latitude"], ["shell", "weather.longitude"], ["shell", "weather.placeName"], ["shell", "weather.units"]];
         case "outputs": return [["sway", "outputs"]];
@@ -546,6 +577,7 @@ PanelHost {
         else if (r.act === "presetLight") Settings.setMany("theme", light);
         else if (r.act === "resetModules") Settings.resetMany([["shell", "bar.modules"]]);
         else if (r.act === "resetTab") confirmReset = true;
+        else if (r.act === "lockNow") Idle.lock();
         else if (r.act === "openHome") Quickshell.execDetached(["xdg-open", homeUrl]);
         else if (r.act === "openReleases") Quickshell.execDetached(["xdg-open", homeUrl + "/releases"]);
         else if (r.act === "addBind") addBind();
@@ -578,6 +610,11 @@ PanelHost {
             if (!SwayBackend.safe(t)) { note = "Caratteri non ammessi (niente virgolette, $ o ;)"; return; }
         } else if (t === "") { note = "Valore vuoto"; return; }
         if (r.kind === "search") { Geocoding.search(t); cancelEdit(); return; }
+        if (r.path === "idle.lockCommand") {                 // array di argomenti, separati da spazi
+            Settings.set("shell", "idle.lockCommand", t.split(/\s+/).filter(function (x) { return x !== ""; }));
+            cancelEdit();
+            return;
+        }
         Settings.set(r.file, r.path, t);
         cancelEdit();
     }
@@ -938,10 +975,10 @@ PanelHost {
                     anchors { fill: parent; leftMargin: Theme.spacing; rightMargin: Theme.spacing }
                     hasCursor: ListView.isCurrentItem && panel.selectable(entry.r)
                     selected: entry.r.over === true        // il valore è stato impostato dal pannello
-                    title: entry.isHeader ? "" : (entry.r.kind === "module" ? entry.r.name : entry.r.label)
+                    title: entry.isHeader ? "" : ((entry.r.kind === "module" ? entry.r.name : entry.r.label) || "")
                     titleColor: entry.r.kind === "action" ? Theme.accent : Theme.foreground
-                    trailingText: entry.isHeader || entry.r.kind === "action" ? ""
-                        : (entry.r.kind === "number" || entry.r.kind === "choice" ? "‹ " + entry.r.text + " ›" : entry.r.text)
+                    trailingText: entry.isHeader || entry.r.kind === "action" || entry.r.kind === "logo" ? ""
+                        : (entry.r.kind === "number" || entry.r.kind === "choice" ? "‹ " + entry.r.text + " ›" : (entry.r.text || ""))
                     trailingColor: entry.isHeader ? Theme.muted
                         : entry.r.kind === "module" && entry.r.zone === "hidden" ? Theme.dim
                         : entry.r.kind === "info" && entry.r.tone === "accent" ? Theme.accent

@@ -134,6 +134,13 @@ ne cambia il comando (vuoto = disattiva) scrivendo una sostituzione in `vela.con
 prossimo login e richiedono l'include). **Bordi e spazi**: spazio tra le finestre e dal bordo dello schermo,
 spessore del bordo (per le finestre nuove), niente spazi o bordi con una sola finestra.
 
+**Blocco e inattività**: Vela può gestire da sé l'inattività (spenta di default: va attivata solo se non usi
+già `swayidle`). Dopo X minuti blocca lo schermo (comando configurabile, `swaylock -f` di default), dopo Y lo
+spegne e dopo Z sospende (di default solo a batteria); 0 = mai. Rispetta le finestre a schermo intero e
+"Resta sveglio". `vela ipc call idle lock` blocca subito. Per passare a Vela togli `swayidle` dal config del
+compositor (il pannello avvisa se è in esecuzione). Chiusura del coperchio e pulsante di accensione dipendono da
+elogind e non sono ancora configurabili da qui.
+
 La categoria **Informazioni** mostra il logo, la versione, la licenza, il compositor e i link al progetto.
 
 La categoria **Compositor** mostra quali compositor ci sono (installato, in esecuzione, sessione attuale), se

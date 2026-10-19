@@ -54,6 +54,9 @@ Singleton {
         return screens.length > 0 ? screens[0] : null;
     }
 
+    // Accende o spegne tutti gli schermi (inattività). Valore booleano: nessuna stringa esterna nel comando.
+    function setScreensPower(on) { I3.dispatch("output * power " + (on === true ? "on" : "off")); }
+
     // Comandi del compositor che il menu può invocare (elenco chiuso, nessuna stringa libera).
     function run(command) {
         if (command === "logout") { I3.dispatch("exit"); return true; }

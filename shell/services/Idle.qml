@@ -1,0 +1,62 @@
+// Copyright (C) 2026 Maurizio Cavalletti — Licensed under the EUPL-1.2
+// Inattività gestita da Vela (D-024): blocco dello schermo, spegnimento e sospensione dopo X, Y, Z minuti.
+// Usa IdleMonitor (ext-idle-notify) e rispetta gli inibitori di idle (finestre a schermo intero, "Resta sveglio").
+// Spento di default: va attivato quando non c'è un altro gestore (es. swayidle).
+pragma Singleton
+import QtQuick
+import Quickshell
+import Quickshell.Io
+import Quickshell.Wayland
+import "../core"
+
+Singleton {
+    id: root
+
+    readonly property var cfg: Config.shell.idle
+    readonly property bool enabled: cfg.enabled === true
+    readonly property var lockCommand: Array.isArray(cfg.lockCommand) && cfg.lockCommand.length > 0 ? cfg.lockCommand : ["swaylock", "-f"]
+
+    function secs(minutes) { return typeof minutes === "number" && minutes > 0 ? Math.round(minutes * 60) : 0; }
+
+    IdleMonitor {
+        enabled: root.enabled && root.secs(root.cfg.lockMinutes) > 0
+        timeout: Math.max(1, root.secs(root.cfg.lockMinutes))
+        respectInhibitors: true
+        onIsIdleChanged: if (isIdle) root.lock()
+    }
+    IdleMonitor {
+        enabled: root.enabled && root.secs(root.cfg.screenOffMinutes) > 0
+        timeout: Math.max(1, root.secs(root.cfg.screenOffMinutes))
+        respectInhibitors: true
+        onIsIdleChanged: Compositor.setScreensPower(!isIdle)    // spenge da inattivo, riaccende all'attività
+    }
+    IdleMonitor {
+        enabled: root.enabled && root.secs(root.cfg.suspendMinutes) > 0
+        timeout: Math.max(1, root.secs(root.cfg.suspendMinutes))
+        respectInhibitors: true
+        onIsIdleChanged: if (isIdle && (!root.cfg.suspendOnlyOnBattery || !Power.onAc)) root.suspend()
+    }
+
+    // Blocca lo schermo, salvo che un blocco sia già attivo (il comando è un array: nessuna shell sulla stringa).
+    function lock() {
+        var name = String(lockCommand[0]).split("/").pop();
+        Quickshell.execDetached(["sh", "-c", 'pgrep -x "$1" >/dev/null 2>&1 || exec "$@"', "sh", name].concat(lockCommand));
+    }
+
+    // Sospende dopo aver avviato il blocco (si ritrova la schermata di blocco al risveglio).
+    function suspend() {
+        lock();
+        suspendDelay.restart();
+    }
+    Timer { id: suspendDelay; interval: 1200; onTriggered: Quickshell.execDetached(["loginctl", "suspend"]) }
+
+    // Un altro gestore dell'inattività in esecuzione causerebbe doppioni: il pannello lo segnala.
+    property bool externalRunning: false
+    Process {
+        id: probe
+        command: ["pgrep", "-x", "swayidle"]
+        onExited: code => root.externalRunning = (code === 0)
+    }
+    function checkExternal() { if (!probe.running) probe.running = true; }
+    Component.onCompleted: checkExternal()
+}

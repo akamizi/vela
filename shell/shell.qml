@@ -15,6 +15,9 @@ import "plugins/osd"
 import "plugins/notifications"
 
 ShellRoot {
+    // I servizi sono singleton creati al primo uso: l'inattività deve esistere fin dall'avvio.
+    readonly property bool idleManaged: Idle.enabled
+
     Loader {
         active: Config.shell.bar.enabled
         sourceComponent: Bar {}
@@ -79,5 +82,10 @@ ShellRoot {
         function refresh(): void { Toggles.refresh(); }   // per gli script che cambiano uno stato esterno
         function night(): void { Toggles.toggleNight(); }
         function dnd(): void { Toggles.toggleDnd(); }
+    }
+    IpcHandler {
+        target: "idle"
+        function lock(): void { Idle.lock(); }
+        function suspend(): void { Idle.suspend(); }
     }
 }
