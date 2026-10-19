@@ -52,16 +52,20 @@ Singleton {
     }
     property bool cancelling: false
 
-    function refresh() { if (!reader.running) reader.running = true; }
+    function refresh() {
+        if (!reader.running) reader.running = true;
+        if (!helperCheck.running) helperCheck.running = true;
+    }
 
     Process {
         id: reader
         command: ["sh", root.statusScript, "status"]
         stdout: StdioCollector { onStreamFinished: root.parse(text) }
     }
+    // L'helper si può installare mentre Vela è in funzione: lo si ricontrolla a ogni aggiornamento.
     Process {
+        id: helperCheck
         command: ["sh", "-c", "test -x \"$1\"", "sh", root.helper]
-        running: root.supported
         onExited: code => root.helperInstalled = (code === 0)
     }
 
