@@ -167,6 +167,11 @@ dell'ambiente, poi italiano). I cataloghi stanno in `i18n/<lingua>.json` (italia
 `~/.config/vela/i18n/<lingua>.json`. Una voce mancante o vuota mostra l'italiano. Per tradurre: `scripts/i18n-extract --update xx`
 crea il catalogo con tutte le chiavi, poi si riempiono i valori.
 
+## Calcolatrice
+
+`vela ipc call menu calc` (o, nel menu, "=" davanti): scrivi un'espressione (`2+3*4`, `100 km to miles`, `5 EUR to USD`) e Invio copia
+il risultato negli appunti. Anche una ricerca che somiglia a un'espressione mostra il risultato in cima. Serve `qalc` (libqalculate) e `wl-copy`.
+
 ## Tasti di sistema (IPC)
 
 Per le scorciatoie di Sway: `vela ipc call audio raise|lower|mute|micMute`, `brightness up|down`, `screens on|off`,

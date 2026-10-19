@@ -132,7 +132,7 @@ function describeCommand(command, vars) {
 
 function describeVela(target, fn, arg) {
     var v = "Vela";
-    if (target === "menu") return { label: fn === "apps" ? tr("Applicazioni") : fn === "toggle" ? tr("Menu") : tr("Menu (%1)", fn), group: v };
+    if (target === "menu") return { label: fn === "apps" ? tr("Applicazioni") : fn === "calc" ? tr("Calcolatrice") : fn === "toggle" ? tr("Menu") : tr("Menu (%1)", fn), group: v };
     if (target === "audio") return { label: ({ raise: tr("Alza il volume"), lower: tr("Abbassa il volume"), mute: tr("Muto"), micMute: tr("Muto del microfono") })[fn] || tr("Vela: %1 %2", target, fn), group: "Schermo e audio" };
     if (target === "brightness") return { label: fn === "up" ? tr("Aumenta la luminosità") : tr("Riduci la luminosità"), group: "Schermo e audio" };
     if (target === "screens") return { label: tr("Accendi / spegni lo schermo"), group: "Schermo e audio" };

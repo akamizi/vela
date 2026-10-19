@@ -38,11 +38,32 @@ PanelWindow {
                  submenu: MenuModel.isSubmenu(item), checked: MenuModel.checked(item) };
     }
 
+    // Calcolatrice: "=" davanti, oppure un'espressione con numeri e operatori. {expr, explicit} oppure null.
+    function calcQuery(q) {
+        if (q.charAt(0) === "=") return { expr: q.slice(1).trim(), explicit: true };
+        if (/^[0-9(.,]/.test(q) && (/[+\-*\/^%]/.test(q.slice(1)) || /\s(to|in)\s/.test(q))) return { expr: q, explicit: false };
+        return null;
+    }
+    function calcRow(c) {
+        if (Calc.expression !== c.expr) Calc.evaluate(c.expr);
+        var label;
+        if (!Calc.available) label = I18n.tr("Per calcolare serve qalc (libqalculate)");
+        else if (c.expr === "") label = I18n.tr("Scrivi un'espressione: 2+3*4, 100 km to miles, 5 EUR to USD");
+        else if (Calc.result !== "") label = "= " + Calc.result;
+        else if (Calc.error !== "") label = Calc.error;
+        else label = "…";
+        return { kind: "calc", label: label, sub: Calc.result !== "" ? I18n.tr("Invio copia il risultato") : "", glyph: Icons.cp(0xF00EC),
+                 result: Calc.result };
+    }
+
     function rebuild() {
         var q = input.text.trim();
         var out = [];
         var appsOnly = Runtime.menuMode === "apps" || appsView;
-        if (appsOnly) {
+        var calc = appsOnly ? null : calcQuery(q);
+        if (calc && calc.explicit) {
+            out = [calcRow(calc)];
+        } else if (appsOnly) {
             out = Apps.search(q, 60);
         } else if (q === "") {
             if (path.length > 0) out.push({ kind: "back", label: I18n.tr("Indietro"), sub: "", glyph: Icons.cp(0xF004D) });
@@ -56,6 +77,7 @@ PanelWindow {
                 if (s >= 0) hits.push({ row: itemRow(l.item, l.sub), score: s + 5 });   // le voci del menu prima delle app
             });
             Apps.search(q, 40).forEach(function (r) { hits.push({ row: r, score: r.score }); });
+            if (calc) hits.push({ row: calcRow(calc), score: 1000 });
             hits.sort(function (a, b) { return b.score - a.score; });
             out = hits.slice(0, 60).map(function (h) { return h.row; });
         }
@@ -67,7 +89,8 @@ PanelWindow {
         path = [];
         appsView = false;
         confirming = null;
-        input.text = "";
+        Calc.evaluate("");
+        input.text = Runtime.menuMode === "calc" ? "=" : "";
         rebuild();
         input.forceActiveFocus();
     }
@@ -75,11 +98,21 @@ PanelWindow {
     onOpenChanged: if (open) reset()
     Connections { target: MenuModel; function onFoundChanged() { if (win.open) win.rebuild(); } }
     Connections { target: Apps; function onAllChanged() { if (win.open) win.rebuild(); } }
+    Connections {
+        target: Calc
+        function onResultChanged() { if (win.open) win.rebuild(); }
+        function onErrorChanged() { if (win.open) win.rebuild(); }
+        function onAvailableChanged() { if (win.open) win.rebuild(); }
+    }
 
     // --- azioni --------------------------------------------------------------------
     function activate(row) {
         if (!row) return;
         if (row.kind === "back") { goBack(); return; }
+        if (row.kind === "calc") {
+            if (row.result !== "") { Quickshell.execDetached(["wl-copy", "--", row.result]); Runtime.closeMenu(); }
+            return;
+        }
         if (row.kind === "app") { Runtime.closeMenu(); Apps.launch(row.entry); return; }
         var item = row.item;
         if (row.submenu) { path = path.concat([item.id]); input.text = ""; rebuild(); return; }

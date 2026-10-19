@@ -87,6 +87,7 @@ ShellRoot {
         target: "menu"
         function toggle(): void { Runtime.toggleMenu("menu"); }   // menu completo
         function apps(): void { Runtime.toggleMenu("apps"); }     // solo applicazioni
+        function calc(): void { Runtime.toggleMenu("calc"); }     // calcolatrice
         function close(): void { Runtime.closeMenu(); }
     }
     IpcHandler {
