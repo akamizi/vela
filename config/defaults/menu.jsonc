@@ -5,7 +5,7 @@
 // Campi di una voce: id, label, children (sottomenu) oppure action, requires (comandi che devono
 // esistere, altrimenti la voce non compare), glyph ("U+F0F85": icona Nerd Font), confirm (chiede conferma).
 // Azioni: {"type":"exec","command":[...]} (array di argomenti, mai una stringa da shell),
-//         {"type":"toggle","target":"night|awake|dnd|bar"}, {"type":"panel","target":"..."},
+//         {"type":"toggle","target":"night|awake|dnd|touchpad|bar"}, {"type":"panel","target":"..."},
 //         {"type":"compositor","command":"logout|reload"}, {"type":"apps"} (elenco applicazioni).
 {
   "items": [
@@ -16,6 +16,7 @@
         { "id": "night", "label": "Luce notturna", "requires": ["gammastep"], "action": { "type": "toggle", "target": "night" } },
         { "id": "awake", "label": "Resta sveglio", "action": { "type": "toggle", "target": "awake" } },
         { "id": "dnd", "label": "Non disturbare", "action": { "type": "toggle", "target": "dnd" } },
+        { "id": "touchpad", "label": "Touchpad", "action": { "type": "toggle", "target": "touchpad" } },
         { "id": "bar", "label": "Barra", "action": { "type": "toggle", "target": "bar" } }
       ]
     },

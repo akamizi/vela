@@ -52,6 +52,7 @@ Singleton {
         if (Array.isArray(r)) for (var i = 0; i < r.length; i++) if (!found[r[i]]) return false;
         var a = item.action;
         if (a && a.type === "panel" && availablePanels.indexOf(a.target) < 0) return false;
+        if (a && a.type === "toggle" && a.target === "touchpad" && !Toggles.touchpadAvailable) return false;
         return true;
     }
 
@@ -111,6 +112,7 @@ Singleton {
         case "night": return Toggles.night;
         case "awake": return Toggles.awakeOn;
         case "dnd": return Toggles.dnd;
+        case "touchpad": return Toggles.touchpad;
         case "bar": return Runtime.barVisible;
         }
         return null;
@@ -133,6 +135,7 @@ Singleton {
             if (a.target === "night") Toggles.toggleNight();
             else if (a.target === "awake") Toggles.toggleAwake();
             else if (a.target === "dnd") Toggles.toggleDnd();
+            else if (a.target === "touchpad") Toggles.toggleTouchpad();
             else if (a.target === "bar") Runtime.barVisible = !Runtime.barVisible;
             else return false;
             return true;

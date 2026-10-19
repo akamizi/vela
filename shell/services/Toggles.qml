@@ -17,6 +17,11 @@ Singleton {
     property bool recording: false
     property bool dndAvailable: false
 
+    // Touchpad: lo stato e il comando vengono dal backend del compositor (oggi Sway).
+    readonly property bool touchpadAvailable: SwayBackend.active && SwayBackend.hasTouchpad
+    readonly property bool touchpad: touchpadAvailable && SwayBackend.touchpadOn
+    function toggleTouchpad() { if (touchpadAvailable) SwayBackend.setTouchpad(!SwayBackend.touchpadOn); }
+
     readonly property var recordingCommand: Config.shell.toggles.recordingCommand
 
     // "Resta sveglio" può essere anche esterno (es. uno script che ferma swayidle): `awakeCommand` esce con 0 se è
@@ -106,6 +111,7 @@ Singleton {
         if (hasDunstctl && !Notifications.active) dndCheck.running = true;
         if (recordingCommand) recCheck.running = true;
         if (awakeCommand) awakeCheck.running = true;
+        if (touchpadAvailable) SwayBackend.refreshInputs();
     }
 
     Timer { id: refreshSoon; interval: 600; onTriggered: root.refresh() }

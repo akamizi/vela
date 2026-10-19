@@ -21,6 +21,8 @@ Singleton {
     property var outputs: []          // [{name, label, active, mode, modes, scale, transform, x, y}]
     property var inputs: []           // [{identifier, name, type}]
     readonly property bool hasTouchpad: inputs.some(function (i) { return i.type === "touchpad"; })
+    // Acceso se almeno un touchpad non è del tutto disattivato ("disabled_on_external_mouse" conta come acceso).
+    readonly property bool touchpadOn: inputs.some(function (i) { return i.type === "touchpad" && i.sendEvents !== "disabled"; })
     property string lastError: ""
 
     // --- lettura dello stato -----------------------------------------------------------
@@ -49,7 +51,7 @@ Singleton {
         stdout: StdioCollector {
             onStreamFinished: {
                 try {
-                    root.inputs = JSON.parse(text).map(function (i) { return { identifier: i.identifier, name: i.name, type: i.type }; });
+                    root.inputs = JSON.parse(text).map(function (i) { return { identifier: i.identifier, name: i.name, type: i.type, sendEvents: i.libinput ? i.libinput.send_events : "" }; });
                 } catch (e) { root.inputs = []; }
             }
         }
@@ -60,7 +62,15 @@ Singleton {
         if (!inProc.running) inProc.running = true;
         swayCfg.reload();
     }
+    function refreshInputs() { if (active && !inProc.running) inProc.running = true; }
     Component.onCompleted: refresh()
+
+    function setTouchpad(on) {
+        if (!active || !hasTouchpad) return;
+        run("input type:touchpad events " + (on ? "enabled" : "disabled"));
+        rereadInputs.restart();
+    }
+    Timer { id: rereadInputs; interval: 400; onTriggered: root.refreshInputs() }
 
     // --- esecuzione dei comandi (in coda, uno alla volta) ---------------------------------
     property var queue: []

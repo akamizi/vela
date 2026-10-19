@@ -14,7 +14,16 @@ Singleton {
     readonly property bool muted: available ? sink.audio.muted : false
     readonly property string deviceName: sink ? sink.description : ""
 
-    PwObjectTracker { objects: [root.sink] }
+    // Microfono predefinito (tasto di muto del microfono)
+    readonly property var source: Pipewire.defaultAudioSource
+    readonly property bool micAvailable: source !== null && source.audio !== null
+    readonly property bool micMuted: micAvailable ? source.audio.muted : false
+
+    PwObjectTracker { objects: [root.sink, root.source] }
+
+    function toggleMicMute() {
+        if (micAvailable) source.audio.muted = !source.audio.muted;
+    }
 
     function change(delta, maxVolume) {
         if (!available) return;

@@ -167,6 +167,11 @@ dell'ambiente, poi italiano). I cataloghi stanno in `i18n/<lingua>.json` (italia
 `~/.config/vela/i18n/<lingua>.json`. Una voce mancante o vuota mostra l'italiano. Per tradurre: `scripts/i18n-extract --update xx`
 crea il catalogo con tutte le chiavi, poi si riempiono i valori.
 
+## Tasti di sistema (IPC)
+
+Per le scorciatoie di Sway: `vela ipc call audio raise|lower|mute|micMute`, `brightness up|down`, `screens on|off`,
+`idle lock`, `toggles touchpad|awake|night|dnd`. I passi di volume e luminosità sono in `audio.step` e `brightness.step`.
+
 ## Pannello luminosità
 
 Clic sull'icona della luminosità nella barra (la rotellina cambia di ±5%), menu Sistema › Luminosità o

@@ -102,6 +102,7 @@ ShellRoot {
         function refresh(): void { Toggles.refresh(); }   // per gli script che cambiano uno stato esterno
         function night(): void { Toggles.toggleNight(); }
         function dnd(): void { Toggles.toggleDnd(); }
+        function touchpad(): void { Toggles.toggleTouchpad(); }
     }
     IpcHandler {
         target: "radio"
@@ -110,6 +111,24 @@ ShellRoot {
             var st = Radio.stations.filter(function (s) { return s.name === name; })[0];
             if (st) Radio.play(st);
         }
+    }
+    // Tasti multimediali e di schermo da Sway: `vela ipc call audio raise`, `brightness up`, `screens on`.
+    IpcHandler {
+        target: "audio"
+        function raise(): void { Audio.change(Config.shell.audio.step, Config.shell.audio.maxVolume); }
+        function lower(): void { Audio.change(-Config.shell.audio.step, Config.shell.audio.maxVolume); }
+        function mute(): void { Audio.toggleMute(); }
+        function micMute(): void { Audio.toggleMicMute(); }
+    }
+    IpcHandler {
+        target: "brightness"
+        function up(): void { Brightness.change(Config.shell.brightness.step); }
+        function down(): void { Brightness.change(-Config.shell.brightness.step); }
+    }
+    IpcHandler {
+        target: "screens"
+        function on(): void { Compositor.setScreensPower(true); }
+        function off(): void { Compositor.setScreensPower(false); }
     }
     IpcHandler {
         target: "idle"
