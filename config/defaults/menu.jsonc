@@ -28,6 +28,7 @@
         { "id": "bluetooth", "label": "Bluetooth", "action": { "type": "panel", "target": "bluetooth" } },
         { "id": "audio", "label": "Audio", "action": { "type": "panel", "target": "audio" } },
         { "id": "shortcuts", "label": "Scorciatoie", "action": { "type": "panel", "target": "shortcuts" } },
+        { "id": "power-profile", "label": "Energia", "action": { "type": "panel", "target": "power" } },
         { "id": "radio", "label": "Radio", "requires": ["mpv"], "action": { "type": "panel", "target": "radio" } }
       ]
     },

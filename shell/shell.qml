@@ -54,6 +54,11 @@ ShellRoot {
     }
 
     Loader {
+        active: Config.shell.panels.power.enabled
+        sourceComponent: PowerPanel {}
+    }
+
+    Loader {
         active: Config.shell.panels.radio.enabled
         sourceComponent: RadioPanel {}
     }

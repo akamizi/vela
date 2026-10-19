@@ -160,6 +160,12 @@ aver fermato dunst/mako, perché un solo programma alla volta può possedere `or
 Testo sempre semplice, clic = chiudi, le notifiche critiche restano finché non si chiudono.
 "Non disturbare" (`vela ipc call toggles dnd` o la voce nel menu) scarta quelle non critiche.
 
+## Pannello energia
+
+Clic sull'icona del profilo energetico (clic destro o rotellina = profilo successivo), menu Sistema › Energia o
+`vela ipc call panel toggle power`. Risparmio energetico, Bilanciato e, se il sistema lo offre, Prestazioni:
+Invio o clic = attiva, 1/2/3 = scelta diretta. Usa power-profiles-daemon.
+
 ## Web radio
 
 `vela ipc call panel toggle radio` o menu Sistema › Radio: le stazioni di `radio.stations`
