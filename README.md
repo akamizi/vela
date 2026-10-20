@@ -37,6 +37,7 @@ Aggiungere a `~/.config/sway/config`:
 exec vela                                           # avvia la shell (barra, menu, pannelli, OSD)
 bindsym $mod+Ctrl+m exec vela ipc call menu toggle  # menu completo
 bindsym $mod+Ctrl+a exec vela ipc call menu apps    # solo applicazioni
+bindsym $mod+Tab exec vela ipc call layout next      # cambia la disposizione delle finestre (indicatore WindowLayout)
 bindsym XF86AudioRaiseVolume exec wpctl set-volume @DEFAULT_AUDIO_SINK@ 2%+
 bindsym XF86AudioLowerVolume exec wpctl set-volume @DEFAULT_AUDIO_SINK@ 2%-
 bindsym XF86AudioMute exec wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle
@@ -54,6 +55,10 @@ vedi sotto).
 scripts/check-deps.sh      # controlla Quickshell e i moduli
 scripts/vela               # avvia la shell (barra in basso; Waybar non viene toccata)
 ```
+
+Spegni, Riavvia ed Esci dal menu chiudono prima le finestre in ordine (le app possono salvare) e agiscono quando non ne resta
+nessuna; se dopo 10 s ce n'è ancora qualcuna annullano e avvisano con una notifica (`session.closeWindows`, `session.closeTimeout`;
+anche `vela ipc call session poweroff|reboot|logout`).
 
 Per fermare Vela: `pkill -x quickshell` oppure Ctrl+C nel terminale.
 
@@ -78,9 +83,12 @@ Variabile per i test: `VELA_USER_DIR` sostituisce `~/.config/vela`.
 ## Barra
 
 Tre zone (sinistra, centro, destra) riempite dagli elementi elencati in `bar.modules` (`config/defaults/shell.jsonc`). Gli elementi dello stesso gruppo (`bar.groups`: hardware, stato, rete, audio, energia) stanno vicini; tra gruppi diversi c'è lo spazio `bar.groupGap` (px), e un gruppo senza elementi visibili non lascia vuoti.
-Elementi: Menu, Workspaces, WindowTitle, Weather, Recording, Dnd, NightLight, Awake, Media, Radio, Clock, Tray, Memory, Cpu,
+Elementi: Menu, Workspaces, WindowLayout, WindowTitle, Weather, Recording, Dnd, NightLight, Awake, Media, Radio, Clock, Tray, Memory, Cpu,
 Temperature, Fan, KeyboardLayout, Updates, Bluetooth, Network, Vpn, Mic, Volume, Brightness, PowerProfile, Battery.
 Mic è spento di default; KeyboardLayout compare solo con più di un layout e Updates solo con aggiornamenti disponibili.
+WindowLayout mostra la disposizione delle finestre del contenitore col focus (colonne, righe, schede, pila, flottante) e serve il
+demone dati; il clic passa alla successiva, il clic destro alla precedente. Con una scorciatoia di Sway:
+`bindsym $mod+Tab exec vela ipc call layout next` (anche `prev`, `set tabbed`, `status`).
 Quelli che dipendono da hardware o servizi assenti (batteria, ventola, retroilluminazione, Bluetooth, VPN) si nascondono da soli.
 
 Interazioni: rotellina su Volume (±2%), Mic, Brightness (±5%), Workspaces e Media; clic destro su Volume (muto) e Bluetooth

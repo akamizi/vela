@@ -46,6 +46,40 @@ Singleton {
         I3.dispatch(direction > 0 ? "workspace prev_on_output" : "workspace next_on_output");
     }
 
+    // Disposizione del contenitore col focus (splith, splitv, tabbed, stacking, floating; vuota se non si sa).
+    // Arriva dal demone dati (modulo sway) a ogni cambio di focus, finestre e workspace e quando scatta una scorciatoia
+    // `layout …`; un comando dato da altri programmi (swaymsg) si vede al primo evento successivo.
+    property string windowLayout: ""
+    readonly property bool windowLayoutKnown: Daemon.ready("sway") && windowLayout !== ""
+    readonly property var windowLayouts: ["splith", "splitv", "tabbed", "stacking"]
+
+    function readDaemonLayout() {
+        var st = Daemon.states.sway;
+        windowLayout = st && typeof st.layout === "string" ? st.layout : "";
+    }
+    Component.onCompleted: readDaemonLayout()    // il singleton può nascere dopo il primo stato del demone
+    Connections {
+        target: Daemon
+        function onModuleState(module) { if (module === "sway") root.readDaemonLayout(); }
+    }
+
+    // Imposta una disposizione (nome dall'elenco chiuso) e la mostra subito: Sway non avvisa dei cambi fatti via IPC.
+    function setWindowLayout(name) {
+        if (windowLayouts.indexOf(name) < 0) return false;
+        I3.dispatch("layout " + name);
+        windowLayout = name;
+        return true;
+    }
+
+    // Passa alla disposizione successiva (direction > 0) o precedente; non fa nulla su una finestra flottante.
+    function cycleWindowLayout(direction) {
+        if (windowLayout === "floating") return false;
+        var n = windowLayouts.length;
+        var i = windowLayouts.indexOf(windowLayout);
+        if (i < 0) i = direction > 0 ? -1 : 0;
+        return setWindowLayout(windowLayouts[(i + (direction > 0 ? 1 : n - 1)) % n]);
+    }
+
     // Schermo su cui sta il focus (per aprire il menu dove guarda l'utente).
     readonly property var focusedScreen: {
         var m = I3.focusedMonitor;

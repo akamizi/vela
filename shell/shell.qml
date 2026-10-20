@@ -126,6 +126,13 @@ ShellRoot {
         function batteryLimit(): void { BatteryLimit.toggleLimit(); }
     }
     IpcHandler {
+        target: "layout"    // disposizione delle finestre del contenitore col focus: next, prev, set <nome>, status
+        function next(): void { Compositor.cycleWindowLayout(1); }
+        function prev(): void { Compositor.cycleWindowLayout(-1); }
+        function set(name: string): void { Compositor.setWindowLayout(name); }
+        function status(): string { return Compositor.windowLayout; }
+    }
+    IpcHandler {
         target: "session"
         function logout(): void { Session.request("logout"); }
         function reboot(): void { Session.request("reboot"); }

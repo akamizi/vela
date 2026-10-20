@@ -26,6 +26,8 @@ var recording = cp(0xF044A);
 var play = cp(0x25B6), pause = cp(0x23F8);
 var vpn = cp(0xF0582);
 var keyboard = cp(0xF030C), radio = cp(0xF0437);
+// Disposizione delle finestre: colonne affiancate, righe sovrapposte, schede, pila, flottante.
+var layoutSplith = cp(0xF056D), layoutSplitv = cp(0xF056A), layoutTabbed = cp(0xF04E9), layoutStacking = cp(0xF0328), layoutFloating = cp(0xF10AC);
 var updates = cp(0xF03D6), calendar = cp(0xF00ED), chevronLeft = cp(0xF0141), chevronRight = cp(0xF0142);
 var lock = cp(0xF033E), check = cp(0xF012C), power = cp(0xF0425);
 

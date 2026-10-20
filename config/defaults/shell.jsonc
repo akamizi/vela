@@ -9,11 +9,11 @@
     // "top" o "bottom"
     "position": "bottom",
     // Elementi di ciascuna zona, nell'ordine in cui compaiono. Disponibili:
-    // Menu Workspaces WindowTitle Weather Recording Dnd NightLight Awake Media Radio Clock Tray
+    // Menu Workspaces WindowLayout WindowTitle Weather Recording Dnd NightLight Awake Media Radio Clock Tray
     // Memory Cpu Temperature Fan KeyboardLayout Updates Bluetooth Network Vpn Mic Volume Brightness PowerProfile Battery
-    // (Mic è spento di default; KeyboardLayout compare solo con più di un layout di tastiera, Updates solo se ci sono aggiornamenti)
+    // (WindowLayout compare solo con il demone dati; Mic è spento di default; KeyboardLayout compare solo con più di un layout di tastiera, Updates solo se ci sono aggiornamenti)
     "modules": {
-      "left": ["Menu", "Workspaces", "Weather", "WindowTitle"],
+      "left": ["Menu", "Workspaces", "WindowLayout", "Weather", "WindowTitle"],
       "center": ["Recording", "Dnd", "NightLight", "Awake", "Media", "Clock"],
       "right": ["Tray", "Memory", "Cpu", "Temperature", "Fan", "KeyboardLayout", "Updates", "Bluetooth", "Network", "Vpn",
                 "Volume", "Brightness", "PowerProfile", "Battery"]

@@ -1,12 +1,16 @@
 // Copyright (C) 2026 Maurizio Cavalletti — Licensed under the EUPL-1.2
-//! Modulo `sway`: elenco degli input (tastiere e touchpad) con layout attivo e stato `send_events`, dal socket IPC di Sway.
+//! Modulo `sway`: elenco degli input (tastiere e touchpad) con layout attivo e stato `send_events`, più il layout
+//! del contenitore che ha il focus, dal socket IPC di Sway.
 //! Sostituisce `swaymsg -t get_inputs` periodico e l'abbonamento `swaymsg -m` del QML.
 //!
 //! Protocollo i3/Sway: `"i3-ipc"` + lunghezza (u32) + tipo (u32) + contenuto, interi in ordine nativo.
-//! Ci si abbona agli eventi `input` su una connessione dedicata; a ogni evento si rilegge `get_inputs`
-//! su una connessione breve (con scadenza), così un Sway che non risponde non blocca il resto.
+//! Ci si abbona agli eventi su una connessione dedicata; a ogni evento utile si rilegge `get_inputs` (input) o
+//! `get_tree` (layout) su una connessione breve (con scadenza), così un Sway che non risponde non blocca il resto.
+//! Il cambio di layout (`layout tabbed`, ecc.) non genera un evento di Sway: si rilegge al cambio di focus, finestre
+//! e workspace e quando scatta una scorciatoia (evento `binding`) il cui comando contiene `layout`.
 //!
-//! Stato: `{"inputs":[{"id","name","type","send_events","layouts":[…],"layout_index"}]}`.
+//! Stato: `{"inputs":[{"id","name","type","send_events","layouts":[…],"layout_index"}],"layout":"splith|splitv|stacking|tabbed|floating|"}`
+//! (`layout` vuoto se non si sa).
 //! Il contenuto che arriva da Sway (nomi) è limitato in lunghezza e in numero prima di uscire.
 
 use super::{Event, Module};
@@ -21,9 +25,15 @@ use std::time::Duration;
 
 const MAGIC: &[u8; 6] = b"i3-ipc";
 const SUBSCRIBE: u32 = 2;
+const GET_TREE: u32 = 4;
 const GET_INPUTS: u32 = 100;
+const EVENT_WORKSPACE: u32 = 0x8000_0000;
+const EVENT_WINDOW: u32 = 0x8000_0003;
+const EVENT_BINDING: u32 = 0x8000_0005;
 const EVENT_INPUT: u32 = 0x8000_0015;
-/// Risposte più grandi di così non sono credibili (un elenco di input è di pochi KiB).
+/// Profondità massima della ricerca nell'albero delle finestre.
+const MAX_TREE_DEPTH: usize = 40;
+/// Risposte più grandi di così non sono credibili (un elenco di input è di pochi KiB, un albero di finestre qualche decina).
 const MAX_PAYLOAD: u32 = 1 << 20;
 const MAX_INPUTS: usize = 64;
 const MAX_LAYOUTS: usize = 16;
@@ -79,7 +89,7 @@ fn text(v: Option<&Value>) -> String {
 }
 
 /// Dal risultato di `get_inputs` allo stato mandato a Vela: solo i campi che servono, con limiti.
-fn inputs_state(reply: &Value) -> Result<Value, String> {
+fn inputs_list(reply: &Value) -> Result<Value, String> {
     let list = reply.as_array().ok_or("risposta di get_inputs non valida")?;
     let inputs: Vec<Value> = list
         .iter()
@@ -104,11 +114,68 @@ fn inputs_state(reply: &Value) -> Result<Value, String> {
             ])
         })
         .collect();
-    Ok(Value::Obj(vec![("inputs".into(), Value::Arr(inputs))]))
+    Ok(Value::Arr(inputs))
+}
+
+/// Nome del layout come lo usa Vela, dal nome di Sway (`stacked` diventa `stacking`); altri valori: vuoto.
+fn layout_name(sway: Option<&str>) -> &'static str {
+    match sway {
+        Some("splith") => "splith",
+        Some("splitv") => "splitv",
+        Some("stacked") => "stacking",
+        Some("tabbed") => "tabbed",
+        _ => "",
+    }
+}
+
+/// Layout del contenitore che ha il focus: quello del genitore della finestra (è ciò che cambia `layout …`),
+/// `floating` se la finestra è flottante, quello del workspace se è vuoto.
+fn focus_layout(tree: &Value) -> &'static str {
+    fn walk(n: &Value, parent: Option<&Value>, floating: bool, depth: usize) -> Option<&'static str> {
+        if depth > MAX_TREE_DEPTH {
+            return None;
+        }
+        if n.get("focused").and_then(Value::as_bool) == Some(true) {
+            let has_children = n.get("nodes").and_then(Value::as_array).is_some_and(|c| !c.is_empty());
+            let is_floating = floating || n.get("type").and_then(Value::as_str) == Some("floating_con");
+            return Some(if is_floating {
+                "floating"
+            } else if has_children || n.get("type").and_then(Value::as_str) == Some("workspace") {
+                layout_name(n.get("layout").and_then(Value::as_str))
+            } else {
+                layout_name(parent.and_then(|p| p.get("layout")).and_then(Value::as_str))
+            });
+        }
+        for (key, fl) in [("nodes", floating), ("floating_nodes", true)] {
+            for c in n.get(key).and_then(Value::as_array).unwrap_or(&[]) {
+                if let Some(l) = walk(c, Some(n), fl, depth + 1) {
+                    return Some(l);
+                }
+            }
+        }
+        None
+    }
+    walk(tree, None, false, 0).unwrap_or("")
+}
+
+/// Un evento di finestra, workspace o scorciatoia cambia il layout mostrato? (i cambi di titolo, frequentissimi, no)
+fn layout_event(kind: u32, body: &[u8]) -> bool {
+    let Some(v) = std::str::from_utf8(body).ok().and_then(|t| json::parse(t).ok()) else { return false };
+    let change = v.get("change").and_then(Value::as_str).unwrap_or("");
+    match kind {
+        EVENT_WINDOW => matches!(change, "focus" | "new" | "close" | "move" | "floating"),
+        EVENT_WORKSPACE => matches!(change, "focus" | "init" | "empty" | "move"),
+        EVENT_BINDING => v.get("binding").and_then(|b| b.get("command")).and_then(Value::as_str).is_some_and(|c| c.contains("layout")),
+        _ => false,
+    }
+}
+
+fn state(inputs: &Value, layout: &str) -> Value {
+    Value::Obj(vec![("inputs".into(), inputs.clone()), ("layout".into(), Value::Str(layout.into()))])
 }
 
 fn empty_state() -> Value {
-    Value::Obj(vec![("inputs".into(), Value::Arr(vec![]))])
+    state(&Value::Arr(vec![]), "")
 }
 
 // --- connessioni ---------------------------------------------------------------------------
@@ -145,7 +212,7 @@ impl Sway {
             Ok(s) => s,
             Err(e) => return End::Lost(format!("connessione a Sway: {e}")),
         };
-        if let Err(e) = sub.write_all(&encode_frame(SUBSCRIBE, b"[\"input\"]")) {
+        if let Err(e) = sub.write_all(&encode_frame(SUBSCRIBE, b"[\"input\",\"window\",\"workspace\",\"binding\"]")) {
             return End::Lost(format!("abbonamento a Sway: {e}"));
         }
         match read_frame(&mut sub) {
@@ -158,25 +225,39 @@ impl Sway {
             Ok(_) => return End::Lost("risposta all'abbonamento inattesa".into()),
             Err(e) => return End::Lost(format!("abbonamento a Sway: {e}")),
         }
+        let read_inputs = || query(path, GET_INPUTS).and_then(|v| inputs_list(&v));
+        // Il layout è un di più: se non si legge, resta vuoto e gli input funzionano comunque.
+        let read_layout = || query(path, GET_TREE).map(|t| focus_layout(&t)).unwrap_or("");
+        let mut inputs = match read_inputs() {
+            Ok(i) => i,
+            Err(e) => return End::Lost(e),
+        };
+        let mut layout = read_layout();
         loop {
-            match query(path, GET_INPUTS).and_then(|v| inputs_state(&v)) {
-                Ok(st) => {
-                    if tx.send(Event::State("sway".into(), st)).is_err() {
-                        return End::Quit;
-                    }
-                    *delivered = true;
-                }
-                Err(e) => return End::Lost(e),
+            if tx.send(Event::State("sway".into(), state(&inputs, layout))).is_err() {
+                return End::Quit;
             }
-            // Si aspetta il prossimo evento input; gli altri tipi (non richiesti) si ignorano.
+            *delivered = true;
+            // Si aspetta il prossimo evento utile; gli altri (titoli, ecc.) si ignorano.
             loop {
                 match read_frame(&mut sub) {
-                    Ok((EVENT_INPUT, _)) => break,
+                    Ok((EVENT_INPUT, _)) => {
+                        sleep(self.settle);
+                        match read_inputs() {
+                            Ok(i) => inputs = i,
+                            Err(e) => return End::Lost(e),
+                        }
+                        break;
+                    }
+                    Ok((kind, body)) if layout_event(kind, &body) => {
+                        sleep(self.settle);
+                        layout = read_layout();
+                        break;
+                    }
                     Ok(_) => {}
                     Err(e) => return End::Lost(format!("connessione a Sway chiusa: {e}")),
                 }
             }
-            sleep(self.settle);
         }
     }
 }
@@ -235,6 +316,70 @@ mod tests {
     const KBD: &str = r#"[{"identifier":"1:1:kbd","name":"AT keyboard","type":"keyboard","xkb_layout_names":["Italian","English (US)"],"xkb_active_layout_index":0,"libinput":{"send_events":"enabled"}},
         {"identifier":"2:2:tp","name":"Touchpad","type":"touchpad","libinput":{"send_events":"disabled_on_external_mouse"}}]"#;
 
+    /// Albero ridotto: un workspace con un contenitore a schede che contiene due finestre, la seconda col focus.
+    const TREE_TABBED: &str = r#"{"type":"root","focused":false,"nodes":[{"type":"output","focused":false,"nodes":[
+        {"type":"workspace","layout":"splith","focused":false,"nodes":[
+          {"type":"con","layout":"tabbed","focused":false,"nodes":[
+            {"type":"con","layout":"none","focused":false,"nodes":[]},
+            {"type":"con","layout":"none","focused":true,"nodes":[]}]}],"floating_nodes":[]}]}]}"#;
+
+    fn layout_of(tree: &str) -> &'static str {
+        focus_layout(&json::parse(tree).unwrap())
+    }
+
+    #[test]
+    fn layout_del_contenitore_col_focus() {
+        assert_eq!(layout_of(TREE_TABBED), "tabbed");
+        assert_eq!(layout_of(&TREE_TABBED.replace("\"tabbed\"", "\"stacked\"")), "stacking");
+        assert_eq!(layout_of(&TREE_TABBED.replace("\"tabbed\"", "\"splitv\"")), "splitv");
+        assert_eq!(layout_of(&TREE_TABBED.replace("\"tabbed\"", "\"qualcosa\"")), "", "valore sconosciuto");
+        // finestra direttamente nel workspace: conta il workspace
+        let in_ws = r#"{"type":"root","nodes":[{"type":"workspace","layout":"splitv","nodes":[{"type":"con","layout":"none","focused":true,"nodes":[]}],"floating_nodes":[]}]}"#;
+        assert_eq!(layout_of(in_ws), "splitv");
+        // workspace vuoto col focus: il suo layout
+        let empty = r#"{"type":"root","nodes":[{"type":"workspace","layout":"splith","focused":true,"nodes":[],"floating_nodes":[]}]}"#;
+        assert_eq!(layout_of(empty), "splith");
+        // contenitore (non una finestra) col focus: il suo layout, non quello del genitore
+        let cont = r#"{"type":"root","nodes":[{"type":"workspace","layout":"splith","nodes":[{"type":"con","layout":"stacked","focused":true,"nodes":[{"type":"con","layout":"none","nodes":[]}]}]}]}"#;
+        assert_eq!(layout_of(cont), "stacking");
+    }
+
+    #[test]
+    fn finestra_flottante_e_senza_focus() {
+        let floating = r#"{"type":"root","nodes":[{"type":"workspace","layout":"splith","nodes":[],"floating_nodes":[{"type":"floating_con","layout":"none","focused":true,"nodes":[]}]}]}"#;
+        assert_eq!(layout_of(floating), "floating");
+        assert_eq!(layout_of(r#"{"type":"root","nodes":[]}"#), "");
+        assert_eq!(layout_of(r#"[1,2]"#), "");
+        assert_eq!(layout_of(r#"{"focused":"si"}"#), "", "focused non booleano");
+    }
+
+    #[test]
+    fn albero_troppo_profondo_non_fa_danni() {
+        let mut t = String::from(r#"{"type":"con","layout":"none","focused":true,"nodes":[]}"#);
+        for _ in 0..200 {
+            t = format!(r#"{{"type":"con","layout":"splith","nodes":[{t}],"floating_nodes":[]}}"#);
+        }
+        let v = Value::Obj(vec![]);
+        assert_eq!(focus_layout(&v), "");
+        // il parser rifiuta già l'annidamento eccessivo: l'esito è un errore, non un crollo
+        assert!(json::parse(&t).is_err());
+    }
+
+    #[test]
+    fn quali_eventi_fanno_rileggere_il_layout() {
+        let ev = |k: u32, b: &str| layout_event(k, b.as_bytes());
+        assert!(ev(EVENT_WINDOW, r#"{"change":"focus"}"#));
+        assert!(ev(EVENT_WINDOW, r#"{"change":"floating"}"#));
+        assert!(!ev(EVENT_WINDOW, r#"{"change":"title"}"#), "i titoli cambiano di continuo");
+        assert!(ev(EVENT_WORKSPACE, r#"{"change":"focus"}"#));
+        assert!(!ev(EVENT_WORKSPACE, r#"{"change":"reload"}"#));
+        assert!(ev(EVENT_BINDING, r#"{"change":"run","binding":{"command":"layout toggle split"}}"#));
+        assert!(!ev(EVENT_BINDING, r#"{"change":"run","binding":{"command":"exec foot"}}"#));
+        assert!(!ev(EVENT_BINDING, r#"{"change":"run"}"#));
+        assert!(!ev(EVENT_INPUT, r#"{"change":"focus"}"#), "gli input hanno la loro strada");
+        assert!(!ev(EVENT_WINDOW, "non json"));
+    }
+
     #[test]
     fn fotogramma_andata_e_ritorno() {
         let f = encode_frame(100, b"abc");
@@ -258,8 +403,8 @@ mod tests {
 
     #[test]
     fn stato_dagli_input() {
-        let st = inputs_state(&json::parse(KBD).unwrap()).unwrap();
-        let ins = st.get("inputs").unwrap().as_array().unwrap();
+        let st = inputs_list(&json::parse(KBD).unwrap()).unwrap();
+        let ins = st.as_array().unwrap();
         assert_eq!(ins.len(), 2);
         assert_eq!(ins[0].get("type").unwrap().as_str(), Some("keyboard"));
         assert_eq!(ins[0].get("layouts").unwrap().as_array().unwrap().len(), 2);
@@ -272,14 +417,14 @@ mod tests {
     #[test]
     fn stato_con_dati_ostili() {
         let many: Vec<String> = (0..200).map(|i| format!(r#"{{"identifier":"{i}","name":"{}","type":"keyboard","xkb_layout_names":["a","b","c","d","e","f","g","h","i","l","m","n","o","p","q","r","s","t"],"xkb_active_layout_index":999999}}"#, "x".repeat(1000))).collect();
-        let st = inputs_state(&json::parse(&format!("[{}]", many.join(","))).unwrap()).unwrap();
-        let ins = st.get("inputs").unwrap().as_array().unwrap();
+        let st = inputs_list(&json::parse(&format!("[{}]", many.join(","))).unwrap()).unwrap();
+        let ins = st.as_array().unwrap();
         assert_eq!(ins.len(), MAX_INPUTS);
         assert!(ins[0].get("name").unwrap().as_str().unwrap().chars().count() <= crate::proto::MAX_STR);
         assert_eq!(ins[0].get("layouts").unwrap().as_array().unwrap().len(), MAX_LAYOUTS);
         assert_eq!(ins[0].get("layout_index").unwrap().as_i64(), Some(0), "indice fuori misura scartato");
-        assert!(inputs_state(&json::parse(r#"{"x":1}"#).unwrap()).is_err());
-        assert!(inputs_state(&json::parse(r#"[1,"a",null,{"type":5}]"#).unwrap()).is_ok());
+        assert!(inputs_list(&json::parse(r#"{"x":1}"#).unwrap()).is_err());
+        assert!(inputs_list(&json::parse(r#"[1,"a",null,{"type":5}]"#).unwrap()).is_ok());
     }
 
     /// Finto Sway: accetta due tipi di connessione (abbonamento e domande). `replies` sono le risposte a `get_inputs`,
@@ -298,6 +443,8 @@ mod tests {
                 if k == SUBSCRIBE {
                     c.write_all(&encode_frame(SUBSCRIBE, br#"{"success": true}"#)).unwrap();
                     sub = Some(c);
+                } else if k == GET_TREE {
+                    c.write_all(&encode_frame(GET_TREE, TREE_TABBED.as_bytes())).unwrap();
                 } else if k == GET_INPUTS {
                     c.write_all(&encode_frame(GET_INPUTS, replies[asked.min(replies.len() - 1)].as_bytes())).unwrap();
                     asked += 1;
@@ -334,6 +481,7 @@ mod tests {
         };
         let a = get();
         assert_eq!(a.get("inputs").unwrap().as_array().unwrap().len(), 2);
+        assert_eq!(a.get("layout").unwrap().as_str(), Some("tabbed"));
         let b = get();
         let ins = b.get("inputs").unwrap().as_array().unwrap();
         assert_eq!(ins.len(), 1);
