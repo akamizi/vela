@@ -5,11 +5,12 @@
 Shell minimale per Sway su Void Linux (barra, launcher, pannelli), basata su Quickshell.
 Licenza: EUPL-1.2.
 
-Versione 0.4.0: barra, menu/launcher con calcolatrice, pannelli (rete, Bluetooth, audio, luminosità, energia, limite di carica della batteria, radio, scorciatoie), OSD, notifiche, Impostazioni (con blocco e inattività distinti tra batteria e rete, applicazioni predefinite, radio, batteria, Informazioni) per Sway; interfaccia traducibile (per ora italiano).
+Ultima versione pubblicata: 0.4.0. Sul ramo principale, dopo la 0.4.0: helper della batteria riscritto in Rust, demone dati `vela-daemon` (luce notturna, input e layout di tastiera da Sway), spazio tra i gruppi della barra, nuovo logo. La 0.4.0 comprende: barra, menu/launcher con calcolatrice, pannelli (rete, Bluetooth, audio, luminosità, energia, limite di carica della batteria, radio, scorciatoie), OSD, notifiche, Impostazioni (con blocco e inattività distinti tra batteria e rete, applicazioni predefinite, radio, batteria, Informazioni) per Sway; interfaccia traducibile (per ora italiano).
 
 ## Requisiti
 
 Obbligatori: `quickshell` (≥ 0.3) con i moduli Quickshell usati (`scripts/check-deps.sh` li elenca) e `sway`.
+Per compilare da sorgente: `cargo` (l'helper della batteria e il demone dati sono programmi Rust, solo libreria standard).
 Facoltativi — se mancano, la voce relativa sparisce o mostra "non disponibile" e la shell parte lo stesso:
 `brightnessctl` (luminosità), PipeWire (audio), NetworkManager e `nmcli` (rete, VPN), BlueZ (Bluetooth),
 `power-profiles-daemon`, UPower (batteria), `gammastep` (luce notturna), `curl` (meteo), `dunstctl` (solo
@@ -17,16 +18,18 @@ per "non disturbare" se si usa dunst al posto delle notifiche integrate).
 
 ## Misure
 
-A riposo su un portatile con Sway e un solo schermo: circa 195 MB di RAM e meno dell'1 % di CPU; la parte
-fissa di Qt/Quickshell è circa 170 MB. Tolti Waybar, `dunst` e `wob`, che Vela sostituisce, il consumo totale
-sale in RAM ma scende in CPU. Dettagli e motivazione in `DECISIONI.md` (D-010).
+A riposo su un portatile con Sway e un solo schermo (misura del 2026-10-20, con demone dati): circa 230 MB di RAM
+(RSS) e 0,4 % di CPU, nessun processo lanciato periodicamente; il demone aggiunge circa 2 MB e 0,3 % di CPU. La parte
+fissa di Qt, Quickshell e del driver grafico è la maggioranza della memoria. Tolti Waybar, `dunst` e `wob`, che Vela
+sostituisce, il consumo totale sale in RAM ma scende in CPU. Dettagli in `DECISIONI.md` (D-010, D-039).
 
 ## Installazione (pacchetto Void)
 
 Quando il pacchetto è nel repository: `xbps-install vela`. Installa il comando `/usr/bin/vela`, il QML e i
 default in `/usr/share/vela`, gli esempi di configurazione in `/usr/share/doc/vela`. Da sorgente:
-`make install PREFIX=/usr` (accetta `DESTDIR`). Il template xbps-src è in `packaging/void/vela/template`
-(da completare con indirizzo e checksum della release).
+`make` (come utente: compila l'helper della batteria e il demone dati) e poi `make install PREFIX=/usr` (accetta
+`DESTDIR`). La parte con privilegi (helper di root, regola polkit, regola udev) si installa anche da sola con
+`doas make install-system`. Il template xbps-src è in `packaging/void/vela/template` (checksum della 0.4.0; ancora da provare con xbps-src).
 
 Aggiungere a `~/.config/sway/config`:
 
@@ -54,6 +57,11 @@ scripts/vela               # avvia la shell (barra in basso; Waybar non viene to
 
 Per fermare Vela: `pkill -x quickshell` oppure Ctrl+C nel terminale.
 
+Il demone dati (`make daemon`) e l'helper della batteria vanno installati in `/usr/libexec/vela/` per essere usati; in
+sviluppo si può puntare il demone al binario compilato con `daemon.command` in `~/.config/vela/shell.jsonc`
+(`daemon/target/release/vela-daemon`). Senza demone Vela funziona come prima, con i controlli periodici nel QML;
+dopo aver sostituito il binario basta fermare il processo `vela-daemon` e Vela lo rilancia.
+
 ## Configurazione
 
 Strati, dal più debole al più forte:
@@ -70,13 +78,15 @@ Variabile per i test: `VELA_USER_DIR` sostituisce `~/.config/vela`.
 ## Barra
 
 Tre zone (sinistra, centro, destra) riempite dagli elementi elencati in `bar.modules` (`config/defaults/shell.jsonc`). Gli elementi dello stesso gruppo (`bar.groups`: hardware, stato, rete, audio, energia) stanno vicini; tra gruppi diversi c'è lo spazio `bar.groupGap` (px), e un gruppo senza elementi visibili non lascia vuoti.
-Elementi: Menu, Workspaces, WindowTitle, Weather, Recording, Dnd, NightLight, Awake, Media, Clock, Tray, Memory, Cpu,
-Temperature, Fan, Bluetooth, Network, Vpn, Volume, Brightness, PowerProfile, Battery.
+Elementi: Menu, Workspaces, WindowTitle, Weather, Recording, Dnd, NightLight, Awake, Media, Radio, Clock, Tray, Memory, Cpu,
+Temperature, Fan, KeyboardLayout, Updates, Bluetooth, Network, Vpn, Mic, Volume, Brightness, PowerProfile, Battery.
+Mic è spento di default; KeyboardLayout compare solo con più di un layout e Updates solo con aggiornamenti disponibili.
 Quelli che dipendono da hardware o servizi assenti (batteria, ventola, retroilluminazione, Bluetooth, VPN) si nascondono da soli.
 
-Interazioni: rotellina su Volume (±2%), Brightness (±5%), Workspaces e Media; clic destro su Volume (muto) e Bluetooth
-(on/off); clic su Clock (formato alternativo), PowerProfile (profilo successivo), Vpn (accendi/spegni), Tray (attiva; destro = menu).
-Passando il mouse compaiono i tooltip (calendario sull'orologio, previsioni sul meteo).
+Interazioni: rotellina su Volume (±2%), Mic, Brightness (±5%), Workspaces e Media; clic destro su Volume (muto) e Bluetooth
+(on/off); clic su Clock (calendario; destro = formato alternativo), Weather (pannello; destro = aggiorna), Battery (pannello del
+limite di carica, se supportato), PowerProfile (profilo successivo), Vpn (accendi/spegni), Mic (muto), Tray (attiva; destro = menu).
+Passando il mouse compaiono i tooltip.
 
 ## Menu / launcher
 
