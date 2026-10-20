@@ -5,7 +5,7 @@
 Shell minimale per Sway su Void Linux (barra, launcher, pannelli), basata su Quickshell.
 Licenza: EUPL-1.2.
 
-Ultima versione pubblicata: 0.4.0. Sul ramo principale, dopo la 0.4.0: helper della batteria riscritto in Rust, demone dati `vela-daemon` (luce notturna, input e layout di tastiera da Sway), spazio tra i gruppi della barra, nuovo logo. La 0.4.0 comprende: barra, menu/launcher con calcolatrice, pannelli (rete, Bluetooth, audio, luminosità, energia, limite di carica della batteria, radio, scorciatoie), OSD, notifiche, Impostazioni (con blocco e inattività distinti tra batteria e rete, applicazioni predefinite, radio, batteria, Informazioni) per Sway; interfaccia traducibile (per ora italiano).
+Versione 0.5.0: novità rispetto alla 0.4.0: helper della batteria riscritto in Rust, demone dati `vela-daemon` (luce notturna, input e layout di tastiera da Sway, senza processi lanciati periodicamente), spazio tra i gruppi della barra, nuovo logo. Comprende: barra, menu/launcher con calcolatrice, pannelli (rete, Bluetooth, audio, luminosità, energia, limite di carica della batteria, radio, scorciatoie), OSD, notifiche, Impostazioni (con blocco e inattività distinti tra batteria e rete, applicazioni predefinite, radio, batteria, Informazioni) per Sway; interfaccia traducibile (per ora italiano).
 
 ## Requisiti
 
@@ -29,7 +29,7 @@ Quando il pacchetto è nel repository: `xbps-install vela`. Installa il comando 
 default in `/usr/share/vela`, gli esempi di configurazione in `/usr/share/doc/vela`. Da sorgente:
 `make` (come utente: compila l'helper della batteria e il demone dati) e poi `make install PREFIX=/usr` (accetta
 `DESTDIR`). La parte con privilegi (helper di root, regola polkit, regola udev) si installa anche da sola con
-`doas make install-system`. Il template xbps-src è in `packaging/void/vela/template` (checksum della 0.4.0; ancora da provare con xbps-src).
+`doas make install-system`. Il template xbps-src è in `packaging/void/vela/template` (ancora da provare con xbps-src).
 
 Aggiungere a `~/.config/sway/config`:
 
