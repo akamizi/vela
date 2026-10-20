@@ -34,6 +34,18 @@ Singleton {
     property string tooltip: ""
     property bool stale: false
     property var data: null
+    // Dati per il pannello (D-035): condizioni attuali, una voce ogni 3 ore per 24 ore, 5 giorni.
+    property var current: null
+    property var hours: []
+    property var days: []
+    readonly property string windUnit: imperial ? "mph" : "km/h"
+    function iconOf(symbol) { return lookup(iconFor, symbol, Icons.weather.cloudy); }
+    function labelOf(symbol) { return lookup(labelFor, symbol, symbol); }
+    function windOf(ms) { return imperial ? ms * 2.23694 : ms * 3.6; }
+    function precipOf(entry) {
+        var d = entry.data, p = d.next_1_hours || d.next_6_hours;
+        return p && p.details && typeof p.details.precipitation_amount === "number" ? p.details.precipitation_amount : 0;
+    }
 
     readonly property string cacheDir: (Quickshell.env("XDG_CACHE_HOME") || (Quickshell.env("HOME") + "/.cache")) + "/vela"
     readonly property string cachePath: cacheDir + "/weather.json"
@@ -98,6 +110,40 @@ Singleton {
                 + lookup(labelFor, ds, ds));
         }
         tooltip = lines.join("\n");
+
+        var inst = best.data.instant.details;
+        current = { temp: conv(temp), icon: lookup(iconFor, symbol, Icons.weather.cloudy), label: lookup(labelFor, symbol, symbol),
+                    wind: windOf(inst.wind_speed || 0), humidity: inst.relative_humidity, pressure: inst.air_pressure_at_sea_level };
+
+        // Una voce ogni 3 ore a partire da adesso.
+        var start = 0;
+        for (var s0 = 0; s0 < series.length; s0++) if (Date.parse(series[s0].time) >= now - 1800000) { start = s0; break; }
+        var t0 = Date.parse(series[start].time), hs = [];
+        for (var k = 0; k < 8; k++) {
+            var target = t0 + k * 3 * 3600000, pick = null;
+            for (var q = start; q < series.length; q++) {
+                var dt = Math.abs(Date.parse(series[q].time) - target);
+                if (pick === null || dt < pick.dt) pick = { e: series[q], dt: dt }; else if (dt > pick.dt) break;
+            }
+            if (pick === null || pick.dt > 3600000) break;
+            hs.push({ time: pick.e.time, temp: conv(pick.e.data.instant.details.air_temperature), icon: lookup(iconFor, symbolOf(pick.e), Icons.weather.cloudy), precip: precipOf(pick.e) });
+        }
+        hours = hs;
+
+        // Oggi (la parte che resta) e i quattro giorni dopo.
+        var ds = [];
+        for (var o = 0; o < 5; o++) {
+            var dd = new Date(); dd.setDate(dd.getDate() + o);
+            var dk = dd.getFullYear() + "-" + dd.getMonth() + "-" + dd.getDate();
+            var es = series.filter(function (e) { var t = new Date(e.time); return t.getFullYear() + "-" + t.getMonth() + "-" + t.getDate() === dk; });
+            if (es.length === 0) continue;
+            var tt = es.map(function (e) { return e.data.instant.details.air_temperature; });
+            var mid = es.reduce(function (a, b) { return Math.abs(new Date(b.time).getHours() - 13) < Math.abs(new Date(a.time).getHours() - 13) ? b : a; });
+            var sym = symbolOf(mid);
+            ds.push({ date: dd, max: conv(Math.max.apply(null, tt)), min: conv(Math.min.apply(null, tt)), icon: lookup(iconFor, sym, Icons.weather.cloudy),
+                      label: lookup(labelFor, sym, sym), precip: es.reduce(function (a, e) { return a + precipOf(e); }, 0) });
+        }
+        days = ds;
         stale = isStale;
         data = json;
     }

@@ -167,6 +167,11 @@ dell'ambiente, poi italiano). I cataloghi stanno in `i18n/<lingua>.json` (italia
 `~/.config/vela/i18n/<lingua>.json`. Una voce mancante o vuota mostra l'italiano. Per tradurre: `scripts/i18n-extract --update xx`
 crea il catalogo con tutte le chiavi, poi si riempiono i valori.
 
+## Meteo
+
+Il clic sull'icona del meteo apre il pannello con le condizioni attuali, le prossime 24 ore e i prossimi giorni (dati di yr.no); il clic destro aggiorna.
+Serve la località in `weather.latitude` e `weather.longitude`.
+
 ## Calendario
 
 Il clic sull'orologio apre il calendario del mese (numeri di settimana, ←/→ giorno, PagSu/PagGiù mese, T oggi); il clic destro cambia il formato

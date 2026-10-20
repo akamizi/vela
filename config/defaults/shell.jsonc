@@ -41,6 +41,7 @@
     "power": { "enabled": true },
     "battery": { "enabled": true },
     "calendar": { "enabled": true },
+    "weather": { "enabled": true },
     "brightness": { "enabled": true }
   },
   // Web radio: stazioni [{ "name": "Rai Radio 3", "url": "http://icestreaming.rai.it/3.mp3" }] e player
