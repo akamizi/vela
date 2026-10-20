@@ -64,6 +64,11 @@ ShellRoot {
     }
 
     Loader {
+        active: Config.shell.panels.calendar.enabled
+        sourceComponent: CalendarPanel {}
+    }
+
+    Loader {
         active: Config.shell.panels.brightness.enabled
         sourceComponent: BrightnessPanel {}
     }

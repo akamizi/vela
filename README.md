@@ -167,6 +167,11 @@ dell'ambiente, poi italiano). I cataloghi stanno in `i18n/<lingua>.json` (italia
 `~/.config/vela/i18n/<lingua>.json`. Una voce mancante o vuota mostra l'italiano. Per tradurre: `scripts/i18n-extract --update xx`
 crea il catalogo con tutte le chiavi, poi si riempiono i valori.
 
+## Calendario
+
+Il clic sull'orologio apre il calendario del mese (numeri di settimana, ←/→ giorno, PagSu/PagGiù mese, T oggi); il clic destro cambia il formato
+dell'orologio. Anche con `vela ipc call panel toggle calendar`. Per ora senza eventi.
+
 ## Limite di carica della batteria
 
 Sui portatili che lo permettono, il clic sull'icona della batteria apre un pannello con l'interruttore del limite di carica e
