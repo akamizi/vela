@@ -9,13 +9,20 @@ LIBEXEC = $(PREFIX)/libexec
 HELPER_DIR = helpers/battery-limit
 HELPER_BIN = $(HELPER_DIR)/target/release/battery-limit
 
-all: helper
+DAEMON_DIR = daemon
+DAEMON_BIN = $(DAEMON_DIR)/target/release/vela-daemon
+
+all: helper daemon
+
+daemon:
+	cargo build --release --locked --manifest-path $(DAEMON_DIR)/Cargo.toml --target-dir $(DAEMON_DIR)/target
 
 helper:
 	cargo build --release --locked --manifest-path $(HELPER_DIR)/Cargo.toml --target-dir $(HELPER_DIR)/target
 
 test:
 	cargo test --locked --manifest-path $(HELPER_DIR)/Cargo.toml --target-dir $(HELPER_DIR)/target
+	cargo test --locked --manifest-path $(DAEMON_DIR)/Cargo.toml --target-dir $(DAEMON_DIR)/target
 
 # Parte privilegiata (D-032): helper delle soglie di carica, regola polkit e regola udev.
 # Serve root: `make` come utente, poi `doas make install-system` (installa il binario già compilato).
@@ -31,6 +38,8 @@ install-system:
 	rm -f helpers/.udev.tmp
 
 install: install-system
+	@test -x $(DAEMON_BIN) || { echo "manca $(DAEMON_BIN): esegui prima 'make' come utente" >&2; exit 1; }
+	install -Dm755 $(DAEMON_BIN) $(DESTDIR)$(LIBEXEC)/vela/vela-daemon
 	install -Dm755 scripts/vela $(DESTDIR)$(PREFIX)/bin/vela
 	find shell config/defaults i18n -type f -exec install -Dm644 {} $(SHARE)/vela/{} \;
 	find config/user.example -type f -exec install -Dm644 {} $(SHARE)/doc/vela/{} \;
@@ -39,4 +48,4 @@ install: install-system
 	install -Dm644 assets/logo.svg $(SHARE)/vela/assets/logo.svg
 	install -Dm644 LICENSE $(SHARE)/licenses/vela/LICENSE
 
-.PHONY: all helper test install install-system
+.PHONY: all helper daemon test install install-system

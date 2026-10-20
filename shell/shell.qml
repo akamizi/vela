@@ -17,6 +17,7 @@ import "plugins/notifications"
 ShellRoot {
     // I servizi sono singleton creati al primo uso: l'inattività deve esistere fin dall'avvio.
     readonly property bool idleManaged: Idle.enabled
+    readonly property bool daemonManaged: Daemon.enabled    // il demone dati (D-039) parte con Vela
 
     Loader {
         active: Config.shell.bar.enabled
@@ -120,6 +121,10 @@ ShellRoot {
         function dnd(): void { Toggles.toggleDnd(); }
         function touchpad(): void { Toggles.toggleTouchpad(); }
         function batteryLimit(): void { BatteryLimit.toggleLimit(); }
+    }
+    IpcHandler {
+        target: "daemon"
+        function status(): string { return Daemon.status(); }
     }
     IpcHandler {
         target: "radio"

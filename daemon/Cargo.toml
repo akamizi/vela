@@ -1,0 +1,19 @@
+[package]
+name = "vela-daemon"
+version = "0.1.0"
+edition = "2021"
+license = "EUPL-1.2"
+description = "Demone dati di Vela: raccoglie stato di sistema e lo scrive come righe JSON (D-039)"
+publish = false
+
+# Solo libreria standard: niente dipendenze da scaricare né da verificare.
+[dependencies]
+
+[[bin]]
+name = "vela-daemon"
+path = "src/main.rs"
+
+[profile.release]
+opt-level = "s"
+lto = true
+strip = true

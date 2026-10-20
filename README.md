@@ -188,8 +188,12 @@ disponibili mostra il numero; il clic lancia l'aggiornamento in un terminale (`u
 
 Sui portatili che lo permettono, il clic sull'icona della batteria apre un pannello con l'interruttore del limite di carica e
 "Carica al 100% una volta" (poi il limite torna da solo). Stesse azioni nelle Impostazioni › Batteria. Su un PC senza questa funzione non compare nulla.
-Serve la parte di sistema (helper di root in Rust, regola polkit per il gruppo `wheel`, regola udev): `make` come utente (serve `cargo`), poi `doas make install-system`. Senza l'helper installato la funzione resta nascosta. `make test` esegue i test dell'helper.
+Serve la parte di sistema (helper di root in Rust, regola polkit per il gruppo `wheel`, regola udev): `make` come utente (serve `cargo`), poi `doas make install-system`. Senza l'helper installato la funzione resta nascosta. `make test` esegue i test dell'helper e del demone.
 Funziona con le soglie regolabili (ThinkPad, 75/80) e con il limite fisso del firmware (IdeaPad, `charge_types`).
+
+## Demone dati (in sviluppo)
+
+`vela-daemon` è un piccolo programma Rust (solo libreria standard) che Vela avvia come processo figlio e che le manda, come righe JSON su stdout, lo stato di sistema raccolto da moduli. È di sola lettura: non esegue comandi, non scrive file, non apre socket. Se manca, se muore o se smette di rispondere (15 s senza segnali), Vela lo rilancia e nel frattempo i servizi usano i loro controlli periodici. Si compila con `make` e `make install` lo mette in `/usr/libexec/vela/`; per ora non ha moduli (arrivano in D-039: `night`, `sway`). Configurazione: `daemon.enabled`, `daemon.command`, `daemon.modules`. Diagnostica: `vela ipc call daemon status` e `vela-daemon --once --modules …`.
 
 ## Calcolatrice
 
