@@ -10,7 +10,7 @@
     "position": "bottom",
     // Elementi di ciascuna zona, nell'ordine in cui compaiono. Disponibili:
     // Menu Workspaces WindowTitle Weather Recording Dnd NightLight Awake Media Radio Clock Tray
-    // Memory Cpu Temperature Fan Bluetooth Network Vpn Volume Brightness PowerProfile Battery
+    // Memory Cpu Temperature Fan Bluetooth Network Vpn Mic Volume Brightness PowerProfile Battery (Mic è spento di default)
     "modules": {
       "left": ["Menu", "Workspaces", "Weather", "WindowTitle"],
       "center": ["Recording", "Dnd", "NightLight", "Awake", "Media", "Clock"],
