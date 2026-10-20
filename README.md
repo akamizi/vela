@@ -177,6 +177,13 @@ Serve la località in `weather.latitude` e `weather.longitude`.
 Il clic sull'orologio apre il calendario del mese (numeri di settimana, ←/→ giorno, PagSu/PagGiù mese, T oggi); il clic destro cambia il formato
 dell'orologio. Anche con `vela ipc call panel toggle calendar`. Per ora senza eventi.
 
+## Layout di tastiera e aggiornamenti
+
+Due elementi di barra che compaiono solo quando servono. **KeyboardLayout**: se in Sway è configurato più di un layout (`xkb_layout it,us`)
+mostra la sigla del layout attivo; il clic passa al successivo (anche `vela ipc call keyboard next|prev`). **Updates**: con aggiornamenti
+disponibili mostra il numero; il clic lancia l'aggiornamento in un terminale (`updates.command`). Il conteggio legge l'indice locale di xbps
+(`xbps-install -un`): si aggiorna dopo una sincronizzazione (`xbps-install -S`), che Vela non fa da sé.
+
 ## Limite di carica della batteria
 
 Sui portatili che lo permettono, il clic sull'icona della batteria apre un pannello con l'interruttore del limite di carica e

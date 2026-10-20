@@ -111,7 +111,7 @@ Singleton {
         if (hasDunstctl && !Notifications.active) dndCheck.running = true;
         if (recordingCommand) recCheck.running = true;
         if (awakeCommand) awakeCheck.running = true;
-        if (touchpadAvailable) SwayBackend.refreshInputs();
+        if (SwayBackend.active) SwayBackend.refreshInputs();      // anche per touchpad e layout di tastiera
     }
 
     Timer { id: refreshSoon; interval: 600; onTriggered: root.refresh() }

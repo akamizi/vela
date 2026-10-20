@@ -143,6 +143,11 @@ ShellRoot {
         function down(): void { Brightness.change(-Config.shell.brightness.step); }
     }
     IpcHandler {
+        target: "keyboard"
+        function next(): void { SwayBackend.switchLayout(1); }
+        function prev(): void { SwayBackend.switchLayout(-1); }
+    }
+    IpcHandler {
         target: "screens"
         function on(): void { Compositor.setScreensPower(true); }
         function off(): void { Compositor.setScreensPower(false); }

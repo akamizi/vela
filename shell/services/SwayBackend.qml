@@ -25,6 +25,36 @@ Singleton {
     readonly property bool touchpadOn: inputs.some(function (i) { return i.type === "touchpad" && i.sendEvents !== "disabled"; })
     property string lastError: ""
 
+    // Layout di tastiera: si considera la prima tastiera con più di un layout configurato (D-037).
+    readonly property var keyboard: {
+        for (var k = 0; k < inputs.length; k++)
+            if (inputs[k].type === "keyboard" && inputs[k].layouts.length > 1) return inputs[k];
+        return null;
+    }
+    readonly property int layoutCount: keyboard ? keyboard.layouts.length : 0
+    readonly property string layoutName: keyboard ? (keyboard.layouts[keyboard.layoutIndex] || "") : ""
+    // Sigla breve dal nome del layout ("Italian" → IT, "English (US)" → US).
+    function layoutCode(name) {
+        var m = /\(([^)]+)\)/.exec(name);
+        if (m) return m[1].slice(0, 3).toUpperCase();
+        var known = { "Italian": "IT", "English": "EN", "German": "DE", "French": "FR", "Spanish": "ES", "Portuguese": "PT",
+                      "Russian": "RU", "Dutch": "NL", "Swedish": "SE", "Norwegian": "NO", "Danish": "DK", "Finnish": "FI",
+                      "Polish": "PL", "Czech": "CZ", "Greek": "GR", "Turkish": "TR", "Japanese": "JP", "Korean": "KR", "Swiss": "CH" };
+        var first = name.split(" ")[0];
+        return known[first] || first.slice(0, 2).toUpperCase();
+    }
+    function switchLayout(direction) {
+        if (!active || layoutCount < 2) return;
+        run("input type:keyboard xkb_switch_layout " + (direction < 0 ? "prev" : "next"));
+        rereadInputs.restart();
+    }
+    // Sway avvisa a ogni cambio di layout: ci si abbona solo se serve (più di un layout).
+    Process {
+        command: ["swaymsg", "-m", "-t", "subscribe", "[\"input\"]"]
+        running: root.active && root.layoutCount > 1
+        stdout: SplitParser { onRead: root.refreshInputs() }
+    }
+
     // --- lettura dello stato -----------------------------------------------------------
     function modeString(m) { return m.width + "x" + m.height + "@" + (m.refresh / 1000).toFixed(3) + "Hz"; }
 
@@ -51,7 +81,7 @@ Singleton {
         stdout: StdioCollector {
             onStreamFinished: {
                 try {
-                    root.inputs = JSON.parse(text).map(function (i) { return { identifier: i.identifier, name: i.name, type: i.type, sendEvents: i.libinput ? i.libinput.send_events : "" }; });
+                    root.inputs = JSON.parse(text).map(function (i) { return { identifier: i.identifier, name: i.name, type: i.type, sendEvents: i.libinput ? i.libinput.send_events : "", layouts: i.xkb_layout_names || [], layoutIndex: i.xkb_active_layout_index || 0 }; });
                 } catch (e) { root.inputs = []; }
             }
         }

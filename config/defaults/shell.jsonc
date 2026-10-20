@@ -10,11 +10,12 @@
     "position": "bottom",
     // Elementi di ciascuna zona, nell'ordine in cui compaiono. Disponibili:
     // Menu Workspaces WindowTitle Weather Recording Dnd NightLight Awake Media Radio Clock Tray
-    // Memory Cpu Temperature Fan Bluetooth Network Vpn Mic Volume Brightness PowerProfile Battery (Mic è spento di default)
+    // Memory Cpu Temperature Fan KeyboardLayout Updates Bluetooth Network Vpn Mic Volume Brightness PowerProfile Battery
+    // (Mic è spento di default; KeyboardLayout compare solo con più di un layout di tastiera, Updates solo se ci sono aggiornamenti)
     "modules": {
       "left": ["Menu", "Workspaces", "Weather", "WindowTitle"],
       "center": ["Recording", "Dnd", "NightLight", "Awake", "Media", "Clock"],
-      "right": ["Tray", "Memory", "Cpu", "Temperature", "Fan", "Bluetooth", "Network", "Vpn",
+      "right": ["Tray", "Memory", "Cpu", "Temperature", "Fan", "KeyboardLayout", "Updates", "Bluetooth", "Network", "Vpn",
                 "Volume", "Brightness", "PowerProfile", "Battery"]
     },
     "workspaces": { "persistent": [1, 2, 3, 4, 5] },
@@ -77,6 +78,15 @@
   // limitHelper: helper di sistema per il limite di carica (compare solo sui portatili compatibili).
   "battery": { "warning": 20, "critical": 10, "limitHelper": "/usr/libexec/vela/battery-limit" },
   "audio": { "step": 0.02, "maxVolume": 1.0 },
+  // Aggiornamenti disponibili (elemento "Updates", visibile solo se ce ne sono). Il controllo legge l'indice locale di xbps:
+  // si aggiorna dopo una sincronizzazione (`xbps-install -S`, per esempio da un'attività periodica di root).
+  // `command` si lancia in un terminale al clic; `interval` in secondi (minimo 60).
+  "updates": {
+    "enabled": true,
+    "interval": 3600,
+    "checkCommand": ["xbps-install", "-un"],
+    "command": ["foot", "-e", "sh", "-c", "if command -v doas >/dev/null 2>&1; then doas xbps-install -Su; else sudo xbps-install -Su; fi; printf '\\nInvio per chiudere… '; read _"]
+  },
   "brightness": { "step": 5 },
   // OSD di volume e luminosità (sostituisce wob, D-012). Togliere wob dalla configurazione di Sway.
   // Inattività gestita da Vela (D-024). Spenta di default: attivarla solo se non c'è swayidle o simili.

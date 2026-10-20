@@ -26,7 +26,7 @@ var recording = cp(0xF044A);
 var play = cp(0x25B6), pause = cp(0x23F8);
 var vpn = cp(0xF0582);
 var keyboard = cp(0xF030C), radio = cp(0xF0437);
-var calendar = cp(0xF00ED), chevronLeft = cp(0xF0141), chevronRight = cp(0xF0142);
+var updates = cp(0xF03D6), calendar = cp(0xF00ED), chevronLeft = cp(0xF0141), chevronRight = cp(0xF0142);
 var lock = cp(0xF033E), check = cp(0xF012C), power = cp(0xF0425);
 
 // Meteo (simbolo yr.no -> icona)
