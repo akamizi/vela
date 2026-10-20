@@ -1,6 +1,7 @@
 // Copyright (C) 2026 Maurizio Cavalletti — Licensed under the EUPL-1.2
-// Limite di carica della batteria (D-032). Lo stato si legge con l'helper senza privilegi; le modifiche passano
-// da `pkexec` e dall'helper di sistema (regola polkit per il gruppo wheel), che accetta solo poche parole fisse.
+// Limite di carica della batteria (D-032, D-038). Lo stato si legge con l'helper installato (binario Rust)
+// senza privilegi; le modifiche passano da `pkexec` e dall'helper di sistema (regola polkit per il gruppo wheel),
+// che accetta solo poche parole fisse.
 // Tutto resta nascosto (`supported` falso) sui portatili senza un limite controllabile.
 pragma Singleton
 import QtQuick
@@ -27,7 +28,6 @@ Singleton {
     property string error: ""
     property bool helperInstalled: false
 
-    readonly property string statusScript: Quickshell.shellDir + "/../helpers/battery-limit"
     readonly property string helper: Config.shell.battery.limitHelper
     // Il limite è "voluto" anche durante la carica piena (le soglie tornano da sole alla fine).
     readonly property bool wanted: full ? choice === "on" : limited
@@ -53,20 +53,24 @@ Singleton {
     property bool cancelling: false
 
     function refresh() {
-        if (!reader.running) reader.running = true;
         if (!helperCheck.running) helperCheck.running = true;
     }
 
     Process {
         id: reader
-        command: ["sh", root.statusScript, "status"]
+        command: [root.helper, "status"]
         stdout: StdioCollector { onStreamFinished: root.parse(text) }
     }
     // L'helper si può installare mentre Vela è in funzione: lo si ricontrolla a ogni aggiornamento.
     Process {
         id: helperCheck
         command: ["sh", "-c", "test -x \"$1\"", "sh", root.helper]
-        onExited: code => root.helperInstalled = (code === 0)
+        // Senza l'helper installato non c'è nulla da leggere: la funzione resta nascosta.
+        onExited: code => {
+            root.helperInstalled = (code === 0);
+            if (code === 0) { if (!reader.running) reader.running = true; }
+            else root.supported = false;
+        }
     }
 
     // Controlla all'avvio e poi con calma: non c'è niente da seguire a ogni secondo.

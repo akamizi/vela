@@ -188,7 +188,7 @@ disponibili mostra il numero; il clic lancia l'aggiornamento in un terminale (`u
 
 Sui portatili che lo permettono, il clic sull'icona della batteria apre un pannello con l'interruttore del limite di carica e
 "Carica al 100% una volta" (poi il limite torna da solo). Stesse azioni nelle Impostazioni › Batteria. Su un PC senza questa funzione non compare nulla.
-Serve la parte di sistema (helper di root, regola polkit per il gruppo `wheel`, regola udev): `doas make install-system`.
+Serve la parte di sistema (helper di root in Rust, regola polkit per il gruppo `wheel`, regola udev): `make` come utente (serve `cargo`), poi `doas make install-system`. Senza l'helper installato la funzione resta nascosta. `make test` esegue i test dell'helper.
 Funziona con le soglie regolabili (ThinkPad, 75/80) e con il limite fisso del firmware (IdeaPad, `charge_types`).
 
 ## Calcolatrice

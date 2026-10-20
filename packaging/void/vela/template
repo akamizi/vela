@@ -5,6 +5,7 @@ version=0.4.0
 revision=1
 build_style=gnu-makefile
 make_install_args="PREFIX=/usr"
+hostmakedepends="cargo"
 depends="quickshell sway font-inter nerd-fonts-symbols-ttf qt6-svg qt6-wayland"
 short_desc="Minimal desktop shell for Sway built on Quickshell"
 maintainer="Maurizio Cavalletti <maurizio@akabit.it>"

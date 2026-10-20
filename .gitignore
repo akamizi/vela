@@ -1,3 +1,4 @@
 *.swp
 *~
 .qmlls.ini
+target/

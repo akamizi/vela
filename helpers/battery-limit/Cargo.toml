@@ -1,0 +1,20 @@
+[package]
+name = "vela-battery-limit"
+version = "0.1.0"
+edition = "2021"
+license = "EUPL-1.2"
+description = "Helper di Vela (root, via pkexec) per il limite di carica della batteria"
+publish = false
+
+# Solo libreria standard: niente dipendenze da scaricare né da verificare.
+[dependencies]
+
+[[bin]]
+name = "battery-limit"
+path = "src/main.rs"
+
+[profile.release]
+opt-level = "s"
+lto = true
+panic = "abort"
+strip = true

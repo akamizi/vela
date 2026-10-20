@@ -5,9 +5,23 @@ DESTDIR ?=
 SHARE = $(DESTDIR)$(PREFIX)/share
 LIBEXEC = $(PREFIX)/libexec
 
-# Parte privilegiata (D-032): helper delle soglie di carica, regola polkit e regola udev. Serve root: `doas make install-system`.
+# Helper delle soglie di carica (Rust, solo libreria standard, D-038): si compila come utente con `make`.
+HELPER_DIR = helpers/battery-limit
+HELPER_BIN = $(HELPER_DIR)/target/release/battery-limit
+
+all: helper
+
+helper:
+	cargo build --release --locked --manifest-path $(HELPER_DIR)/Cargo.toml --target-dir $(HELPER_DIR)/target
+
+test:
+	cargo test --locked --manifest-path $(HELPER_DIR)/Cargo.toml --target-dir $(HELPER_DIR)/target
+
+# Parte privilegiata (D-032): helper delle soglie di carica, regola polkit e regola udev.
+# Serve root: `make` come utente, poi `doas make install-system` (installa il binario già compilato).
 install-system:
-	install -Dm755 helpers/battery-limit $(DESTDIR)$(LIBEXEC)/vela/battery-limit
+	@test -x $(HELPER_BIN) || { echo "manca $(HELPER_BIN): esegui prima 'make' come utente" >&2; exit 1; }
+	install -Dm755 $(HELPER_BIN) $(DESTDIR)$(LIBEXEC)/vela/battery-limit
 	sed 's|@LIBEXEC@|$(LIBEXEC)|' helpers/org.vela.battery-limit.policy > helpers/.policy.tmp
 	install -Dm644 helpers/.policy.tmp $(SHARE)/polkit-1/actions/org.vela.battery-limit.policy
 	rm -f helpers/.policy.tmp
@@ -17,7 +31,6 @@ install-system:
 	rm -f helpers/.udev.tmp
 
 install: install-system
-	install -Dm644 helpers/battery-limit $(SHARE)/vela/helpers/battery-limit
 	install -Dm755 scripts/vela $(DESTDIR)$(PREFIX)/bin/vela
 	find shell config/defaults i18n -type f -exec install -Dm644 {} $(SHARE)/vela/{} \;
 	find config/user.example -type f -exec install -Dm644 {} $(SHARE)/doc/vela/{} \;
@@ -26,4 +39,4 @@ install: install-system
 	install -Dm644 assets/logo.svg $(SHARE)/vela/assets/logo.svg
 	install -Dm644 LICENSE $(SHARE)/licenses/vela/LICENSE
 
-.PHONY: install install-system
+.PHONY: all helper test install install-system
