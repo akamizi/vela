@@ -2,9 +2,6 @@
 //! JSON minimo: serve a leggere le risposte di Sway e a scrivere i messaggi verso Vela.
 //! Analizzatore con limiti (dimensione, profondità), scrittore con escape completo.
 
-// Parte dell'analizzatore serve solo dal modulo sway (M2): fino ad allora è codice testato ma non ancora usato.
-#![allow(dead_code)]
-
 use std::fmt::Write;
 
 /// Dimensione massima accettata per un documento da analizzare.
@@ -48,6 +45,13 @@ impl Value {
             _ => None,
         }
     }
+    pub fn as_bool(&self) -> Option<bool> {
+        match self {
+            Value::Bool(b) => Some(*b),
+            _ => None,
+        }
+    }
+
     /// Serializza in una sola riga (nessun a capo letterale: vanno tutti in escape).
     pub fn to_json(&self) -> String {
         let mut s = String::new();

@@ -3,6 +3,7 @@
 //! Un guasto (errore o panico) in un modulo non ferma gli altri.
 
 mod night;
+mod sway;
 
 use crate::json::Value;
 use std::sync::mpsc::Sender;
@@ -29,7 +30,7 @@ pub fn build(names: &[String]) -> (Vec<Box<dyn Module>>, Vec<String>) {
     for n in names {
         match n.as_str() {
             "night" => mods.push(Box::new(night::Night::new())),
-            // M2: "sway"
+            "sway" => mods.push(Box::new(sway::Sway::new())),
             _ => unknown.push(n.clone()),
         }
     }

@@ -48,10 +48,27 @@ Singleton {
         run("input type:keyboard xkb_switch_layout " + (direction < 0 ? "prev" : "next"));
         rereadInputs.restart();
     }
+    // Con il demone dati (D-039) gli input arrivano da lì in tempo reale (abbonamento agli eventi di Sway fatto dal demone):
+    // niente `swaymsg` periodico né abbonamento qui. Se il demone manca o non è fresco, resta il controllo di prima.
+    readonly property bool daemonInputs: Daemon.ready("sway")
+    Connections {
+        target: Daemon
+        function onModuleState(module) { if (module === "sway") root.applyDaemonInputs(); }
+    }
+    function applyDaemonInputs() {
+        var st = Daemon.states.sway;
+        if (!st || !Array.isArray(st.inputs)) return;
+        inputs = st.inputs.map(function (i) {
+            return { identifier: String(i.id || ""), name: String(i.name || ""), type: String(i.type || ""),
+                     sendEvents: String(i.send_events || ""),
+                     layouts: Array.isArray(i.layouts) ? i.layouts.map(String) : [], layoutIndex: Number(i.layout_index) || 0 };
+        });
+    }
+
     // Sway avvisa a ogni cambio di layout: ci si abbona solo se serve (più di un layout).
     Process {
         command: ["swaymsg", "-m", "-t", "subscribe", "[\"input\"]"]
-        running: root.active && root.layoutCount > 1
+        running: root.active && root.layoutCount > 1 && !root.daemonInputs
         stdout: SplitParser { onRead: root.refreshInputs() }
     }
 
@@ -89,10 +106,10 @@ Singleton {
     function refresh() {
         if (!active) return;
         if (!outProc.running) outProc.running = true;
-        if (!inProc.running) inProc.running = true;
+        if (!inProc.running && !daemonInputs) inProc.running = true;
         swayCfg.reload();
     }
-    function refreshInputs() { if (active && !inProc.running) inProc.running = true; }
+    function refreshInputs() { if (active && !daemonInputs && !inProc.running) inProc.running = true; }
     Component.onCompleted: refresh()
 
     function setTouchpad(on) {

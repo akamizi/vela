@@ -154,6 +154,10 @@ ShellRoot {
         target: "keyboard"
         function next(): void { SwayBackend.switchLayout(1); }
         function prev(): void { SwayBackend.switchLayout(-1); }
+        function status(): string {    // stato in JSON, per script e diagnostica
+            return JSON.stringify({ layouts: SwayBackend.keyboard ? SwayBackend.keyboard.layouts : [], current: SwayBackend.layoutName,
+                                    touchpad: SwayBackend.hasTouchpad ? SwayBackend.touchpadOn : null, viaDaemon: SwayBackend.daemonInputs });
+        }
     }
     IpcHandler {
         target: "screens"
