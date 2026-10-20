@@ -6,7 +6,8 @@
 // esistere, altrimenti la voce non compare), glyph ("U+F0F85": icona Nerd Font), confirm (chiede conferma).
 // Azioni: {"type":"exec","command":[...]} (array di argomenti, mai una stringa da shell),
 //         {"type":"toggle","target":"night|awake|dnd|touchpad|bar"}, {"type":"panel","target":"..."},
-//         {"type":"compositor","command":"logout|reload"}, {"type":"apps"} (elenco applicazioni).
+//         {"type":"compositor","command":"reload"}, {"type":"apps"} (elenco applicazioni),
+//         {"type":"session","command":"logout|reboot|poweroff"} (chiude prima le finestre in ordine, vedi `session` in shell.jsonc).
 {
   "items": [
     { "id": "apps", "label": "App", "glyph": "U+F003B", "action": { "type": "apps" } },
@@ -42,9 +43,9 @@
       "children": [
         { "id": "lock", "label": "Blocca", "requires": ["swaylock"], "action": { "type": "exec", "command": ["swaylock", "-f"] } },
         { "id": "suspend", "label": "Sospendi", "requires": ["loginctl"], "action": { "type": "exec", "command": ["loginctl", "suspend"] } },
-        { "id": "logout", "label": "Esci dalla sessione", "confirm": true, "action": { "type": "compositor", "command": "logout" } },
-        { "id": "reboot", "label": "Riavvia", "confirm": true, "requires": ["loginctl"], "action": { "type": "exec", "command": ["loginctl", "reboot"] } },
-        { "id": "poweroff", "label": "Spegni", "confirm": true, "requires": ["loginctl"], "action": { "type": "exec", "command": ["loginctl", "poweroff"] } }
+        { "id": "logout", "label": "Esci dalla sessione", "confirm": true, "action": { "type": "session", "command": "logout" } },
+        { "id": "reboot", "label": "Riavvia", "confirm": true, "requires": ["loginctl"], "action": { "type": "session", "command": "reboot" } },
+        { "id": "poweroff", "label": "Spegni", "confirm": true, "requires": ["loginctl"], "action": { "type": "session", "command": "poweroff" } }
       ]
     }
   ]

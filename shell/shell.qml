@@ -126,6 +126,13 @@ ShellRoot {
         function batteryLimit(): void { BatteryLimit.toggleLimit(); }
     }
     IpcHandler {
+        target: "session"
+        function logout(): void { Session.request("logout"); }
+        function reboot(): void { Session.request("reboot"); }
+        function poweroff(): void { Session.request("poweroff"); }
+        function status(): string { return JSON.stringify({ pending: Session.pending, windows: Session.windowCount }); }
+    }
+    IpcHandler {
         target: "daemon"
         function status(): string { return Daemon.status(); }
     }

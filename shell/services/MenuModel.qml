@@ -146,6 +146,8 @@ Singleton {
             return true;
         case "compositor":
             return Compositor.run(a.command);
+        case "session":
+            return Session.request(a.command);
         }
         console.warn("[vela] menu: tipo di azione sconosciuto in '" + item.id + "': " + a.type);
         return false;
