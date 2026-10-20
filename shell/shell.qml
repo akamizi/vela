@@ -116,7 +116,10 @@ ShellRoot {
     IpcHandler {
         target: "toggles"
         function awake(): void { Toggles.toggleAwake(); }
-        function refresh(): void { Toggles.refresh(); }   // per gli script che cambiano uno stato esterno
+        function status(): string {    // stato in JSON, per script e diagnostica
+            return JSON.stringify({ night: Toggles.night, dnd: Toggles.dnd, awake: Toggles.awakeOn, recording: Toggles.recording });
+        }
+        function refresh(): void { Toggles.refresh(true); }   // per gli script che cambiano uno stato esterno
         function night(): void { Toggles.toggleNight(); }
         function dnd(): void { Toggles.toggleDnd(); }
         function touchpad(): void { Toggles.toggleTouchpad(); }

@@ -87,8 +87,8 @@
     "monitorCommand": null
   },
   // Demone dati (D-039): processo figlio che manda a Vela righe JSON con lo stato di sistema. Se manca o non risponde,
-  // i servizi tornano al controllo periodico. "modules": moduli attivi (per ora nessuno).
-  "daemon": { "enabled": true, "command": "/usr/libexec/vela/vela-daemon", "modules": [] },
+  // i servizi tornano al controllo periodico. "modules": moduli attivi (night: luce notturna).
+  "daemon": { "enabled": true, "command": "/usr/libexec/vela/vela-daemon", "modules": ["night"] },
   // limitHelper: helper di sistema per il limite di carica (compare solo sui portatili compatibili).
   "battery": { "warning": 20, "critical": 10, "limitHelper": "/usr/libexec/vela/battery-limit" },
   "audio": { "step": 0.02, "maxVolume": 1.0 },

@@ -44,7 +44,7 @@ Singleton {
     function status() {
         return JSON.stringify({
             enabled: enabled, installed: installed, connected: connected, fresh: fresh, incompatible: incompatible,
-            modules: modules, restarts: restarts, errors: errors
+            modules: modules, restarts: restarts, errors: errors, states: states
         });
     }
 

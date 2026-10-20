@@ -55,6 +55,15 @@ Singleton {
         onExited: code => root.night = (code === 0)
     }
 
+    // Con il demone dati (D-039) la luce notturna arriva da lì, senza lanciare `pgrep` a ogni controllo.
+    Connections {
+        target: Daemon
+        function onModuleState(module) {
+            if (module === "night" && Daemon.states.night && typeof Daemon.states.night.on === "boolean")
+                root.night = Daemon.states.night.on;
+        }
+    }
+
     function toggleNight() {
         if (night) Quickshell.execDetached(["pkill", "-x", "gammastep"]);
         else Quickshell.execDetached(["gammastep", "-O", String(Config.shell.toggles.nightTemperature)]);
@@ -106,15 +115,17 @@ Singleton {
         refreshSoon.restart();
     }
 
-    function refresh() {
-        nightCheck.running = true;
+    // `force`: dopo un'azione dell'utente o per uno script esterno si controlla subito, anche se il demone dati
+    // è attivo (il demone manda solo i cambiamenti: un comando fallito non cambierebbe nulla e lo stato ottimistico resterebbe).
+    function refresh(force) {
+        if (force === true || !Daemon.ready("night")) nightCheck.running = true;
         if (hasDunstctl && !Notifications.active) dndCheck.running = true;
         if (recordingCommand) recCheck.running = true;
         if (awakeCommand) awakeCheck.running = true;
         if (SwayBackend.active) SwayBackend.refreshInputs();      // anche per touchpad e layout di tastiera
     }
 
-    Timer { id: refreshSoon; interval: 600; onTriggered: root.refresh() }
+    Timer { id: refreshSoon; interval: 600; onTriggered: root.refresh(true) }
     Timer {
         interval: Config.shell.toggles.pollInterval * 1000
         running: true

@@ -193,7 +193,7 @@ Funziona con le soglie regolabili (ThinkPad, 75/80) e con il limite fisso del fi
 
 ## Demone dati (in sviluppo)
 
-`vela-daemon` è un piccolo programma Rust (solo libreria standard) che Vela avvia come processo figlio e che le manda, come righe JSON su stdout, lo stato di sistema raccolto da moduli. È di sola lettura: non esegue comandi, non scrive file, non apre socket. Se manca, se muore o se smette di rispondere (15 s senza segnali), Vela lo rilancia e nel frattempo i servizi usano i loro controlli periodici. Si compila con `make` e `make install` lo mette in `/usr/libexec/vela/`; per ora non ha moduli (arrivano in D-039: `night`, `sway`). Configurazione: `daemon.enabled`, `daemon.command`, `daemon.modules`. Diagnostica: `vela ipc call daemon status` e `vela-daemon --once --modules …`.
+`vela-daemon` è un piccolo programma Rust (solo libreria standard) che Vela avvia come processo figlio e che le manda, come righe JSON su stdout, lo stato di sistema raccolto da moduli. È di sola lettura: non esegue comandi, non scrive file, non apre socket. Dopo un'azione dell'utente (o `vela ipc call toggles refresh`) si ricontrolla comunque subito. Se manca, se muore o se smette di rispondere (15 s senza segnali), Vela lo rilancia e nel frattempo i servizi usano i loro controlli periodici. Si compila con `make` e `make install` lo mette in `/usr/libexec/vela/`; moduli: `night` (luce notturna, al posto di `pgrep gammastep`); `sway` arriva dopo (D-039). Configurazione: `daemon.enabled`, `daemon.command`, `daemon.modules`. Diagnostica: `vela ipc call daemon status` e `vela-daemon --once --modules …`.
 
 ## Calcolatrice
 

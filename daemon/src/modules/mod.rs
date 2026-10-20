@@ -2,6 +2,8 @@
 //! Moduli del demone: ognuno gira in un proprio thread e manda eventi al ciclo principale.
 //! Un guasto (errore o panico) in un modulo non ferma gli altri.
 
+mod night;
+
 use crate::json::Value;
 use std::sync::mpsc::Sender;
 
@@ -26,10 +28,10 @@ pub fn build(names: &[String]) -> (Vec<Box<dyn Module>>, Vec<String>) {
     let mut unknown = Vec::new();
     for n in names {
         match n.as_str() {
-            // M1: "night", M2: "sway"
+            "night" => mods.push(Box::new(night::Night::new())),
+            // M2: "sway"
             _ => unknown.push(n.clone()),
         }
     }
-    let _ = &mut mods;
     (mods, unknown)
 }
