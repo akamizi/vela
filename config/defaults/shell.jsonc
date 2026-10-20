@@ -10,17 +10,22 @@
     "position": "bottom",
     // Elementi di ciascuna zona, nell'ordine in cui compaiono. Disponibili:
     // Menu Workspaces WindowLayout WindowTitle Weather Recording Dnd NightLight Awake Media Radio Clock Tray
+    // Indicators (raggruppa Recording Dnd NightLight Awake)
     // Memory Cpu Temperature Fan KeyboardLayout Updates Bluetooth Network Vpn Mic Volume Brightness PowerProfile Battery
     // (WindowLayout compare solo con il demone dati; Mic è spento di default; KeyboardLayout compare solo con più di un layout di tastiera, Updates solo se ci sono aggiornamenti)
     "modules": {
       "left": ["Menu", "Workspaces", "WindowLayout", "Weather", "WindowTitle"],
-      "center": ["Recording", "Dnd", "NightLight", "Awake", "Media", "Clock"],
+      "center": ["Indicators", "Media", "Clock"],
       "right": ["Tray", "Memory", "Cpu", "Temperature", "Fan", "KeyboardLayout", "Updates", "Bluetooth", "Network", "Vpn",
                 "Volume", "Brightness", "PowerProfile", "Battery"]
     },
     // Gruppi logici: tra elementi di gruppi diversi, vicini nella lista, si lascia groupGap pixel
     // (se manca, il doppio dello spazio del tema). Chi non è elencato fa gruppo con i vicini senza gruppo.
     "groupGap": 14,
+    // Elemento Indicators: i simboli dei modi accesi (Recording, Dnd, NightLight, Awake), nell'ordine di "items".
+    // peek: con il mouse sulla barra compaiono anche quelli spenti (un clic li accende); alwaysShow: sempre visibili.
+    // Con peek il gruppo si allarga: in una zona centrale sposta gli elementi vicini, a sinistra o a destra no.
+    "indicators": { "items": ["Recording", "Dnd", "NightLight", "Awake"], "alwaysShow": false, "peek": true },
     "groups": {
       "Tray": "tray",
       "Memory": "hw", "Cpu": "hw", "Temperature": "hw", "Fan": "hw",

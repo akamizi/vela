@@ -83,9 +83,13 @@ Variabile per i test: `VELA_USER_DIR` sostituisce `~/.config/vela`.
 ## Barra
 
 Tre zone (sinistra, centro, destra) riempite dagli elementi elencati in `bar.modules` (`config/defaults/shell.jsonc`). Gli elementi dello stesso gruppo (`bar.groups`: hardware, stato, rete, audio, energia) stanno vicini; tra gruppi diversi c'è lo spazio `bar.groupGap` (px), e un gruppo senza elementi visibili non lascia vuoti.
-Elementi: Menu, Workspaces, WindowLayout, WindowTitle, Weather, Recording, Dnd, NightLight, Awake, Media, Radio, Clock, Tray, Memory, Cpu,
+Elementi: Menu, Workspaces, WindowLayout, WindowTitle, Weather, Indicators, Recording, Dnd, NightLight, Awake, Media, Radio, Clock, Tray, Memory, Cpu,
 Temperature, Fan, KeyboardLayout, Updates, Bluetooth, Network, Vpn, Mic, Volume, Brightness, PowerProfile, Battery.
 Mic è spento di default; KeyboardLayout compare solo con più di un layout e Updates solo con aggiornamenti disponibili.
+Indicators raggruppa in un solo elemento i modi accesi (Recording, Dnd, NightLight, Awake): un clic su un simbolo lo accende o lo
+spegne; con il mouse sulla barra compaiono anche quelli spenti (`bar.indicators.peek`) e `bar.indicators.alwaysShow` li tiene sempre
+visibili; `bar.indicators.items` sceglie quali e in che ordine. In una zona centrale il gruppo, allargandosi, sposta gli elementi
+vicini: a sinistra o a destra no. Gli elementi singoli restano disponibili.
 WindowLayout mostra la disposizione delle finestre del contenitore col focus (colonne, righe, schede, pila, flottante) e serve il
 demone dati; il clic passa alla successiva, il clic destro alla precedente. Con una scorciatoia di Sway:
 `bindsym $mod+Tab exec vela ipc call layout next` (anche `prev`, `set tabbed`, `status`).

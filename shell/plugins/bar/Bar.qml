@@ -25,6 +25,9 @@ Variants {
         visible: Runtime.barVisible
         WlrLayershell.namespace: "vela-bar"
 
+        // Il mouse è sulla barra: gli indicatori (elemento Indicators) mostrano anche quelli spenti.
+        readonly property bool pointerInside: barHover.hovered
+
         // Un elemento è un file widgets/<Nome>Widget.qml; il nome viene dalla configurazione,
         // quindi si accetta solo la forma Maiuscola+lettere (niente percorsi).
         // Gli elementi consecutivi dello stesso gruppo (bar.groups) stanno vicini; tra gruppi diversi c'è
@@ -91,6 +94,8 @@ Variants {
             anchors.fill: parent
             color: Theme.barBackground
             radius: Theme.barRadius
+
+            HoverHandler { id: barHover }
 
             Row {
                 id: left
