@@ -78,13 +78,16 @@
   "brightness": { "step": 5 },
   // OSD di volume e luminosità (sostituisce wob, D-012). Togliere wob dalla configurazione di Sway.
   // Inattività gestita da Vela (D-024). Spenta di default: attivarla solo se non c'è swayidle o simili.
-  // Minuti; 0 = mai. Il comando di blocco è un array di argomenti.
+  // Minuti; 0 = mai. `xxxMinutes` vale a batteria, `xxxMinutesOnAc` con l'alimentatore collegato (e sui PC senza batteria).
+  // Il comando di blocco è un array di argomenti.
   "idle": {
     "enabled": false,
     "lockMinutes": 5,
+    "lockMinutesOnAc": 5,
     "screenOffMinutes": 10,
+    "screenOffMinutesOnAc": 10,
     "suspendMinutes": 30,
-    "suspendOnlyOnBattery": true,
+    "suspendMinutesOnAc": 0,
     "lockCommand": ["swaylock", "-f"]
   },
   "osd": { "enabled": true, "timeout": 1500 },

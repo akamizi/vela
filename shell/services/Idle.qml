@@ -18,23 +18,34 @@ Singleton {
 
     function secs(minutes) { return typeof minutes === "number" && minutes > 0 ? Math.round(minutes * 60) : 0; }
 
+    // Ogni tempo ha due valori: a batteria (`xxxMinutes`) e con l'alimentatore (`xxxMinutesOnAc`). Un PC senza batteria è sempre "a rete".
+    // Se la chiave `…OnAc` manca vale quella a batteria.
+    readonly property bool onAc: Power.onAc
+    function minutes(base) {
+        var v = onAc ? cfg[base + "OnAc"] : undefined;
+        return typeof v === "number" ? v : cfg[base];
+    }
+    readonly property int lockSecs: secs(minutes("lockMinutes"))
+    readonly property int screenOffSecs: secs(minutes("screenOffMinutes"))
+    readonly property int suspendSecs: secs(minutes("suspendMinutes"))
+
     IdleMonitor {
-        enabled: root.enabled && root.secs(root.cfg.lockMinutes) > 0
-        timeout: Math.max(1, root.secs(root.cfg.lockMinutes))
+        enabled: root.enabled && root.lockSecs > 0
+        timeout: Math.max(1, root.lockSecs)
         respectInhibitors: true
         onIsIdleChanged: if (isIdle) root.lock()
     }
     IdleMonitor {
-        enabled: root.enabled && root.secs(root.cfg.screenOffMinutes) > 0
-        timeout: Math.max(1, root.secs(root.cfg.screenOffMinutes))
+        enabled: root.enabled && root.screenOffSecs > 0
+        timeout: Math.max(1, root.screenOffSecs)
         respectInhibitors: true
         onIsIdleChanged: Compositor.setScreensPower(!isIdle)    // spenge da inattivo, riaccende all'attività
     }
     IdleMonitor {
-        enabled: root.enabled && root.secs(root.cfg.suspendMinutes) > 0
-        timeout: Math.max(1, root.secs(root.cfg.suspendMinutes))
+        enabled: root.enabled && root.suspendSecs > 0
+        timeout: Math.max(1, root.suspendSecs)
         respectInhibitors: true
-        onIsIdleChanged: if (isIdle && (!root.cfg.suspendOnlyOnBattery || !Power.onAc)) root.suspend()
+        onIsIdleChanged: if (isIdle) root.suspend()
     }
 
     // Blocca lo schermo, salvo che un blocco sia già attivo (il comando è un array: nessuna shell sulla stringa).

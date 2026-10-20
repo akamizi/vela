@@ -432,10 +432,14 @@ PanelHost {
         out.push(choice("shell", "idle.enabled", I18n.tr("Gestione dell'inattività di Vela"), [{ v: true, t: "attiva" }, { v: false, t: "spenta" }]));
         if (Idle.enabled && Idle.externalRunning)
             out.push(info(I18n.tr("Attenzione"), I18n.tr("swayidle è in esecuzione: rischio di doppioni, va fermato"), "warn"));
+        out.push(header(I18n.tr("A batteria")));
         out.push(minutesRow("idle.lockMinutes", I18n.tr("Blocca lo schermo dopo"), 5));
         out.push(minutesRow("idle.screenOffMinutes", I18n.tr("Spegni lo schermo dopo"), 10));
         out.push(minutesRow("idle.suspendMinutes", I18n.tr("Sospendi dopo"), 30));
-        out.push(choice("shell", "idle.suspendOnlyOnBattery", I18n.tr("Sospensione"), [{ v: true, t: I18n.tr("solo a batteria") }, { v: false, t: I18n.tr("sempre") }]));
+        out.push(header(I18n.tr("Con l'alimentatore")));
+        out.push(minutesRow("idle.lockMinutesOnAc", I18n.tr("Blocca lo schermo dopo"), 5));
+        out.push(minutesRow("idle.screenOffMinutesOnAc", I18n.tr("Spegni lo schermo dopo"), 10));
+        out.push(minutesRow("idle.suspendMinutesOnAc", I18n.tr("Sospendi dopo"), 0));
         out.push(header(I18n.tr("Blocco")));
         var lc = Idle.lockCommand.join(" ");
         out.push({ kind: "text", file: "shell", path: "idle.lockCommand", label: I18n.tr("Comando di blocco"), value: lc, text: lc,
