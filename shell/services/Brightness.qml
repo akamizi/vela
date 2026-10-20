@@ -76,10 +76,10 @@ Singleton {
         if (setter.running) pending = p; else apply(p);
     }
 
-    // step in percentuale (positivo o negativo)
+    // step in percentuale (positivo o negativo). Il livello si aggiorna subito (così l'OSD compare senza aspettare
+    // brightnessctl e la rilettura di sysfs) e i tasti ripetuti si sommano invece di essere scartati.
     function change(stepPercent) {
-        if (!available || setter.running) return;
-        setter.command = ["brightnessctl", "set", Math.abs(stepPercent) + "%" + (stepPercent > 0 ? "+" : "-")];
-        setter.running = true;
+        if (!available) return;
+        set(level + stepPercent / 100);
     }
 }

@@ -18,6 +18,17 @@
       "right": ["Tray", "Memory", "Cpu", "Temperature", "Fan", "KeyboardLayout", "Updates", "Bluetooth", "Network", "Vpn",
                 "Volume", "Brightness", "PowerProfile", "Battery"]
     },
+    // Gruppi logici: tra elementi di gruppi diversi, vicini nella lista, si lascia groupGap pixel
+    // (se manca, il doppio dello spazio del tema). Chi non è elencato fa gruppo con i vicini senza gruppo.
+    "groupGap": 14,
+    "groups": {
+      "Tray": "tray",
+      "Memory": "hw", "Cpu": "hw", "Temperature": "hw", "Fan": "hw",
+      "KeyboardLayout": "stato", "Updates": "stato",
+      "Bluetooth": "rete", "Network": "rete", "Vpn": "rete",
+      "Mic": "audio", "Volume": "audio", "Brightness": "audio",
+      "PowerProfile": "energia", "Battery": "energia"
+    },
     "workspaces": { "persistent": [1, 2, 3, 4, 5] },
     "windowTitle": { "maxWidth": 360 },
     "media": { "maxWidth": 320 },

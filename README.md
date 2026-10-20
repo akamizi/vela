@@ -69,7 +69,7 @@ Variabile per i test: `VELA_USER_DIR` sostituisce `~/.config/vela`.
 
 ## Barra
 
-Tre zone (sinistra, centro, destra) riempite dagli elementi elencati in `bar.modules` (`config/defaults/shell.jsonc`).
+Tre zone (sinistra, centro, destra) riempite dagli elementi elencati in `bar.modules` (`config/defaults/shell.jsonc`). Gli elementi dello stesso gruppo (`bar.groups`: hardware, stato, rete, audio, energia) stanno vicini; tra gruppi diversi c'è lo spazio `bar.groupGap` (px), e un gruppo senza elementi visibili non lascia vuoti.
 Elementi: Menu, Workspaces, WindowTitle, Weather, Recording, Dnd, NightLight, Awake, Media, Clock, Tray, Memory, Cpu,
 Temperature, Fan, Bluetooth, Network, Vpn, Volume, Brightness, PowerProfile, Battery.
 Quelli che dipendono da hardware o servizi assenti (batteria, ventola, retroilluminazione, Bluetooth, VPN) si nascondono da soli.

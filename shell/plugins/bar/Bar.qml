@@ -27,18 +27,61 @@ Variants {
 
         // Un elemento è un file widgets/<Nome>Widget.qml; il nome viene dalla configurazione,
         // quindi si accetta solo la forma Maiuscola+lettere (niente percorsi).
-        component Zone: Repeater {
-            delegate: Loader {
-                required property string modelData
-                readonly property bool valid: /^[A-Z][A-Za-z]*$/.test(modelData)
-                source: valid ? "widgets/" + modelData + "Widget.qml" : ""
-                // Un elemento nascosto (es. batteria assente) non occupa spazio. Il Loader resta
-                // visibile: se dipendesse da item.visible, che include quello del genitore, si bloccherebbe.
-                width: item && item.visible ? item.implicitWidth : 0
-                height: Theme.barHeight
-                onStatusChanged: {
-                    if (status === Loader.Error || !valid)
-                        console.warn("[vela] elemento di barra sconosciuto o non caricabile: " + modelData);
+        // Gli elementi consecutivi dello stesso gruppo (bar.groups) stanno vicini; tra gruppi diversi c'è
+        // bar.groupGap. Un gruppo senza elementi visibili sparisce con il suo spazio.
+        component Zone: Row {
+            id: zone
+            property var names: []
+            readonly property var runs: {
+                var groups = Config.shell.bar.groups || {};
+                var out = [], last = null;
+                for (var i = 0; i < names.length; i++) {
+                    var g = groups[names[i]] || "";
+                    if (out.length === 0 || g !== last) out.push([]);
+                    out[out.length - 1].push(names[i]);
+                    last = g;
+                }
+                return out;
+            }
+            readonly property int gap: Config.shell.bar.groupGap !== undefined ? Config.shell.bar.groupGap : Theme.spacing * 2
+            // larghezza di ogni gruppo: lo spazio si mette solo tra gruppi con qualcosa di visibile
+            property var widths: ({})
+            function anyBefore(index) {
+                for (var i = 0; i < index; i++) if ((widths[i] || 0) > 0) return true;
+                return false;
+            }
+
+            Repeater {
+                model: zone.runs
+                delegate: Item {
+                    id: run
+                    required property var modelData
+                    required property int index
+                    readonly property real inner: items.implicitWidth
+                    readonly property real lead: inner > 0 && zone.anyBefore(index) ? zone.gap : 0
+                    onInnerChanged: { var w = zone.widths; w[index] = inner; zone.widths = w; }
+                    width: lead + inner
+                    height: Theme.barHeight
+                    Row {
+                        id: items
+                        x: run.lead
+                        Repeater {
+                            model: run.modelData
+                            delegate: Loader {
+                                required property string modelData
+                                readonly property bool valid: /^[A-Z][A-Za-z]*$/.test(modelData)
+                                source: valid ? "widgets/" + modelData + "Widget.qml" : ""
+                                // Un elemento nascosto (es. batteria assente) non occupa spazio. Il Loader resta
+                                // visibile: se dipendesse da item.visible, che include quello del genitore, si bloccherebbe.
+                                width: item && item.visible ? item.implicitWidth : 0
+                                height: Theme.barHeight
+                                onStatusChanged: {
+                                    if (status === Loader.Error || !valid)
+                                        console.warn("[vela] elemento di barra sconosciuto o non caricabile: " + modelData);
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -52,15 +95,15 @@ Variants {
             Row {
                 id: left
                 anchors { left: parent.left; leftMargin: Theme.spacing; top: parent.top; bottom: parent.bottom }
-                Zone { model: Config.shell.bar.modules.left }
+                Zone { names: Config.shell.bar.modules.left }
             }
             Row {
                 anchors { horizontalCenter: parent.horizontalCenter; top: parent.top; bottom: parent.bottom }
-                Zone { model: Config.shell.bar.modules.center }
+                Zone { names: Config.shell.bar.modules.center }
             }
             Row {
                 anchors { right: parent.right; rightMargin: Theme.spacing; top: parent.top; bottom: parent.bottom }
-                Zone { model: Config.shell.bar.modules.right }
+                Zone { names: Config.shell.bar.modules.right }
             }
 
             // Avvisi di configurazione (testo semplice, mai markup), sopra tutto il resto.
