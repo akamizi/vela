@@ -31,7 +31,7 @@ Singleton {
     onImperialChanged: if (data) render(data, stale)
 
     property string text: ""
-    property string tooltip: ""
+    property int ageMinutes: -1
     property bool stale: false
     property var data: null
     // Dati per il pannello (D-035): condizioni attuali, una voce ogni 3 ore per 24 ore, 5 giorni.
@@ -85,31 +85,9 @@ Singleton {
         var symbol = symbolOf(best);
         text = lookup(iconFor, symbol, Icons.weather.cloudy) + " " + Math.round(conv(temp)) + "°";
 
-        var loc = Config.shell.bar.clock.locale ? Qt.locale(Config.shell.bar.clock.locale) : Qt.locale();
-        var lines = [(cfg.placeName ? cfg.placeName + " — " : "") + lookup(labelFor, symbol, symbol) + ", " + Math.round(conv(temp) * 10) / 10 + unitLabel, ""];
-        if (isStale) {
-            var upd = json.properties.meta && json.properties.meta.updated_at;
-            var age = upd ? Math.round((now - Date.parse(upd)) / 60000) : -1;
-            lines.push("⚠ " + I18n.tr("dati dalla cache") + (age >= 0 ? " (" + I18n.tr("%1 min fa", age) + ")" : "") + " — " + I18n.tr("rete non raggiungibile"));
-        }
-        for (var off = 1; off <= 3; off++) {
-            var day = new Date(); day.setDate(day.getDate() + off);
-            var key = day.getFullYear() + "-" + day.getMonth() + "-" + day.getDate();
-            var entries = series.filter(function (e) {
-                var t = new Date(e.time);
-                return t.getFullYear() + "-" + t.getMonth() + "-" + t.getDate() === key;
-            });
-            if (entries.length === 0) continue;
-            var temps = entries.map(function (e) { return e.data.instant.details.air_temperature; });
-            var noon = entries.reduce(function (a, b) {
-                return Math.abs(new Date(b.time).getHours() - 12) < Math.abs(new Date(a.time).getHours() - 12) ? b : a;
-            });
-            var ds = symbolOf(noon);
-            lines.push(day.toLocaleDateString(loc, "ddd") + " " + lookup(iconFor, ds, Icons.weather.cloudy) + " "
-                + Math.round(conv(Math.max.apply(null, temps))) + "°/" + Math.round(conv(Math.min.apply(null, temps))) + unitLabel + " "
-                + lookup(labelFor, ds, ds));
-        }
-        tooltip = lines.join("\n");
+        // Età dei dati quando arrivano dalla cache (la mostra il pannello).
+        var upd = json.properties.meta && json.properties.meta.updated_at;
+        ageMinutes = isStale && upd ? Math.round((now - Date.parse(upd)) / 60000) : -1;
 
         var inst = best.data.instant.details;
         current = { temp: conv(temp), icon: lookup(iconFor, symbol, Icons.weather.cloudy), label: lookup(labelFor, symbol, symbol),
@@ -153,7 +131,6 @@ Singleton {
             try { render(JSON.parse(cached.text()), true); return; } catch (e) {}
         }
         text = " N/D";
-        tooltip = I18n.tr("Errore nel recupero del meteo (yr.no)");
     }
 
     FileView { id: cached; path: root.cachePath; blockLoading: true; printErrors: false

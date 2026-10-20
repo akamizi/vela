@@ -46,7 +46,7 @@ PanelHost {
             icon: panel.cur ? panel.cur.icon : Icons.weather.cloudy
             iconColor: Theme.accent
             title: Config.shell.weather.placeName || I18n.tr("Meteo")
-            meta: panel.cur ? panel.cur.label : ""
+            meta: panel.cur ? panel.cur.label : I18n.tr("dati non disponibili")
             detail: panel.cur ? panel.deg(panel.cur.temp) + Weather.unitLabel.slice(1) : ""
         }
         PanelSeparator { id: sep; anchors.top: hero.bottom }
@@ -60,7 +60,7 @@ PanelHost {
             elide: Text.ElideRight
             color: Theme.warning
             font.pixelSize: Theme.fontSize - 2
-            text: "⚠ " + I18n.tr("dati dalla cache: rete non raggiungibile")
+            text: "⚠ " + I18n.tr("dati dalla cache") + (Weather.ageMinutes >= 0 ? " (" + I18n.tr("%1 min fa", Weather.ageMinutes) + ")" : "") + " — " + I18n.tr("rete non raggiungibile")
         }
 
         // Vento, umidità, pressione
