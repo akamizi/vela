@@ -5,7 +5,7 @@
 Shell minimale per Sway su Void Linux (barra, launcher, pannelli), basata su Quickshell.
 Licenza: EUPL-1.2.
 
-Versione 0.3.0: barra, menu/launcher con calcolatrice, pannelli (rete, Bluetooth, audio, luminosità, energia, radio, scorciatoie), OSD, notifiche, Impostazioni (con blocco e inattività, applicazioni predefinite, radio, Informazioni) per Sway; interfaccia traducibile (per ora italiano).
+Versione 0.4.0: barra, menu/launcher con calcolatrice, pannelli (rete, Bluetooth, audio, luminosità, energia, limite di carica della batteria, radio, scorciatoie), OSD, notifiche, Impostazioni (con blocco e inattività distinti tra batteria e rete, applicazioni predefinite, radio, batteria, Informazioni) per Sway; interfaccia traducibile (per ora italiano).
 
 ## Requisiti
 

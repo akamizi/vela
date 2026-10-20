@@ -1,7 +1,7 @@
 # Template file for 'vela'
-# Per void-packages: copiare in srcpkgs/vela/template (distfiles e checksum sono quelli della release v0.3.0).
+# Per void-packages: copiare in srcpkgs/vela/template (distfiles e checksum sono quelli della release v0.4.0).
 pkgname=vela
-version=0.3.0
+version=0.4.0
 revision=1
 build_style=gnu-makefile
 make_install_args="PREFIX=/usr"
@@ -16,7 +16,7 @@ checksum=bb34ac6588b6d0d91cfc56816973d35297e695a8f560535f7af5ce57fdc21118
 # Dipendenze facoltative: senza, la voce relativa sparisce (vedi README).
 # NetworkManager (rete, VPN), bluez (Bluetooth), wireplumber (audio PipeWire), upower (batteria),
 # power-profiles-daemon (profilo energetico), brightnessctl (luminosità), gammastep (luce notturna),
-# curl (meteo), polkit.
+# curl (meteo), polkit (limite di carica della batteria: helper di sistema, regola polkit e regola udev sono già installati da `make install`).
 
 post_install() {
 	vlicense LICENSE
