@@ -5,7 +5,7 @@
 Shell minimale per Sway su Void Linux (barra, launcher, pannelli), basata su Quickshell.
 Licenza: EUPL-1.2.
 
-Versione 0.5.0: novità rispetto alla 0.4.0: helper della batteria riscritto in Rust, demone dati `vela-daemon` (luce notturna, input e layout di tastiera da Sway, senza processi lanciati periodicamente), spazio tra i gruppi della barra, nuovo logo. Comprende: barra, menu/launcher con calcolatrice, pannelli (rete, Bluetooth, audio, luminosità, energia, limite di carica della batteria, radio, scorciatoie), OSD, notifiche, Impostazioni (con blocco e inattività distinti tra batteria e rete, applicazioni predefinite, radio, batteria, Informazioni) per Sway; interfaccia traducibile (per ora italiano).
+Versione 0.6.0: novità rispetto alla 0.5.0: chiusura ordinata delle finestre alla fine sessione, indicatore e ciclo della disposizione delle finestre (`WindowLayout`, `vela ipc call layout next`), notifiche raggruppate per mittente (e correzione della durata esplicita delle app), indicatori raggruppati (`Indicators`). Dalla 0.5.0: helper della batteria in Rust, demone dati `vela-daemon`, spazio tra i gruppi della barra, nuovo logo. Comprende: barra, menu/launcher con calcolatrice, pannelli (rete, Bluetooth, audio, luminosità, energia, limite di carica della batteria, radio, scorciatoie), OSD, notifiche, Impostazioni (con blocco e inattività distinti tra batteria e rete, applicazioni predefinite, radio, batteria, Informazioni) per Sway; interfaccia traducibile (per ora italiano).
 
 ## Requisiti
 
