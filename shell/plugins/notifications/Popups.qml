@@ -35,23 +35,49 @@ PanelWindow {
 
         Repeater {
             id: list
-            // Le più recenti sotto; se sono troppe si mostrano le ultime `maxVisible`.
-            model: Notifications.tracked
+            // Una scheda per mittente; le più recenti sotto; se sono troppe si mostrano le ultime `maxVisible`.
+            model: Notifications.groups
 
             delegate: Rectangle {
                 id: card
-                required property var modelData
+                required property string key
                 required property int index
-                readonly property var n: modelData
-                readonly property bool critical: n.urgency === NotificationUrgency.Critical
+                // Notifiche del mittente, dalla più vecchia; `n` è l'ultima ed è quella mostrata (testo e pulsanti).
+                readonly property var items: Notifications.itemsOf(key)
+                readonly property var n: items.length > 0 ? items[items.length - 1] : null
+                readonly property bool critical: items.some(function (x) { return x.urgency === NotificationUrgency.Critical; })
+                // Notifiche precedenti con testo diverso dall'ultima (le identiche si fondono nel contatore), le più recenti prima.
+                readonly property var earlier: {
+                    var out = [];
+                    for (var i = items.length - 2; i >= 0 && out.length < 2; i--) {
+                        var x = items[i];
+                        if ((x.summary !== n.summary || x.body !== n.body) && out.indexOf(x.summary) < 0) out.push(x.summary);
+                    }
+                    return out;
+                }
                 readonly property string iconSource: {
+                    if (!n) return "";
                     if (n.image) return n.image;
                     if (!n.appIcon) return "";
                     if (n.appIcon.charAt(0) === "/") return "file://" + n.appIcon;
                     return Quickshell.iconPath(n.appIcon, true);
                 }
 
-                visible: index >= list.count - win.maxVisible
+                // Durata in ms. Con 0 o -1 vale il predefinito. Quickshell 0.3.2 passa `expireTimeout` così come lo manda l'app,
+                // cioè in millisecondi (misurato: `notify-send -t 3000` dà 3000), pur documentandolo in secondi: i valori
+                // piccoli (< 100) si leggono come secondi, per non rompersi se Quickshell lo correggerà.
+                readonly property int lifeMs: {
+                    var t = n ? n.expireTimeout : 0;
+                    if (!(t > 0)) return Config.shell.notifications.timeout;
+                    return Math.round(t >= 100 ? t : t * 1000);
+                }
+
+                function closeAll(expire) {
+                    var all = items.slice();
+                    for (var i = 0; i < all.length; i++) { if (expire) all[i].expire(); else all[i].dismiss(); }
+                }
+
+                visible: n !== null && index >= list.count - win.maxVisible
                 width: column.width
                 height: visible ? content.implicitHeight + Theme.padding * 2 : 0
                 color: Theme.surface
@@ -67,15 +93,22 @@ PanelWindow {
                     color: card.critical ? Theme.error : Theme.accent
                 }
 
-                // Scade da sé, salvo le critiche. 0 = predefinito, -1 = a discrezione del server.
+                // Scade da sé, salvo le critiche; l'arrivo di una nuova notifica del gruppo riparte da capo.
+                // 0 = predefinito, -1 = a discrezione del server. Alla scadenza scade tutto il gruppo.
+                // Il timer si governa solo da `rearm()`: restart() romperebbe un legame dichiarativo di `running`.
                 Timer {
-                    interval: card.n.expireTimeout > 0 ? card.n.expireTimeout * 1000 : Config.shell.notifications.timeout
-                    running: card.visible && !card.critical && !hover.hovered
-                    onTriggered: card.n.expire()
+                    id: life
+                    interval: card.lifeMs
+                    onTriggered: card.closeAll(true)
                 }
+                readonly property bool wantTimer: visible && !critical && !hover.hovered
+                function rearm() { if (wantTimer) life.restart(); else life.stop(); }
+                onWantTimerChanged: rearm()
+                onNChanged: rearm()
+                Component.onCompleted: rearm()
 
                 HoverHandler { id: hover }
-                TapHandler { onTapped: card.n.dismiss() }
+                TapHandler { onTapped: card.closeAll(false) }    // il clic chiude tutto il gruppo
 
                 Row {
                     id: content
@@ -96,9 +129,9 @@ PanelWindow {
                         spacing: Theme.gap
 
                         BarText {
-                            visible: card.n.appName !== ""
+                            visible: card.n !== null && (card.n.appName !== "" || card.items.length > 1)
                             width: parent.width
-                            text: card.n.appName.toUpperCase()
+                            text: card.n ? (card.n.appName.toUpperCase() + (card.items.length > 1 ? (card.n.appName !== "" ? "  ×" : "×") + card.items.length : "")) : ""
                             color: Theme.dim
                             font.pixelSize: Theme.fontSize - 2
                             font.bold: true
@@ -107,26 +140,37 @@ PanelWindow {
                         }
                         BarText {
                             width: parent.width
-                            text: card.n.summary
+                            text: card.n ? card.n.summary : ""
                             font.bold: true
                             elide: Text.ElideRight
                             color: card.critical ? Theme.error : Theme.foreground
                         }
                         BarText {
-                            visible: card.n.body !== ""
+                            visible: card.n !== null && card.n.body !== ""
                             width: parent.width
-                            text: card.n.body
+                            text: card.n ? card.n.body : ""
                             color: Theme.muted
                             wrapMode: Text.Wrap
                             maximumLineCount: 4
                             elide: Text.ElideRight
                             verticalAlignment: Text.AlignTop
                         }
+                        Repeater {
+                            model: card.earlier
+                            delegate: BarText {
+                                required property string modelData
+                                width: parent.width
+                                text: "· " + modelData
+                                color: Theme.dim
+                                font.pixelSize: Theme.fontSize - 2
+                                elide: Text.ElideRight
+                            }
+                        }
                         Row {
-                            visible: card.n.actions.length > 0
+                            visible: card.n !== null && card.n.actions.length > 0
                             spacing: Theme.spacing
                             Repeater {
-                                model: card.n.actions
+                                model: card.n ? card.n.actions : []
                                 delegate: PanelActionButton {
                                     required property var modelData
                                     text: modelData.text

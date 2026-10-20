@@ -175,7 +175,10 @@ Vela ha un backend per quello attivo e quali categorie di impostazioni sono già
 L'OSD di volume e luminosità (`osd.enabled`) compare a ogni cambio e sostituisce `wob`. Il server di
 notifiche integrato (`notifications.enabled`, spento per default) sostituisce `dunst`: va attivato solo dopo
 aver fermato dunst/mako, perché un solo programma alla volta può possedere `org.freedesktop.Notifications`.
-Testo sempre semplice, clic = chiudi, le notifiche critiche restano finché non si chiudono.
+Testo sempre semplice, le notifiche critiche restano finché non si chiudono. Le notifiche dello stesso mittente si raggruppano in
+una scheda sola: titolo e testo dell'ultima, il contatore (`×3`) e i titoli delle due precedenti; quelle identiche si fondono nel
+contatore. Il clic chiude tutto il gruppo, il passaggio del mouse ferma la scadenza e una nuova notifica del gruppo la fa ripartire.
+Un timeout esplicito dell'app (per esempio `notify-send -t 3000`) è rispettato.
 "Non disturbare" (`vela ipc call toggles dnd` o la voce nel menu) scarta quelle non critiche.
 
 ## Lingua
