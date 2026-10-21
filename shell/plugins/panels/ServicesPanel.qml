@@ -1,6 +1,6 @@
 // Copyright (C) 2026 Maurizio Cavalletti — Licensed under the EUPL-1.2
 // Pannello dei servizi runit (D-047). Lo stato si legge senza privilegi; le azioni si aprono in un terminale con doas/sudo, che chiede la
-// password: Vela non la vede mai. ↑/↓ = scorri · Spazio = avvia/ferma · R = riavvia · E = abilita/disabilita · Esc chiude.
+// password: Vela non la vede mai. ↑/↓ = scorri · Spazio = avvia/ferma (abilita, se non lo è) · R = riavvia · E = abilita/disabilita · Esc chiude.
 import QtQuick
 import Quickshell
 import "../../core"
@@ -39,8 +39,9 @@ PanelHost {
     }
     onRowsChanged: Qt.callLater(restoreSelection)
 
-    function toggleRun(r) { if (r) Services.act(r.e.running ? "stop" : "start", r.e.id); }
-    function restart(r) { if (r && r.e.running) Services.act("restart", r.e.id); }
+    // Un servizio non abilitato non ha il collegamento in /var/service: `sv start` non può funzionare, si abilita (runit lo avvia da solo in pochi secondi).
+    function toggleRun(r) { if (r) Services.act(!r.e.enabled ? "enable" : r.e.running ? "stop" : "start", r.e.id); }
+    function restart(r) { if (r && r.e.enabled && r.e.running) Services.act("restart", r.e.id); }
     function toggleEnabled(r) { if (r) Services.act(r.e.enabled ? "disable" : "enable", r.e.id); }
 
     onOpenChanged: {
@@ -125,7 +126,7 @@ PanelHost {
                 elide: Text.ElideRight
                 font.pixelSize: Theme.fontSize - 2
                 color: Theme.dim
-                text: I18n.tr("Spazio avvia/ferma · R riavvia · E abilita/disabilita (chiede la password) · Esc chiude")
+                text: I18n.tr("Spazio avvia/ferma (o abilita) · R riavvia · E abilita/disabilita (chiede la password) · Esc chiude")
             }
         }
     }

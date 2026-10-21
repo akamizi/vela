@@ -198,7 +198,7 @@ Da script: `vela ipc call printers status|scan|add <indirizzo>|remove <nome>`.
 
 Pannello **Servizi** (menu › Servizi, oppure `vela ipc call panel toggle services`): stato (attivo, fermo, non abilitato) di un elenco di servizi runit
 (`services.list` in `shell.jsonc`: NetworkManager, bluetoothd, cupsd, avahi, ...). Lo stato si legge senza privilegi (collegamento in `/var/service`
-e processo con `pgrep`, perché `sv status` è riservato a root). Spazio avvia/ferma, R riavvia, E abilita/disabilita: l'azione si apre in un terminale
+e processo con `pgrep`, perché `sv status` è riservato a root). Spazio avvia/ferma (su un servizio non abilitato lo abilita: runit lo avvia da solo in pochi secondi), R riavvia, E abilita/disabilita: l'azione si apre in un terminale
 (`services.terminal`, di default `foot -e`) con `doas` (o `sudo`), che **chiede la password ogni volta**; Vela non la vede e non installa regole senza password.
 Da script: `vela ipc call services status|run <azione> <servizio>`. Compare solo se esiste `/var/service`.
 
