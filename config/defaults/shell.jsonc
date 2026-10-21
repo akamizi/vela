@@ -61,7 +61,8 @@
     "weather": { "enabled": true },
     "brightness": { "enabled": true },
     "display": { "enabled": true },
-    "printers": { "enabled": true }
+    "printers": { "enabled": true },
+    "services": { "enabled": true }
   },
   // Web radio: stazioni [{ "name": "Rai Radio 3", "url": "http://icestreaming.rai.it/3.mp3" }] e player
   // (riceve l'indirizzo come ultimo argomento). Elemento di barra "Radio" e pannello `panel toggle radio`.
@@ -110,6 +111,25 @@
     "interval": 3600,
     "checkCommand": ["xbps-install", "-un"],
     "command": ["foot", "-e", "sh", "-c", "if command -v doas >/dev/null 2>&1; then doas xbps-install -Su; else sudo xbps-install -Su; fi; printf '\\nInvio per chiudere… '; read _"]
+  },
+  // Servizi runit (D-047): lo stato non richiede privilegi; avvia/ferma/riavvia/abilita/disabilita si lanciano in `terminal` con doas
+  // (o sudo), che chiede la password: Vela non la vede. `process` = nome del processo (pgrep -x), se diverso dal servizio.
+  "services": {
+    "terminal": ["foot", "-e"],
+    "list": [
+      { "id": "NetworkManager", "label": "Rete (NetworkManager)" },
+      { "id": "bluetoothd", "label": "Bluetooth" },
+      { "id": "cupsd", "label": "Stampa (CUPS)" },
+      { "id": "avahi-daemon", "label": "Scoperta in rete (Avahi)" },
+      { "id": "chronyd", "label": "Orologio di rete (chrony)" },
+      { "id": "docker", "label": "Docker", "process": "dockerd" },
+      { "id": "sshd", "label": "Server SSH" },
+      { "id": "unbound", "label": "DNS locale (Unbound)" },
+      { "id": "power-profiles-daemon", "label": "Profili energetici" },
+      { "id": "touchegg", "label": "Gesti del touchpad (Touchegg)" },
+      { "id": "earlyoom", "label": "Protezione dalla memoria esaurita" },
+      { "id": "fcron", "label": "Attività pianificate (fcron)" }
+    ]
   },
   "brightness": { "step": 5 },
   // OSD di volume e luminosità (sostituisce wob, D-012). Togliere wob dalla configurazione di Sway.

@@ -90,6 +90,11 @@ ShellRoot {
     }
 
     Loader {
+        active: Config.shell.panels.services.enabled
+        sourceComponent: ServicesPanel {}
+    }
+
+    Loader {
         active: Config.shell.panels.radio.enabled
         sourceComponent: RadioPanel {}
     }
@@ -135,6 +140,13 @@ ShellRoot {
         function touchpad(): void { Toggles.toggleTouchpad(); }
         function batteryLimit(): void { BatteryLimit.toggleLimit(); }
     }
+    IpcHandler {
+        target: "services"    // servizi runit: `status` (JSON), `run start|stop|restart|enable|disable <servizio>` (apre un terminale con doas/sudo)
+        function status(): string { return JSON.stringify({ available: Services.available, items: Services.items }); }
+        function refresh(): void { Services.refresh(); }
+        function run(action: string, name: string): void { Services.act(action, name); }   // apre il terminale con doas/sudo (chiede la password)
+    }
+
     IpcHandler {
         target: "printers"    // stampanti: `status` (JSON), `default <nome>`, `pause <nome>` (ferma/riprende), `cancel <id>`, `scan`, `add <indirizzo>`, `remove <nome>`
         function status(): string {
