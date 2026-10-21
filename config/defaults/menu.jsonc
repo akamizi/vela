@@ -27,6 +27,7 @@
         // I pannelli compaiono quando esistono (fasi 4-6)
         { "id": "settings", "label": "Impostazioni", "action": { "type": "panel", "target": "settings" } },
         { "id": "display", "label": "Schermi", "action": { "type": "panel", "target": "display" } },
+        { "id": "printers", "label": "Stampanti", "requires": ["lpstat"], "action": { "type": "panel", "target": "printers" } },
         { "id": "network", "label": "Rete", "action": { "type": "panel", "target": "network" } },
         { "id": "bluetooth", "label": "Bluetooth", "action": { "type": "panel", "target": "bluetooth" } },
         { "id": "audio", "label": "Audio", "action": { "type": "panel", "target": "audio" } },

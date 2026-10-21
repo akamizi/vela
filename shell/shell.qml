@@ -85,6 +85,11 @@ ShellRoot {
     }
 
     Loader {
+        active: Config.shell.panels.printers.enabled
+        sourceComponent: PrintersPanel {}
+    }
+
+    Loader {
         active: Config.shell.panels.radio.enabled
         sourceComponent: RadioPanel {}
     }
@@ -130,6 +135,21 @@ ShellRoot {
         function touchpad(): void { Toggles.toggleTouchpad(); }
         function batteryLimit(): void { BatteryLimit.toggleLimit(); }
     }
+    IpcHandler {
+        target: "printers"    // stampanti: `status` (JSON), `default <nome>`, `pause <nome>` (ferma/riprende), `cancel <id>`
+        function status(): string {
+            return JSON.stringify({ up: Printers.schedulerUp, default: Printers.defaultName, admin: Printers.admin, error: Printers.error,
+                                    printers: Printers.printers, jobs: Printers.jobs });
+        }
+        function refresh(): void { Printers.refresh(); }
+        function setDefault(name: string): void { Printers.setDefault(name); }
+        function pause(name: string): void {
+            for (var i = 0; i < Printers.printers.length; i++)
+                if (Printers.printers[i].name === name) { Printers.togglePause(name, Printers.printers[i].state); return; }
+        }
+        function cancel(id: string): void { Printers.cancelJob(id); }
+    }
+
     IpcHandler {
         target: "display"    // schermi: `mode internal|external|extend|mirror`, `place <schermo> left|right|above|below` (con conferma di 15 s), `keep`, `revert`, `status`
         function mode(name: string): void { SwayBackend.applyDisplayMode(name); }

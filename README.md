@@ -185,6 +185,13 @@ in numeri restano nelle Impostazioni, scheda Schermi.
 Con due schermi accesi la riga **Disposizione** mostra una mappa: ←/→ sceglie lo schermo, Maiusc+frecce lo sposta a sinistra, a destra,
 sopra o sotto l'altro (`vela ipc call display place <schermo> left|right|above|below`).
 
+## Stampanti
+
+Pannello **Stampanti** (menu › Stampanti, oppure `vela ipc call panel toggle printers`): stampanti CUPS con stato (pronta, in stampa, ferma) e predefinita,
+coda dei lavori. Invio imposta la predefinita (o annulla il lavoro), Spazio ferma/riprende la stampante, Canc annulla i lavori. Compare solo con gli
+strumenti di CUPS installati (`lpstat`); con `cupsd` fermo il pannello lo dice. Fermare e riprendere le stampanti richiede il gruppo `lpadmin`
+(CUPS autorizza per gruppo: Vela non gestisce password). L'aggiunta di stampanti non c'è ancora: per ora `localhost:631` o `lpadmin`.
+
 ## OSD e notifiche
 
 L'OSD di volume e luminosità (`osd.enabled`) compare a ogni cambio e sostituisce `wob`. Il server di

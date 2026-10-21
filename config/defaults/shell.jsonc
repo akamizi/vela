@@ -60,7 +60,8 @@
     "calendar": { "enabled": true },
     "weather": { "enabled": true },
     "brightness": { "enabled": true },
-    "display": { "enabled": true }
+    "display": { "enabled": true },
+    "printers": { "enabled": true }
   },
   // Web radio: stazioni [{ "name": "Rai Radio 3", "url": "http://icestreaming.rai.it/3.mp3" }] e player
   // (riceve l'indirizzo come ultimo argomento). Elemento di barra "Radio" e pannello `panel toggle radio`.
