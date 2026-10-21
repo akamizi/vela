@@ -16,6 +16,7 @@ PanelHost {
 
     readonly property int footerHeight: 28
     readonly property int maxListHeight: 14 * Theme.rowHeight
+    readonly property int mapHeight: 128
 
     property string currentKey: ""
 
@@ -23,6 +24,21 @@ PanelHost {
     readonly property var outs: SwayBackend.outputs
     readonly property int activeCount: outs.filter(function (o) { return o.active; }).length
     readonly property string currentMode: SwayBackend.displayMode
+
+    // Mappa degli schermi accesi (solo con due o più): lo schermo scelto si sposta con Maiusc+frecce.
+    readonly property var activeOuts: outs.filter(function (o) { return o.active; })
+    property string mapSel: ""
+    readonly property string mapSelected: {
+        for (var i = 0; i < activeOuts.length; i++) if (activeOuts[i].name === mapSel) return mapSel;
+        return activeOuts.length > 0 ? SwayBackend.internalName : "";
+    }
+    function mapStep(dir) {
+        var n = activeOuts.length;
+        if (n < 2) return;
+        var names = activeOuts.map(function (o) { return o.name; }).sort();
+        mapSel = names[(Math.max(0, names.indexOf(mapSelected)) + dir + n) % n];
+    }
+    function mapPlace(side) { if (mapSelected !== "") SwayBackend.placeOutput(mapSelected, side); }
     function applyMode(kind) { SwayBackend.applyDisplayMode(kind); }
 
     function uniq(list) {
@@ -60,6 +76,10 @@ PanelHost {
             out.push({ kind: "mode", id: "external", label: I18n.tr("Solo schermi esterni"), icon: Icons.monitor, key: "mode:external" });
             out.push({ kind: "mode", id: "extend", label: I18n.tr("Estendi"), icon: Icons.monitorMultiple, key: "mode:extend" });
         }
+        if (activeOuts.length >= 2) {
+            out.push({ kind: "header", label: I18n.tr("Disposizione"), key: "h-map" });
+            out.push({ kind: "map", key: "map" });
+        }
         outs.forEach(function (o) {
             out.push({ kind: "header", label: o.name + (o.label ? " — " + o.label : ""), key: "h:" + o.name });
             if (!o.active) { out.push({ kind: "message", text: I18n.tr("spento"), key: "m:" + o.name }); return; }
@@ -71,7 +91,7 @@ PanelHost {
     }
     readonly property var rows: buildRows()
 
-    function selectable(r) { return r && (r.kind === "mode" || r.kind === "res" || r.kind === "scale" || r.kind === "action"); }
+    function selectable(r) { return r && (r.kind === "mode" || r.kind === "res" || r.kind === "scale" || r.kind === "action" || r.kind === "map"); }
     function current() { var r = rows[list.currentIndex]; return selectable(r) ? r : null; }
 
     function select(i) {
@@ -103,7 +123,8 @@ PanelHost {
     }
     function change(r, dir) {
         if (!r) return;
-        if (r.kind === "res") cycleMode(r.name, dir);
+        if (r.kind === "map") mapStep(dir);
+        else if (r.kind === "res") cycleMode(r.name, dir);
         else if (r.kind === "scale") stepScale(r.name, dir);
     }
 
@@ -119,7 +140,7 @@ PanelHost {
     // --- aspetto ------------------------------------------------------------------------
     property real listHeight: {
         var h = 0;
-        for (var i = 0; i < Math.min(rows.length, 60); i++) h += rows[i].kind === "header" ? 28 : Theme.rowHeight;
+        for (var i = 0; i < Math.min(rows.length, 60); i++) h += rows[i].kind === "header" ? 28 : rows[i].kind === "map" ? mapHeight : Theme.rowHeight;
         return Math.min(h + Theme.spacing, maxListHeight);
     }
     contentHeight: hero.implicitHeight + 1 + listHeight + footerHeight
@@ -134,6 +155,10 @@ PanelHost {
             var r = panel.current();
             if (event.key === Qt.Key_Escape) {
                 if (SwayBackend.pending) SwayBackend.revert(); else Runtime.closePanel();
+            } else if (r && r.kind === "map" && (event.modifiers & Qt.ShiftModifier)
+                       && (event.key === Qt.Key_Left || event.key === Qt.Key_Right || event.key === Qt.Key_Up || event.key === Qt.Key_Down)) {
+                // Maiusc+freccia sulla mappa: lo schermo scelto passa a quel lato dell'altro
+                panel.mapPlace(event.key === Qt.Key_Left ? "left" : event.key === Qt.Key_Right ? "right" : event.key === Qt.Key_Up ? "above" : "below");
             } else if (event.key === Qt.Key_Down || (ctrl && (event.key === Qt.Key_J || event.key === Qt.Key_N))) {
                 panel.move(1);
             } else if (event.key === Qt.Key_Up || (ctrl && (event.key === Qt.Key_K || event.key === Qt.Key_P))) {
@@ -179,7 +204,58 @@ PanelHost {
                 required property int index
                 readonly property var r: modelData
                 width: ListView.view.width
-                height: r.kind === "header" ? 28 : Theme.rowHeight
+                height: r.kind === "header" ? 28 : r.kind === "map" ? panel.mapHeight : Theme.rowHeight
+
+                // Mappa: gli schermi accesi in scala, quello scelto col bordo colore accento.
+                Item {
+                    id: map
+                    visible: entry.r.kind === "map"
+                    anchors { fill: parent; leftMargin: Theme.spacing; rightMargin: Theme.spacing }
+                    readonly property real pad: 14
+                    readonly property real minX: Math.min.apply(null, panel.activeOuts.map(function (o) { return o.x; }).concat([0]))
+                    readonly property real minY: Math.min.apply(null, panel.activeOuts.map(function (o) { return o.y; }).concat([0]))
+                    readonly property real totW: Math.max(1, Math.max.apply(null, panel.activeOuts.map(function (o) { return o.x + o.w; }).concat([1])) - minX)
+                    readonly property real totH: Math.max(1, Math.max.apply(null, panel.activeOuts.map(function (o) { return o.y + o.h; }).concat([1])) - minY)
+                    readonly property real k: Math.min((width - 2 * pad) / totW, (height - 2 * pad) / totH)
+                    readonly property real offX: (width - totW * k) / 2
+                    readonly property real offY: (height - totH * k) / 2
+
+                    Rectangle {
+                        anchors.fill: parent
+                        radius: Theme.radius
+                        color: "transparent"
+                        border.width: entry.ListView.isCurrentItem ? 1 : 0
+                        border.color: Theme.border
+                    }
+                    Repeater {
+                        model: entry.r.kind === "map" ? panel.activeOuts : []
+                        delegate: Rectangle {
+                            required property var modelData
+                            readonly property bool chosen: modelData.name === panel.mapSelected
+                            x: map.offX + (modelData.x - map.minX) * map.k
+                            y: map.offY + (modelData.y - map.minY) * map.k
+                            width: Math.max(8, modelData.w * map.k) - 2
+                            height: Math.max(8, modelData.h * map.k) - 2
+                            radius: 3
+                            color: chosen ? Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.18) : Theme.surface
+                            border.width: chosen ? 2 : 1
+                            border.color: chosen ? Theme.accent : Theme.border
+                            BarText {
+                                anchors.centerIn: parent
+                                width: parent.width - 6
+                                horizontalAlignment: Text.AlignHCenter
+                                elide: Text.ElideRight
+                                font.pixelSize: Theme.fontSize - 2
+                                text: modelData.name + "\n" + modelData.w + "×" + modelData.h
+                                color: chosen ? Theme.foreground : Theme.muted
+                            }
+                            MouseArea {
+                                anchors.fill: parent
+                                onClicked: { panel.select(entry.index); panel.mapSel = modelData.name; }
+                            }
+                        }
+                    }
+                }
 
                 PanelSectionHeader { visible: entry.r.kind === "header"; text: entry.r.kind === "header" ? entry.r.label : "" }
 
@@ -217,7 +293,8 @@ PanelHost {
                 font.pixelSize: Theme.fontSize - 2
                 color: Theme.dim
                 text: SwayBackend.pending ? I18n.tr("Invio mantieni · Esc ripristina")
-                                          : I18n.tr("Invio applica · ←/→ cambia valore · Esc chiude")
+                    : panel.current() && panel.current().kind === "map" ? I18n.tr("←/→ scegli lo schermo · Maiusc+frecce lo sposta · Esc chiude")
+                    : I18n.tr("Invio applica · ←/→ cambia valore · Esc chiude")
             }
         }
     }

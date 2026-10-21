@@ -283,6 +283,24 @@ Singleton {
         return { w: Math.round(w / sc), h: Math.round(h / sc) };
     }
 
+    // Sposta uno schermo accanto all'altro (solo con due schermi accesi): `side` = "left", "right", "above" o "below" è il lato
+    // dell'altro schermo su cui va. Gli schermi restano accostati e allineati sul bordo alto (o sinistro); le coordinate si
+    // riportano a zero in alto a sinistra. Con la conferma di 15 s. Restituisce false se non si può.
+    function placeOutput(name, side) {
+        var o = find(name);
+        var act = outputs.filter(function (a) { return a.active; });
+        if (!o || !o.active || act.length !== 2 || ["left", "right", "above", "below"].indexOf(side) < 0) return false;
+        var ref = act[0].name === name ? act[1] : act[0];
+        var x = ref.x, y = ref.y;
+        if (side === "left") x = ref.x - o.w;
+        else if (side === "right") x = ref.x + ref.w;
+        else if (side === "above") y = ref.y - o.h;
+        else y = ref.y + ref.h;
+        var dx = Math.min(x, ref.x), dy = Math.min(y, ref.y);
+        setOutputs([{ name: name, props: { x: x - dx, y: y - dy } }, { name: ref.name, props: { x: ref.x - dx, y: ref.y - dy } }]);
+        return true;
+    }
+
     // Applica una modalità ("internal", "external", "extend"): accende e spegne gli schermi e li affianca da sinistra a destra,
     // tutto sotto un'unica conferma. Restituisce false se la modalità non esiste o manca lo schermo interno.
     function applyDisplayMode(kind) {

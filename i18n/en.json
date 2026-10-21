@@ -122,6 +122,7 @@
   "Disconnesso dalla rete": "",
   "Disponibili": "",
   "Dispositivi": "",
+  "Disposizione": "",
   "Dividi in orizzontale": "",
   "Dividi in verticale": "",
   "Editor di testo": "",
@@ -485,5 +486,6 @@
   "tra %1 s si torna indietro": "",
   "←/→ cambia · Canc ripristina · Tab scheda · Esc chiudi": "",
   "←/→ regola · 1-9 = 10-90% · Esc chiude": "",
+  "←/→ scegli lo schermo · Maiusc+frecce lo sposta · Esc chiude": "",
   "←/→ zona · Maiusc+↑/↓ ordine · Canc ripristina · Tab scheda": ""
 }

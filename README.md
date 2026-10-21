@@ -181,6 +181,8 @@ Pannello **Schermi** (menu › Sistema › Schermi, oppure `vela ipc call panel 
 (Invio = mantieni, Esc = ripristina; senza conferma tutto torna come prima). Da script o da una scorciatoia di Sway:
 `vela ipc call display mode internal|external|extend`, poi `keep` o `revert` (`status` mostra lo stato). La rotazione e la posizione
 in numeri restano nelle Impostazioni, scheda Schermi.
+Con due schermi accesi la riga **Disposizione** mostra una mappa: ←/→ sceglie lo schermo, Maiusc+frecce lo sposta a sinistra, a destra,
+sopra o sotto l'altro (`vela ipc call display place <schermo> left|right|above|below`).
 
 ## OSD e notifiche
 
