@@ -185,6 +185,7 @@
   "Invio connetti · Spazio on/off · Canc dimentica": "",
   "Invio copia il risultato": "",
   "Invio mantieni · Esc ripristina": "",
+  "Invio o Spazio accende/spegne la luce notturna · Esc chiude": "",
   "Invio predefinito · ←/→ volume · M muto · Spazio muto uscita": "",
   "Layout (es. it oppure it,us)": "",
   "Layout a pila": "",
@@ -206,6 +207,7 @@
   "Lum-": "",
   "Luminosità": "",
   "Luminosità %1%": "",
+  "Luminosità e colore": "",
   "Maiusc+↑/↓ sposta la stazione selezionata": "",
   "Manca l'helper di sistema: doas make install-system": "",
   "Manda allo scratchpad": "",
@@ -485,6 +487,7 @@
   "temporale": "",
   "tra %1 s si torna indietro": "",
   "←/→ cambia · Canc ripristina · Tab scheda · Esc chiudi": "",
+  "←/→ luminosità · Esc chiude": "",
   "←/→ regola · 1-9 = 10-90% · Esc chiude": "",
   "←/→ scegli lo schermo · Maiusc+frecce lo sposta · Esc chiude": "",
   "←/→ zona · Maiusc+↑/↓ ordine · Canc ripristina · Tab scheda": ""

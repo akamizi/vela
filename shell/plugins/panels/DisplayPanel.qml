@@ -1,7 +1,8 @@
 // Copyright (C) 2026 Maurizio Cavalletti — Licensed under the EUPL-1.2
-// Pannello degli schermi (D-044): modalità rapide (solo interno, solo esterno, estendi) e, per ogni schermo, risoluzione
-// e scala. Ogni modifica passa da SwayBackend con la conferma di 15 secondi (poi si torna indietro da soli).
-// ↑/↓ = scorri · Invio = applica / mantieni · ←/→ = cambia il valore · Esc = ripristina (se in attesa) o chiude.
+// Pannello degli schermi (D-044): luminosità e luce notturna, modalità rapide (solo interno, solo esterno, estendi) e,
+// per ogni schermo, risoluzione e scala. Ogni modifica passa da SwayBackend con la conferma di 15 secondi (poi si torna indietro da soli).
+// ↑/↓ = scorri · Invio = applica / mantieni · ←/→ = cambia il valore (luminosità ±passo) · Spazio = luce notturna ·
+// Esc = ripristina (se in attesa) o chiude.
 import QtQuick
 import Quickshell
 import "../../core"
@@ -60,9 +61,19 @@ PanelHost {
         if (v !== o.scale) SwayBackend.setOutput(name, { scale: v });
     }
 
+    // --- luminosità e luce notturna -------------------------------------------------
+    readonly property bool hasNight: MenuModel.found["gammastep"] === true || Toggles.night
+    readonly property real brightnessStep: Config.shell.brightness.step / 100
+    function nudgeBrightness(delta) { Brightness.set(Math.max(0.01, Math.min(1, Brightness.level + delta))); }
+
     // --- elenco -------------------------------------------------------------------
     function buildRows() {
         var out = [];
+        if (Brightness.available || hasNight) {
+            out.push({ kind: "header", label: I18n.tr("Luminosità e colore"), key: "h-light" });
+            if (Brightness.available) out.push({ kind: "bright", label: I18n.tr("Luminosità"), key: "bright" });
+            if (hasNight) out.push({ kind: "night", label: I18n.tr("Luce notturna"), key: "night" });
+        }
         if (SwayBackend.pending) {
             out.push({ kind: "header", label: I18n.tr("Conferma"), key: "h-confirm" });
             out.push({ kind: "message", text: I18n.tr("Mantenere queste impostazioni? Tra %1 s si torna indietro", String(SwayBackend.countdown)),
@@ -91,7 +102,7 @@ PanelHost {
     }
     readonly property var rows: buildRows()
 
-    function selectable(r) { return r && (r.kind === "mode" || r.kind === "res" || r.kind === "scale" || r.kind === "action" || r.kind === "map"); }
+    function selectable(r) { return r && (r.kind === "mode" || r.kind === "res" || r.kind === "scale" || r.kind === "action" || r.kind === "map" || r.kind === "bright" || r.kind === "night"); }
     function current() { var r = rows[list.currentIndex]; return selectable(r) ? r : null; }
 
     function select(i) {
@@ -118,12 +129,14 @@ PanelHost {
 
     function activate(r) {
         if (!r) return;
-        if (r.kind === "mode") applyMode(r.id);
+        if (r.kind === "night") Toggles.toggleNight();
+        else if (r.kind === "mode") applyMode(r.id);
         else if (r.kind === "action") { if (r.act === "keep") SwayBackend.confirm(); else SwayBackend.revert(); }
     }
     function change(r, dir) {
         if (!r) return;
-        if (r.kind === "map") mapStep(dir);
+        if (r.kind === "bright") nudgeBrightness(dir * brightnessStep);
+        else if (r.kind === "map") mapStep(dir);
         else if (r.kind === "res") cycleMode(r.name, dir);
         else if (r.kind === "scale") stepScale(r.name, dir);
     }
@@ -131,6 +144,7 @@ PanelHost {
     onOpenChanged: {
         if (open) {
             SwayBackend.refresh();
+            Brightness.read();
             currentKey = "";
             for (var i = 0; i < rows.length; i++) if (selectable(rows[i])) { select(i); break; }
             keys.forceActiveFocus();
@@ -163,6 +177,8 @@ PanelHost {
                 panel.move(1);
             } else if (event.key === Qt.Key_Up || (ctrl && (event.key === Qt.Key_K || event.key === Qt.Key_P))) {
                 panel.move(-1);
+            } else if (event.key === Qt.Key_Space && r && r.kind === "night") {
+                Toggles.toggleNight();
             } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
                 if (SwayBackend.pending && !(r && r.kind === "action")) SwayBackend.confirm(); else panel.activate(r);
             } else if (event.key === Qt.Key_Right || event.key === Qt.Key_L) {
@@ -173,6 +189,23 @@ PanelHost {
                 return;
             }
             event.accepted = true;
+        }
+
+        Component {
+            id: brightTrail
+            PanelSlider {
+                implicitWidth: 140
+                value: Brightness.level
+                maxValue: 1
+                onMoved: v => Brightness.set(Math.max(0.01, v))
+            }
+        }
+        Component {
+            id: nightTrail
+            ToggleSwitch {
+                checked: Toggles.night
+                onToggled: Toggles.toggleNight()
+            }
         }
 
         PanelHero {
@@ -268,15 +301,20 @@ PanelHost {
                 }
 
                 PanelRow {
-                    visible: panel.selectable(entry.r)
+                    visible: panel.selectable(entry.r) && entry.r.kind !== "map"
                     anchors { fill: parent; leftMargin: Theme.spacing; rightMargin: Theme.spacing }
                     hasCursor: ListView.isCurrentItem
                     selected: entry.r.kind === "mode" && entry.r.id === panel.currentMode
-                    icon: entry.r.kind === "mode" || entry.r.kind === "action" ? entry.r.icon : ""
-                    iconColor: entry.r.kind === "mode" && entry.r.id === panel.currentMode ? Theme.accent : Theme.muted
+                    icon: entry.r.kind === "mode" || entry.r.kind === "action" ? entry.r.icon
+                        : entry.r.kind === "bright" ? Icons.pick(Icons.brightness, Brightness.level)
+                        : entry.r.kind === "night" ? Icons.night : ""
+                    trailing: entry.r.kind === "bright" ? brightTrail : entry.r.kind === "night" ? nightTrail : null
+                    iconColor: (entry.r.kind === "mode" && entry.r.id === panel.currentMode) || entry.r.kind === "bright"
+                               || (entry.r.kind === "night" && Toggles.night) ? Theme.accent : Theme.muted
                     title: panel.selectable(entry.r) ? entry.r.label : ""
                     bold: entry.r.kind === "mode" && entry.r.id === panel.currentMode
-                    trailingText: entry.r.kind === "res" || entry.r.kind === "scale" ? "‹ " + entry.r.value + " ›" : ""
+                    trailingText: entry.r.kind === "res" || entry.r.kind === "scale" ? "‹ " + entry.r.value + " ›"
+                                : entry.r.kind === "bright" ? Math.round(Brightness.level * 100) + "%" : ""
                     onMoved: panel.select(entry.index)
                     onClicked: { panel.select(entry.index); panel.activate(entry.r); }
                 }
@@ -293,6 +331,8 @@ PanelHost {
                 font.pixelSize: Theme.fontSize - 2
                 color: Theme.dim
                 text: SwayBackend.pending ? I18n.tr("Invio mantieni · Esc ripristina")
+                    : panel.current() && panel.current().kind === "bright" ? I18n.tr("←/→ luminosità · Esc chiude")
+                    : panel.current() && panel.current().kind === "night" ? I18n.tr("Invio o Spazio accende/spegne la luce notturna · Esc chiude")
                     : panel.current() && panel.current().kind === "map" ? I18n.tr("←/→ scegli lo schermo · Maiusc+frecce lo sposta · Esc chiude")
                     : I18n.tr("Invio applica · ←/→ cambia valore · Esc chiude")
             }
