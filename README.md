@@ -56,8 +56,9 @@ Il pacchetto non modifica file dell'utente: dopo `xbps-install` restano da fare 
 1. **Repository** (se non è nei repository ufficiali): `echo 'repository=https://akamizi.github.io/vela/current' | doas tee /etc/xbps.d/20-vela.conf`,
    poi `doas xbps-install -S vela`. Al primo `-S` xbps mostra l'impronta della chiave: deve essere
    `90:db:2f:97:18:f1:73:cd:c7:63:81:93:bb:2c:0a:8d`.
-2. **Sway**: aggiungere a `~/.config/sway/config` le righe `exec vela` e le scorciatoie (sezione sopra), togliere il blocco `bar { … }` di Sway e
-   fermare Waybar, dunst, mako e wob. Ricaricare Sway.
+2. **Sway**: la via più semplice è scegliere la sessione **«Vela»** dal login manager (vedi «Sessione Vela» sotto): non serve toccare nulla. Con la
+   propria sessione Sway: aggiungere a `~/.config/sway/config` le righe `exec vela` e le scorciatoie (sezione sopra), togliere il blocco `bar { … }` di Sway
+   e fermare Waybar, dunst, mako e wob. Ricaricare Sway.
 3. **Servizi di sistema** (runit: `doas ln -s /etc/sv/<servizio> /var/service/`), solo per le funzioni che servono:
    `dbus` ed `elogind` (sessione), `NetworkManager` (rete), `bluetoothd` (Bluetooth), `cupsd` e `avahi-daemon` (stampanti),
    `power-profiles-daemon` (profili energetici); l'audio usa PipeWire e WirePlumber avviati dalla sessione.
@@ -70,6 +71,16 @@ Il pacchetto non modifica file dell'utente: dopo `xbps-install` restano da fare 
    (in `/usr/libexec/vela/`) deve rispondere. Funziona solo se il portatile espone le soglie in sysfs.
 8. **Configurazione**: non serve nessun file, partono i default del pacchetto. Per cambiare qualcosa: pannello Impostazioni
    (scrive `~/.config/vela/settings.jsonc`) oppure i file a mano in `~/.config/vela/` (vedi `/usr/share/doc/vela`).
+
+## Sessione Vela
+
+Il pacchetto installa una voce **«Vela»** per il login manager (`/usr/share/wayland-sessions/vela.desktop`, per greetd/tuigreet, ly, sddm...): avvia
+`vela-session`, cioè Sway con la configurazione di sistema `/usr/share/vela/sway/config` dentro una sessione D-Bus. Quella configurazione avvia Vela
+(`exec vela`), non ha nessuna barra di Sway e dà le scorciatoie di base (finestre, spazi di lavoro 1-9, menu, layout con Super+Tab, tasti
+audio e luminosità con l'OSD, Super+Maiusc+L blocca, Super+Maiusc+E esce). `/usr/libexec/vela/session-init` avvia, se ci sono e non sono già attivi,
+PipeWire e i portali (condivisione schermo, selettori di file). **Non tocca `~/.config/sway/config`**: la tua sessione Sway normale resta com'è.
+Personalizzazioni (layout di tastiera, sfondo, touchpad, altre scorciatoie): file `~/.config/vela/sway.d/*.conf`, inclusi in fondo (vincono).
+Non parte: il portachiavi, applet di rete o servizi di sistema (i servizi runit restano da collegare, vedi «Primo avvio»).
 
 ## Prova in sviluppo
 

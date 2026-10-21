@@ -1,0 +1,24 @@
+#!/bin/sh
+# Copyright (C) 2026 Maurizio Cavalletti — Licensed under the EUPL-1.2
+# Avvii di sessione per la sessione «Vela» (D-048), lanciato da Sway (`exec`). Ogni passo parte solo se il programma c'è e non è già in
+# esecuzione; niente di ciò che richiede privilegi o una scelta dell'utente (portachiavi, applet di rete, servizi di sistema).
+running() { pgrep -u "$(id -u)" -x "$1" >/dev/null 2>&1; }
+
+# I servizi attivati da D-Bus devono vedere il display e l'ambiente di Sway.
+if [ -n "${DBUS_SESSION_BUS_ADDRESS:-}" ] && command -v dbus-update-activation-environment >/dev/null 2>&1; then
+    dbus-update-activation-environment WAYLAND_DISPLAY SWAYSOCK XDG_CURRENT_DESKTOP XDG_SESSION_TYPE 2>/dev/null || true
+fi
+
+# Audio (PipeWire; WirePlumber lo avvia la configurazione di PipeWire).
+if command -v pipewire >/dev/null 2>&1 && ! running pipewire; then
+    pipewire >/dev/null 2>&1 &
+fi
+
+# Portali per condivisione dello schermo e selettori di file.
+if [ -x /usr/libexec/xdg-desktop-portal-wlr ] && ! running xdg-desktop-portal-wlr; then
+    /usr/libexec/xdg-desktop-portal-wlr >/dev/null 2>&1 &
+fi
+if [ -x /usr/libexec/xdg-desktop-portal ] && ! running xdg-desktop-portal; then
+    /usr/libexec/xdg-desktop-portal --replace >/dev/null 2>&1 &
+fi
+exit 0

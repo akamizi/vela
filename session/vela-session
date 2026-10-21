@@ -1,0 +1,13 @@
+#!/bin/sh
+# Copyright (C) 2026 Maurizio Cavalletti — Licensed under the EUPL-1.2
+# Avvia la sessione «Vela» (D-048): Sway con la configurazione di sistema di Vela (/usr/share/vela/sway/config), dentro una sessione D-Bus.
+# Lo lancia il login manager dalla voce «Vela» (vela.desktop). Non tocca ~/.config/sway/config: personalizzazioni in ~/.config/vela/sway.d/*.conf.
+# VELA_SWAY_CONFIG sostituisce il file di configurazione (prove).
+export XDG_SESSION_TYPE=wayland
+export XDG_CURRENT_DESKTOP=sway     # i portali (xdg-desktop-portal-wlr) scelgono la configurazione da qui
+cfg=${VELA_SWAY_CONFIG:-/usr/share/vela/sway/config}
+[ -r "$cfg" ] || { echo "vela-session: manca $cfg" >&2; exit 1; }
+if [ -z "${DBUS_SESSION_BUS_ADDRESS:-}" ] && command -v dbus-run-session >/dev/null 2>&1; then
+    exec dbus-run-session sway -c "$cfg"
+fi
+exec sway -c "$cfg"

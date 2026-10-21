@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=Vela
+Comment=Il desktop Vela: Sway con barra, menu e pannelli di Vela
+Exec=vela-session
+TryExec=/usr/bin/vela-session
+Type=Application
+DesktopNames=sway;wlroots
