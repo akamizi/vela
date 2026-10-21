@@ -80,6 +80,11 @@ ShellRoot {
     }
 
     Loader {
+        active: Config.shell.panels.display.enabled
+        sourceComponent: DisplayPanel {}
+    }
+
+    Loader {
         active: Config.shell.panels.radio.enabled
         sourceComponent: RadioPanel {}
     }
@@ -124,6 +129,16 @@ ShellRoot {
         function dnd(): void { Toggles.toggleDnd(); }
         function touchpad(): void { Toggles.toggleTouchpad(); }
         function batteryLimit(): void { BatteryLimit.toggleLimit(); }
+    }
+    IpcHandler {
+        target: "display"    // schermi: `mode internal|external|extend` (con conferma di 15 s), `keep`, `revert`, `status`
+        function mode(name: string): void { SwayBackend.applyDisplayMode(name); }
+        function keep(): void { SwayBackend.confirm(); }
+        function revert(): void { SwayBackend.revert(); }
+        function status(): string {
+            return JSON.stringify({ mode: SwayBackend.displayMode, pending: SwayBackend.pending !== null, countdown: SwayBackend.countdown,
+                                    outputs: SwayBackend.outputs.map(function (o) { return { name: o.name, active: o.active, mode: o.mode, scale: o.scale, x: o.x, y: o.y }; }) });
+        }
     }
     IpcHandler {
         target: "layout"    // disposizione delle finestre del contenitore col focus: next, prev, set <nome>, status

@@ -85,7 +85,7 @@ Singleton {
                         var cur = o.current_mode;
                         return { name: o.name, label: (o.make + " " + o.model).trim(), active: o.active,
                                  mode: cur ? root.modeString(cur) : "", scale: o.scale, transform: o.transform,
-                                 x: o.rect.x, y: o.rect.y,
+                                 x: o.rect.x, y: o.rect.y, w: o.rect.width, h: o.rect.height,
                                  modes: (o.modes || []).map(root.modeString) };
                     });
                 } catch (e) { root.outputs = []; }
@@ -241,7 +241,7 @@ Singleton {
     FileView { id: confFile; path: root.confPath; atomicWrites: true; printErrors: false }
 
     // --- schermi, con conferma (si torna indietro se non si conferma entro 15 secondi) -----------
-    property var pending: null        // {name, prev, next}
+    property var pending: null        // {items: {<schermo>: {prev, next}}}: tutte le modifiche in attesa di conferma
     property int countdown: 0
 
     function find(name) {
@@ -250,36 +250,119 @@ Singleton {
     }
     function snapshot(o) { return { mode: o.mode, scale: o.scale, transform: o.transform, x: o.x, y: o.y, enabled: o.active }; }
 
-    function setOutput(name, props) {
-        var cur = find(name);
-        if (!cur) return;
-        if (pending && pending.name !== name) confirm();
-        if (!pending) pending = { name: name, prev: snapshot(cur), next: snapshot(cur) };
-        var next = {};
-        for (var k in pending.next) next[k] = pending.next[k];
-        for (var p in props) next[p] = props[p];
-        pending = { name: name, prev: pending.prev, next: next };
-        run(outputCommand(name, props));
+    // --- modalità rapide degli schermi (D-044) ----------------------------------------------
+    function isInternal(o) { return /^(eDP|LVDS|DSI)/.test(o.name); }
+    // Lo schermo "interno": quello con nome da pannello di portatile (eDP, LVDS, DSI), altrimenti il primo in ordine
+    // alfabetico (Sway non garantisce l'ordine dell'elenco: la scelta deve restare la stessa a ogni lettura).
+    readonly property string internalName: {
+        var best = "";
+        for (var i = 0; i < outputs.length; i++) {
+            var n = outputs[i].name;
+            if (isInternal(outputs[i])) return n;
+            if (best === "" || n < best) best = n;
+        }
+        return best;
+    }
+    // Modalità in uso con almeno due schermi: "internal" (solo l'interno), "external" (solo gli esterni), "extend" (tutti); "" se non si sa.
+    readonly property string displayMode: {
+        var inn = find(internalName);
+        if (outputs.length < 2 || !inn) return "";
+        var ext = outputs.some(function (o) { return o.name !== internalName && o.active; });
+        if (inn.active && !ext) return "internal";
+        if (!inn.active && ext) return "external";
+        return inn.active && ext ? "extend" : "";
+    }
+
+    // Dimensione logica di uno schermo (pixel dopo scala e rotazione), anche da spento (modo preferito).
+    function logicalSize(o) {
+        var m = /^(\d+)x(\d+)/.exec(o.active && o.mode !== "" ? o.mode : (o.modes.length > 0 ? o.modes[0] : ""));
+        if (!m) return { w: 0, h: 0 };
+        var w = parseInt(m[1]), h = parseInt(m[2]);
+        if (/90|270/.test(o.transform || "")) { var t = w; w = h; h = t; }
+        var sc = o.scale > 0 ? o.scale : 1;
+        return { w: Math.round(w / sc), h: Math.round(h / sc) };
+    }
+
+    // Applica una modalità ("internal", "external", "extend"): accende e spegne gli schermi e li affianca da sinistra a destra,
+    // tutto sotto un'unica conferma. Restituisce false se la modalità non esiste o manca lo schermo interno.
+    function applyDisplayMode(kind) {
+        var inn = find(internalName);
+        if (!inn || outputs.length < 2) return false;
+        var ext = outputs.filter(function (o) { return o.name !== internalName; });
+        var changes = [], x = 0;
+        function place(o) {
+            changes.push({ name: o.name, props: { enabled: true, x: x, y: 0 } });
+            x += logicalSize(o).w;
+        }
+        if (kind === "internal") {
+            place(inn);
+            ext.forEach(function (o) { changes.push({ name: o.name, props: { enabled: false } }); });
+        } else if (kind === "external") {
+            ext.forEach(place);
+            changes.push({ name: inn.name, props: { enabled: false } });
+        } else if (kind === "extend") {
+            place(inn);
+            ext.forEach(place);
+        } else {
+            return false;
+        }
+        setOutputs(changes);
+        return true;
+    }
+
+    function setOutput(name, props) { setOutputs([{ name: name, props: props }]); }
+
+    // Applica insieme le modifiche di più schermi ([{name, props}]) sotto un'unica conferma: se non si conferma entro
+    // 15 s tornano tutte allo stato precedente. Gli schermi da accendere vanno prima di quelli da spegnere, per non
+    // restare mai senza schermi.
+    function setOutputs(changes) {
+        var items = {};
+        if (pending) for (var k in pending.items) items[k] = pending.items[k];
+        var cmds = [];
+        changes.forEach(function (ch) {
+            var cur = find(ch.name);
+            if (!cur) return;
+            var it = items[ch.name] || { prev: snapshot(cur), next: snapshot(cur) };
+            var next = {};
+            for (var q in it.next) next[q] = it.next[q];
+            for (var p in ch.props) next[p] = ch.props[p];
+            items[ch.name] = { prev: it.prev, next: next };
+            var c = outputCommand(ch.name, ch.props);
+            if (c) cmds.push({ off: ch.props.enabled === false, c: c });
+        });
+        if (cmds.length === 0) return;
+        pending = { items: items };
+        cmds.sort(function (a, b) { return (a.off ? 1 : 0) - (b.off ? 1 : 0); });
+        cmds.forEach(function (x) { run(x.c); });
         countdown = 15;
         tick.restart();
         reread.restart();
     }
     function confirm() {
         if (!pending) return;
-        var n = pending.name, v = pending.next, map = {};
-        map["outputs." + n + ".mode"] = v.mode;
-        map["outputs." + n + ".scale"] = v.scale;
-        map["outputs." + n + ".x"] = v.x;
-        map["outputs." + n + ".y"] = v.y;
-        map["outputs." + n + ".transform"] = v.transform;
-        map["outputs." + n + ".enabled"] = v.enabled;
+        var map = {};
+        for (var n in pending.items) {
+            var v = pending.items[n].next;
+            map["outputs." + n + ".mode"] = v.mode;
+            map["outputs." + n + ".scale"] = v.scale;
+            map["outputs." + n + ".x"] = v.x;
+            map["outputs." + n + ".y"] = v.y;
+            map["outputs." + n + ".transform"] = v.transform;
+            map["outputs." + n + ".enabled"] = v.enabled;
+        }
         Settings.setMany("sway", map);
         pending = null;
         tick.stop();
     }
     function revert() {
         if (!pending) return;
-        run(outputCommand(pending.name, pending.prev));
+        var cmds = [];
+        for (var n in pending.items) {
+            var prev = pending.items[n].prev;
+            cmds.push({ off: prev.enabled === false, c: outputCommand(n, prev) });
+        }
+        cmds.sort(function (a, b) { return (a.off ? 1 : 0) - (b.off ? 1 : 0); });
+        cmds.forEach(function (x) { if (x.c !== "") run(x.c); });
         pending = null;
         tick.stop();
         reread.restart();

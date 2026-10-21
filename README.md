@@ -174,6 +174,14 @@ La categoria **Compositor** mostra quali compositor ci sono (installato, in esec
 Vela ha un backend per quello attivo e quali categorie di impostazioni sono già disponibili o in arrivo
 (schermi, tastiera e touchpad, sfondo, scorciatoie, avvio automatico, regole, bordi). Oggi il backend è Sway.
 
+## Schermi
+
+Pannello **Schermi** (menu › Sistema › Schermi, oppure `vela ipc call panel toggle display`): modalità rapide con più schermi collegati
+(solo interno, solo esterni, estendi) e, per ogni schermo, risoluzione e scala con ←/→. Ogni modifica ha la conferma di 15 secondi
+(Invio = mantieni, Esc = ripristina; senza conferma tutto torna come prima). Da script o da una scorciatoia di Sway:
+`vela ipc call display mode internal|external|extend`, poi `keep` o `revert` (`status` mostra lo stato). La rotazione e la posizione
+in numeri restano nelle Impostazioni, scheda Schermi.
+
 ## OSD e notifiche
 
 L'OSD di volume e luminosità (`osd.enabled`) compare a ogni cambio e sostituisce `wob`. Il server di
