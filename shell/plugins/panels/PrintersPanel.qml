@@ -38,7 +38,7 @@ PanelHost {
         Printers.printers.forEach(function (p) {
             out.push({ kind: "printer", p: p, label: p.name, key: "p:" + p.name });
             if (p.state === "disabled" && p.reason !== "" && p.reason !== "-")
-                out.push({ kind: "message", text: p.reason, key: "r:" + p.name });
+                out.push({ kind: "message", text: p.reason === "Paused" ? I18n.tr("In pausa") : p.reason, key: "r:" + p.name });
         });
         if (Printers.jobs.length > 0) {
             out.push({ kind: "header", label: I18n.tr("Lavori in coda"), key: "h-jobs" });
@@ -136,7 +136,8 @@ PanelHost {
             title: I18n.tr("Stampanti")
             meta: !Printers.known ? "" : !Printers.schedulerUp ? I18n.tr("servizio fermo")
                 : Printers.printers.length === 0 ? I18n.tr("nessuna stampante")
-                : Printers.jobs.length > 0 ? I18n.tr("%1 lavori in coda", String(Printers.jobs.length))
+                : Printers.jobs.length === 1 ? I18n.tr("1 lavoro in coda")
+                : Printers.jobs.length > 1 ? I18n.tr("%1 lavori in coda", String(Printers.jobs.length))
                 : I18n.tr("nessun lavoro in coda")
             detail: Printers.defaultName !== "" ? Printers.defaultName : ""
         }
