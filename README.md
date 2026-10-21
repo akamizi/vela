@@ -49,6 +49,28 @@ Se in Sway `~/.local/bin` non è nel PATH si usa il percorso completo. Barra e n
 (Waybar, dunst, mako, wob) vanno fermate: Vela le sostituisce (le notifiche integrate sono spente di default,
 vedi sotto).
 
+## Primo avvio (su un PC nuovo)
+
+Il pacchetto non modifica file dell'utente: dopo `xbps-install` restano da fare queste cose a mano.
+
+1. **Repository** (se non è nei repository ufficiali): `echo 'repository=https://akamizi.github.io/vela/current' | doas tee /etc/xbps.d/20-vela.conf`,
+   poi `doas xbps-install -S vela`. Al primo `-S` xbps mostra l'impronta della chiave: deve essere
+   `90:db:2f:97:18:f1:73:cd:c7:63:81:93:bb:2c:0a:8d`.
+2. **Sway**: aggiungere a `~/.config/sway/config` le righe `exec vela` e le scorciatoie (sezione sopra), togliere il blocco `bar { … }` di Sway e
+   fermare Waybar, dunst, mako e wob. Ricaricare Sway.
+3. **Servizi di sistema** (runit: `doas ln -s /etc/sv/<servizio> /var/service/`), solo per le funzioni che servono:
+   `dbus` ed `elogind` (sessione), `NetworkManager` (rete), `bluetoothd` (Bluetooth), `cupsd` e `avahi-daemon` (stampanti),
+   `power-profiles-daemon` (profili energetici); l'audio usa PipeWire e WirePlumber avviati dalla sessione.
+4. **Gruppi** (poi rifare il login): `network` (azioni di rete), `lpadmin` (fermare, aggiungere e rimuovere stampanti), `wheel` (limite di carica
+   della batteria senza password, in sessione locale). Per i servizi runit serve `doas` (o `sudo`) configurato per l'utente.
+5. **Facoltativi** (se mancano la voce sparisce o dice «non disponibile»): `brightnessctl`, `gammastep`, `upower`, `curl`, `wl-mirror` (Duplica),
+   `cups` e `cups-pdf` (stampanti). Controllo rapido: `scripts/check-deps.sh` (dal sorgente).
+6. **Notifiche**: sono spente di default; per usare quelle di Vela, `notifications.enabled: true` in `~/.config/vela/shell.jsonc` (e fermare altri server di notifiche).
+7. **Portatili**: la regola udev del limite di carica si applica con `doas udevadm control --reload` o al riavvio; poi `battery-limit status`
+   (in `/usr/libexec/vela/`) deve rispondere. Funziona solo se il portatile espone le soglie in sysfs.
+8. **Configurazione**: non serve nessun file, partono i default del pacchetto. Per cambiare qualcosa: pannello Impostazioni
+   (scrive `~/.config/vela/settings.jsonc`) oppure i file a mano in `~/.config/vela/` (vedi `/usr/share/doc/vela`).
+
 ## Prova in sviluppo
 
 ```sh
