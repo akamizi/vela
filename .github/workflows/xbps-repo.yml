@@ -1,0 +1,63 @@
+# Costruisce il pacchetto xbps a ogni tag v* e lo pubblica come repository xbps su GitHub Pages (ramo gh-pages).
+# Segreto richiesto: XBPS_PRIVKEY = contenuto della chiave privata PEM (vedi packaging/void/README.md).
+# Pages va attivato una volta: Settings › Pages › Source: ramo gh-pages, cartella /.
+name: xbps-repo
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Versione da costruire (tag v<versione> esistente); vuoto = file VERSION"
+        required: false
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/void-linux/void-glibc-full:latest
+      # xbps-src usa i namespace utente: in un container serve spesso --privileged (da verificare alla prima esecuzione)
+      options: --privileged
+    steps:
+      - name: Strumenti
+        run: |
+          xbps-install -Suy xbps
+          xbps-install -uy
+          xbps-install -y git curl openssl sudo base-devel github-cli
+
+      - uses: actions/checkout@v4
+
+      - name: Utente di costruzione
+        run: |
+          useradd -m builder
+          chown -R builder "$GITHUB_WORKSPACE"
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+      - name: Pacchetto
+        run: |
+          v="${{ github.event.inputs.version }}"
+          if [ -z "$v" ] && [ "$GITHUB_REF_TYPE" = tag ]; then v="${GITHUB_REF_NAME#v}"; fi
+          [ -n "$v" ] || v=$(cat VERSION)
+          su builder -c "sh scripts/build-xbps.sh '$v' \"\$HOME/work\" \"\$GITHUB_WORKSPACE/out\""
+
+      - name: Repository firmato
+        env:
+          XBPS_PRIVKEY: ${{ secrets.XBPS_PRIVKEY }}
+        run: |
+          [ -n "$XBPS_PRIVKEY" ] || { echo "segreto XBPS_PRIVKEY mancante" >&2; exit 1; }
+          umask 077; printf '%s\n' "$XBPS_PRIVKEY" > "$RUNNER_TEMP/key.pem"
+          sh scripts/publish-xbps-repo.sh out site/current "$RUNNER_TEMP/key.pem" "Maurizio Cavalletti"
+          rm -f "$RUNNER_TEMP/key.pem"
+          touch site/.nojekyll
+
+      - name: Pubblica su gh-pages
+        run: |
+          cd site
+          git init -q -b gh-pages
+          git config user.name "github-actions"; git config user.email "actions@users.noreply.github.com"
+          git add -A; git commit -qm "Repository xbps ${GITHUB_REF_NAME:-manuale}"
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" gh-pages

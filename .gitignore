@@ -1,4 +1,5 @@
 *.swp
 *~
 .qmlls.ini
+build-xbps/
 target/
