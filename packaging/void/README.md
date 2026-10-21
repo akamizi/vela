@@ -10,7 +10,7 @@ doas xbps-install -S vela
 ```
 
 Al primo `-S` xbps mostra l'impronta della chiave del repository e chiede di accettarla: va confrontata con quella
-pubblicata nel README del progetto (`xbps-rindex`/`openssl`: vedi sotto). Le dipendenze facoltative sono nel
+questa: `90:db:2f:97:18:f1:73:cd:c7:63:81:93:bb:2c:0a:8d`. Le dipendenze facoltative sono nel
 `template` (NetworkManager, bluez, wireplumber, ...).
 
 ## Pubblicazione (una tantum)
