@@ -37,6 +37,8 @@ cd "$work/void-packages"
 mkdir -p srcpkgs/vela
 sed -e "s/^version=.*/version=${version}/" -e "s/^revision=.*/revision=1/" -e "s/^checksum=.*/checksum=${sum}/" \
     "$root/packaging/void/vela/template" > srcpkgs/vela/template
+install -m755 "$root/packaging/void/vela/INSTALL" srcpkgs/vela/INSTALL
+install -m644 "$root/packaging/void/vela/INSTALL.msg" srcpkgs/vela/INSTALL.msg
 
 ./xbps-src binary-bootstrap
 ./xbps-src -A x86_64 pkg vela

@@ -33,6 +33,11 @@ scripts/publish-xbps-repo.sh build-xbps/out build-xbps/repo vela-repo.pem "Nome"
 
 Provare il repository locale senza installare nulla: `xbps-query -i --repository=$PWD/build-xbps/repo -R vela`.
 
+## Script e messaggio di installazione
+
+`packaging/void/vela/INSTALL` ricarica le regole udev dopo l'installazione (la regola del limite di carica si vede senza riavviare);
+`INSTALL.msg` è il testo che xbps mostra a fine installazione (Sway, servizi, gruppi). Nessuno dei due attiva servizi, tocca le home o i gruppi (D-048).
+
 ## Limiti noti
 
 - Solo x86_64 glibc (musl e altre architetture: da aggiungere).

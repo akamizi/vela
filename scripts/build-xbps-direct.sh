@@ -23,6 +23,9 @@ cd "$root"
 make PREFIX=/usr
 make install PREFIX=/usr DESTDIR="$stage"
 install -Dm644 LICENSE "$stage/usr/share/licenses/vela/LICENSE"
+# Script e messaggio di installazione (stessi file che xbps-src prende da srcpkgs/vela/): xbps-create li legge dalla radice
+install -Dm755 packaging/void/vela/INSTALL "$stage/INSTALL"
+install -Dm644 packaging/void/vela/INSTALL.msg "$stage/INSTALL.msg"
 
 mkdir -p "$out"; cd "$out"
 # glibc: il demone e l'helper sono binari Rust dinamici
