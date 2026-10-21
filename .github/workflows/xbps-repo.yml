@@ -27,13 +27,13 @@ jobs:
         run: |
           xbps-install -Suy xbps
           xbps-install -uy
-          xbps-install -y git curl openssl sudo base-devel github-cli
+          xbps-install -y git curl openssl bash base-devel
 
       - uses: actions/checkout@v4
 
       - name: Utente di costruzione
         run: |
-          useradd -m builder
+          useradd -m -s /bin/bash builder
           chown -R builder "$GITHUB_WORKSPACE"
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
@@ -42,7 +42,7 @@ jobs:
           v="${{ github.event.inputs.version }}"
           if [ -z "$v" ] && [ "$GITHUB_REF_TYPE" = tag ]; then v="${GITHUB_REF_NAME#v}"; fi
           [ -n "$v" ] || v=$(cat VERSION)
-          su builder -c "sh scripts/build-xbps.sh '$v' \"\$HOME/work\" \"\$GITHUB_WORKSPACE/out\""
+          su builder -c "cd '$GITHUB_WORKSPACE' && sh scripts/build-xbps.sh '$v' \"\$HOME/work\" '$GITHUB_WORKSPACE/out'"
 
       - name: Repository firmato
         env:
