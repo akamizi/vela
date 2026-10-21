@@ -263,15 +263,52 @@ Singleton {
         }
         return best;
     }
-    // Modalità in uso con almeno due schermi: "internal" (solo l'interno), "external" (solo gli esterni), "extend" (tutti); "" se non si sa.
+    // Modalità in uso con almeno due schermi: "internal" (solo l'interno), "external" (solo gli esterni), "extend" (tutti),
+    // "mirror" (tutti, con l'immagine dell'interno duplicata sugli esterni); "" se non si sa.
     readonly property string displayMode: {
         var inn = find(internalName);
         if (outputs.length < 2 || !inn) return "";
         var ext = outputs.some(function (o) { return o.name !== internalName && o.active; });
         if (inn.active && !ext) return "internal";
         if (!inn.active && ext) return "external";
-        return inn.active && ext ? "extend" : "";
+        if (inn.active && ext) return mirrorPairs.length > 0 ? "mirror" : "extend";
+        return "";
     }
+
+    // --- duplicazione (D-044, passo 4): Sway non duplica da solo; `wl-mirror` mostra a schermo intero sullo schermo
+    // esterno l'immagine dell'interno, mentre gli schermi restano estesi. I processi vivono con Vela (non sopravvivono a un
+    // riavvio di Vela) e si fermano con qualsiasi altra modalità o con il ripristino.
+    property bool hasMirror: false
+    Process {
+        command: ["sh", "-c", "command -v wl-mirror"]
+        running: true
+        onExited: code => root.hasMirror = (code === 0)
+    }
+    property var mirrorPairs: []          // [{src, dst}]
+    property bool mirrorRuleSet: false
+    function stopMirror() { mirrorPairs = []; }
+    function validName(n) { return typeof n === "string" && /^[A-Za-z0-9_\-]+$/.test(n); }
+    function startMirror() {
+        var inn = find(internalName);
+        if (!hasMirror || !inn || !inn.active) return;
+        var pairs = outputs.filter(function (o) { return o.active && o.name !== internalName && validName(o.name); })
+                           .map(function (o) { return { src: inn.name, dst: o.name }; });
+        if (pairs.length === 0 || !validName(inn.name)) return;
+        // La finestra del duplicato non deve rubare il focus.
+        if (!mirrorRuleSet) { run('no_focus [title="vela-mirror"]'); mirrorRuleSet = true; }
+        mirrorPairs = pairs;
+    }
+    Instantiator {
+        model: root.mirrorPairs
+        delegate: Process {
+            required property var modelData
+            command: ["wl-mirror", "--title", "vela-mirror", "--fullscreen-output", modelData.dst, modelData.src]
+            running: true
+            Component.onDestruction: running = false
+        }
+    }
+    // Dopo aver acceso gli schermi si aspetta un attimo che Sway li abbia pronti.
+    Timer { id: mirrorStart; interval: 1200; onTriggered: root.startMirror() }
 
     // Dimensione logica di uno schermo (pixel dopo scala e rotazione), anche da spento (modo preferito).
     function logicalSize(o) {
@@ -306,6 +343,11 @@ Singleton {
     function applyDisplayMode(kind) {
         var inn = find(internalName);
         if (!inn || outputs.length < 2) return false;
+        if (kind === "mirror" && !hasMirror) return false;
+        stopMirror();
+        mirrorStart.stop();
+        var wantMirror = kind === "mirror";
+        if (wantMirror) kind = "extend";
         var ext = outputs.filter(function (o) { return o.name !== internalName; });
         var changes = [], x = 0;
         function place(o) {
@@ -325,6 +367,7 @@ Singleton {
             return false;
         }
         setOutputs(changes);
+        if (wantMirror) mirrorStart.restart();
         return true;
     }
 
@@ -374,6 +417,8 @@ Singleton {
     }
     function revert() {
         if (!pending) return;
+        mirrorStart.stop();
+        stopMirror();
         var cmds = [];
         for (var n in pending.items) {
             var prev = pending.items[n].prev;

@@ -86,6 +86,10 @@ PanelHost {
             out.push({ kind: "mode", id: "internal", label: I18n.tr("Solo schermo interno"), icon: Icons.laptop, key: "mode:internal" });
             out.push({ kind: "mode", id: "external", label: I18n.tr("Solo schermi esterni"), icon: Icons.monitor, key: "mode:external" });
             out.push({ kind: "mode", id: "extend", label: I18n.tr("Estendi"), icon: Icons.monitorMultiple, key: "mode:extend" });
+            if (SwayBackend.hasMirror)
+                out.push({ kind: "mode", id: "mirror", label: I18n.tr("Duplica"), icon: Icons.duplicate, key: "mode:mirror" });
+            else
+                out.push({ kind: "message", text: I18n.tr("Duplica: serve il programma wl-mirror"), key: "m-mirror" });
         }
         if (activeOuts.length >= 2) {
             out.push({ kind: "header", label: I18n.tr("Disposizione"), key: "h-map" });
@@ -311,7 +315,7 @@ PanelHost {
                     trailing: entry.r.kind === "bright" ? brightTrail : entry.r.kind === "night" ? nightTrail : null
                     iconColor: (entry.r.kind === "mode" && entry.r.id === panel.currentMode) || entry.r.kind === "bright"
                                || (entry.r.kind === "night" && Toggles.night) ? Theme.accent : Theme.muted
-                    title: panel.selectable(entry.r) ? entry.r.label : ""
+                    title: panel.selectable(entry.r) ? (entry.r.label || "") : ""
                     bold: entry.r.kind === "mode" && entry.r.id === panel.currentMode
                     trailingText: entry.r.kind === "res" || entry.r.kind === "scale" ? "‹ " + entry.r.value + " ›"
                                 : entry.r.kind === "bright" ? Math.round(Brightness.level * 100) + "%" : ""

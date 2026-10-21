@@ -131,7 +131,7 @@ ShellRoot {
         function batteryLimit(): void { BatteryLimit.toggleLimit(); }
     }
     IpcHandler {
-        target: "display"    // schermi: `mode internal|external|extend`, `place <schermo> left|right|above|below` (con conferma di 15 s), `keep`, `revert`, `status`
+        target: "display"    // schermi: `mode internal|external|extend|mirror`, `place <schermo> left|right|above|below` (con conferma di 15 s), `keep`, `revert`, `status`
         function mode(name: string): void { SwayBackend.applyDisplayMode(name); }
         function place(screen: string, side: string): void { SwayBackend.placeOutput(screen, side); }   // con due schermi: left|right|above|below
         function keep(): void { SwayBackend.confirm(); }

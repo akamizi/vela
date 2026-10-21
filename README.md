@@ -177,7 +177,7 @@ Vela ha un backend per quello attivo e quali categorie di impostazioni sono già
 ## Schermi
 
 Pannello **Schermi** (menu › Sistema › Schermi, oppure `vela ipc call panel toggle display`): luminosità e luce notturna (Spazio),
-modalità rapide con più schermi collegati
+modalità rapide (anche **Duplica**, se è installato `wl-mirror`) con più schermi collegati
 (solo interno, solo esterni, estendi) e, per ogni schermo, risoluzione e scala con ←/→. Ogni modifica ha la conferma di 15 secondi
 (Invio = mantieni, Esc = ripristina; senza conferma tutto torna come prima). Da script o da una scorciatoia di Sway:
 `vela ipc call display mode internal|external|extend`, poi `keep` o `revert` (`status` mostra lo stato). La rotazione e la posizione
