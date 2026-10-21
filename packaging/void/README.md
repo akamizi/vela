@@ -33,6 +33,12 @@ scripts/publish-xbps-repo.sh build-xbps/out build-xbps/repo vela-repo.pem "Nome"
 
 Provare il repository locale senza installare nulla: `xbps-query -i --repository=$PWD/build-xbps/repo -R vela`.
 
+## Meta-pacchetto `vela-recommended`
+
+`doas xbps-install vela-recommended` porta le dipendenze facoltative (elenco in `packaging/void/vela-recommended/template`); senza, resta il minimo
+(`vela`) e le funzioni senza il loro programma spariscono. L'Action lo costruisce insieme a `vela` (`scripts/build-xbps-direct.sh`, `noarch`, senza file,
+stessa versione). A ogni versione nuova cambia `version=` in **entrambi** i template.
+
 ## Script e messaggio di installazione
 
 `packaging/void/vela/INSTALL` ricarica le regole udev dopo l'installazione (la regola del limite di carica si vede senza riavviare);

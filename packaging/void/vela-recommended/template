@@ -1,0 +1,15 @@
+# Template file for 'vela-recommended' (meta-pacchetto, D-048)
+# Per void-packages: copiare in srcpkgs/vela-recommended/template. Non ha file: porta solo le dipendenze facoltative di Vela, così
+# chi vuole tutte le funzioni installa questo e chi vuole il minimo installa solo `vela`. Con `xbps-install vela-recommended`.
+# Le funzioni senza il programma corrispondente spariscono da sole (vedi README): niente di questo è obbligatorio.
+pkgname=vela-recommended
+version=0.10.0
+revision=1
+build_style=meta
+depends="vela>=${version}
+ NetworkManager bluez pipewire wireplumber upower power-profiles-daemon brightnessctl gammastep curl
+ cups avahi wl-mirror polkit xdg-desktop-portal xdg-desktop-portal-wlr swaylock swayidle libnotify"
+short_desc="Optional dependencies of the Vela desktop shell (meta package)"
+maintainer="Maurizio Cavalletti <maurizio@akabit.it>"
+license="EUPL-1.2"
+homepage="https://github.com/akamizi/vela"

@@ -64,8 +64,9 @@ Il pacchetto non modifica file dell'utente: dopo `xbps-install` restano da fare 
    `power-profiles-daemon` (profili energetici); l'audio usa PipeWire e WirePlumber avviati dalla sessione.
 4. **Gruppi** (poi rifare il login): `network` (azioni di rete), `lpadmin` (fermare, aggiungere e rimuovere stampanti), `wheel` (limite di carica
    della batteria senza password, in sessione locale). Per i servizi runit serve `doas` (o `sudo`) configurato per l'utente.
-5. **Facoltativi** (se mancano la voce sparisce o dice «non disponibile»): `brightnessctl`, `gammastep`, `upower`, `curl`, `wl-mirror` (Duplica),
-   `cups` e `cups-pdf` (stampanti). Controllo rapido: `scripts/check-deps.sh` (dal sorgente).
+5. **Facoltativi** (se mancano la voce sparisce o dice «non disponibile»): il modo più semplice è il meta-pacchetto **`vela-recommended`**
+   (`doas xbps-install vela-recommended`: NetworkManager, bluez, PipeWire e WirePlumber, upower, power-profiles-daemon, brightnessctl, gammastep, curl,
+   cups, avahi, wl-mirror, polkit, portali, swaylock, swayidle, libnotify). Chi vuole il minimo installa solo `vela` e aggiunge ciò che gli serve. Controllo rapido: `scripts/check-deps.sh` (dal sorgente).
 6. **Notifiche**: sono spente di default; per usare quelle di Vela, `notifications.enabled: true` in `~/.config/vela/shell.jsonc` (e fermare altri server di notifiche).
 7. **Portatili**: la regola udev del limite di carica si applica con `doas udevadm control --reload` o al riavvio; poi `battery-limit status`
    (in `/usr/libexec/vela/`) deve rispondere. Funziona solo se il portatile espone le soglie in sysfs.
