@@ -136,10 +136,10 @@ ShellRoot {
         function batteryLimit(): void { BatteryLimit.toggleLimit(); }
     }
     IpcHandler {
-        target: "printers"    // stampanti: `status` (JSON), `default <nome>`, `pause <nome>` (ferma/riprende), `cancel <id>`
+        target: "printers"    // stampanti: `status` (JSON), `default <nome>`, `pause <nome>` (ferma/riprende), `cancel <id>`, `scan`, `add <indirizzo>`, `remove <nome>`
         function status(): string {
             return JSON.stringify({ up: Printers.schedulerUp, default: Printers.defaultName, admin: Printers.admin, error: Printers.error,
-                                    printers: Printers.printers, jobs: Printers.jobs });
+                                    printers: Printers.printers, jobs: Printers.jobs, devices: Printers.devices, scanning: Printers.scanning });
         }
         function refresh(): void { Printers.refresh(); }
         function setDefault(name: string): void { Printers.setDefault(name); }
@@ -148,6 +148,9 @@ ShellRoot {
                 if (Printers.printers[i].name === name) { Printers.togglePause(name, Printers.printers[i].state); return; }
         }
         function cancel(id: string): void { Printers.cancelJob(id); }
+        function scan(): void { Printers.scan(); }
+        function add(address: string): void { var u = Printers.normalizeAddress(address); if (u !== "") Printers.addPrinter(u, ""); else Printers.error = I18n.tr("Indirizzo non valido"); }
+        function remove(name: string): void { Printers.removePrinter(name); }
     }
 
     IpcHandler {

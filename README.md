@@ -190,7 +190,9 @@ sopra o sotto l'altro (`vela ipc call display place <schermo> left|right|above|b
 Pannello **Stampanti** (menu › Stampanti, oppure `vela ipc call panel toggle printers`): stampanti CUPS con stato (pronta, in stampa, ferma) e predefinita,
 coda dei lavori. Invio imposta la predefinita (o annulla il lavoro), Spazio ferma/riprende la stampante, Canc annulla i lavori. Compare solo con gli
 strumenti di CUPS installati (`lpstat`); con `cupsd` fermo il pannello lo dice. Fermare e riprendere le stampanti richiede il gruppo `lpadmin`
-(CUPS autorizza per gruppo: Vela non gestisce password). L'aggiunta di stampanti non c'è ancora: per ora `localhost:631` o `lpadmin`.
+(CUPS autorizza per gruppo: Vela non gestisce password). In fondo si aggiungono stampanti: «Cerca stampanti» (`lpinfo`, la ricerca in rete richiede avahi) oppure «Aggiungi per indirizzo» (nome, IP o URI);
+l'aggiunta è senza driver (IPP Everywhere). Maiusc+Canc rimuove la stampante, con conferma. Stampanti che richiedono PPD o filtri: `localhost:631`.
+Da script: `vela ipc call printers status|scan|add <indirizzo>|remove <nome>`.
 
 ## OSD e notifiche
 
