@@ -20,29 +20,21 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/void-linux/void-glibc-full:latest
-      # xbps-src usa i namespace utente: in un container serve spesso --privileged (da verificare alla prima esecuzione)
-      options: --privileged
     steps:
       - name: Strumenti
         run: |
           xbps-install -Suy xbps
           xbps-install -uy
-          xbps-install -y git curl openssl bash base-devel
+          xbps-install -y git curl openssl base-devel cargo
 
+      # Con l'avvio a mano si costruisce il tag v<versione>, non il ramo main
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.version && format('v{0}', github.event.inputs.version) || github.ref }}
 
-      - name: Utente di costruzione
-        run: |
-          useradd -m -s /bin/bash builder
-          chown -R builder "$GITHUB_WORKSPACE"
-          git config --global --add safe.directory "$GITHUB_WORKSPACE"
-
+      # xbps-src non funziona qui (niente user namespace nel container dei runner): si impacchetta con xbps-create
       - name: Pacchetto
-        run: |
-          v="${{ github.event.inputs.version }}"
-          if [ -z "$v" ] && [ "$GITHUB_REF_TYPE" = tag ]; then v="${GITHUB_REF_NAME#v}"; fi
-          [ -n "$v" ] || v=$(cat VERSION)
-          su builder -c "cd '$GITHUB_WORKSPACE' && sh scripts/build-xbps.sh '$v' \"\$HOME/work\" '$GITHUB_WORKSPACE/out'"
+        run: sh scripts/build-xbps-direct.sh "$GITHUB_WORKSPACE/out"
 
       - name: Repository firmato
         env:
