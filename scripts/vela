@@ -27,12 +27,12 @@ if [ "${1:-}" = theme ]; then
         echo "vela theme qt: Vela non è in esecuzione e non c'è un foglio di stile salvato ($file)" >&2
         exit 1
     fi
-    # Tema delle icone solo per il programma lanciato: kdeglobals privato (cercato tramite XDG_CONFIG_DIRS) letto dal tema piattaforma «kde» di Qt
-    icons=$(quickshell ipc -p "$root/shell" call theme qtIconTheme 2>/dev/null) || icons=""
+    # Icone e palette solo per il programma lanciato: kdeglobals privato (cercato tramite XDG_CONFIG_DIRS) letto dal tema piattaforma «kde» di Qt
     kdedir="$dir/kde"
-    if [ -n "$icons" ]; then
+    kde=$(quickshell ipc -p "$root/shell" call theme kdeglobals 2>/dev/null) || kde=""
+    if [ -n "$kde" ]; then
         mkdir -p "$kdedir"
-        printf '[Icons]\nTheme=%s\n' "$icons" > "$kdedir/kdeglobals"
+        printf '%s\n' "$kde" > "$kdedir/kdeglobals"
     fi
     case "$action" in
         write) echo "$file" ;;
