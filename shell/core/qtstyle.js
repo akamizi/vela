@@ -66,6 +66,7 @@ function qss(theme) {
         "QLineEdit:focus, QComboBox:focus, QSpinBox:focus { border: 1px solid " + c.accent + "; }",
         "QComboBox QAbstractItemView { background-color: " + c.surface + "; border: 1px solid " + soft + "; }",
         "QTreeView, QListView, QTableView, QAbstractItemView { background-color: " + c.background + "; alternate-background-color: " + c.background + "; border: none; outline: none; }",
+        "QListView { padding-top: " + (pad * 4) + "px; }",   // aria sopra la prima riga di icone nella vista dei file
         "QAbstractItemView::item:hover { background-color: " + hover + "; }",
         "QAbstractItemView::item:selected { background-color: " + selected + "; color: " + c.foreground + "; }",
         "QHeaderView::section { background-color: " + c.surface + "; border: none; border-right: 1px solid " + soft + "; padding: " + pad + "px 6px; color: " + c.muted + "; }",
