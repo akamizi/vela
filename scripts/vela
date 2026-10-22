@@ -11,6 +11,35 @@ if [ -f "$here/../shell/shell.qml" ]; then
 else
     root=${VELA_ROOT:-/usr/share/vela}
 fi
+if [ "${1:-}" = theme ]; then
+    # vela theme qt [write|print|run <programma> [argomenti]]: foglio di stile Qt dal tema di Vela (D-049).
+    #   write (default)  salva ~/.local/share/vela/qt/vela.qss e ne stampa il percorso
+    #   print            stampa il foglio di stile
+    #   run <p> [...]    rigenera il foglio di stile e lancia il programma Qt con `-style fusion -stylesheet` (e QT_QPA_PLATFORMTHEME=gtk3 se non è impostato)
+    [ "${2:-}" = qt ] || { echo "uso: vela theme qt [write|print|run <programma> [argomenti]]" >&2; exit 2; }
+    dir="${XDG_DATA_HOME:-$HOME/.local/share}/vela/qt"; file="$dir/vela.qss"
+    action=${3:-write}
+    new=$(quickshell ipc -p "$root/shell" call theme qss 2>/dev/null) || new=""
+    if [ -n "$new" ]; then
+        mkdir -p "$dir"
+        printf '%s\n' "$new" > "$file.tmp" && mv "$file.tmp" "$file"
+    elif [ ! -r "$file" ]; then
+        echo "vela theme qt: Vela non è in esecuzione e non c'è un foglio di stile salvato ($file)" >&2
+        exit 1
+    fi
+    case "$action" in
+        write) echo "$file" ;;
+        print) cat "$file" ;;
+        run)
+            [ -n "${4:-}" ] || { echo "vela theme qt run: manca il programma" >&2; exit 2; }
+            prog=$4; shift 4
+            # Il tema della piattaforma «gtk3» dà le icone del tema GTK dell'utente (solo per questo programma, non per Quickshell)
+            QT_QPA_PLATFORMTHEME=${QT_QPA_PLATFORMTHEME:-gtk3}; export QT_QPA_PLATFORMTHEME
+            exec "$prog" -style fusion -stylesheet "$file" "$@" ;;
+        *) echo "azione sconosciuta: $action" >&2; exit 2 ;;
+    esac
+    exit 0
+fi
 if [ "${1:-}" = ipc ]; then
     shift
     exec quickshell ipc -p "$root/shell" "$@"

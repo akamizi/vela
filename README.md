@@ -73,6 +73,15 @@ Il pacchetto non modifica file dell'utente: dopo `xbps-install` restano da fare 
 8. **Configurazione**: non serve nessun file, partono i default del pacchetto. Per cambiare qualcosa: pannello Impostazioni
    (scrive `~/.config/vela/settings.jsonc`) oppure i file a mano in `~/.config/vela/` (vedi `/usr/share/doc/vela`).
 
+## Tema per le app Qt (`vela theme qt`)
+
+`vela theme qt` genera un foglio di stile Qt (QSS) **dagli stessi token di `theme.jsonc`** (colori, font Inter, stati hover/selezione, angoli) e lo salva in
+`~/.local/share/vela/qt/vela.qss`; `vela theme qt print` lo stampa e `vela theme qt run <programma> [argomenti]` lo rigenera e lancia il programma Qt con
+`-style fusion -stylesheet …` (e `QT_QPA_PLATFORMTHEME=gtk3`, per le icone del tema GTK). Così le app Qt, per esempio **PCManFM-Qt** (voce di menu «File», se
+installato), seguono il tema di Vela senza toccare `~/.config/pcmanfm-qt` né installare `qt6ct`/Kvantum; il tema si applica **solo** al programma lanciato, non a
+Quickshell né al resto della sessione. Serve Vela in esecuzione (altrimenti usa l'ultimo foglio salvato). Limiti: le icone sono quelle del tema GTK (a colori, non i glifi di
+Vela) e alcune hanno un riquadro scuro dietro; il QSS non cambia la struttura dell'interfaccia.
+
 ## Sessione Vela
 
 Il pacchetto installa una voce **«Vela»** per il login manager (`/usr/share/wayland-sessions/vela.desktop`, per greetd/tuigreet, ly, sddm...): avvia

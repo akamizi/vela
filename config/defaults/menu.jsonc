@@ -11,6 +11,7 @@
 {
   "items": [
     { "id": "apps", "label": "App", "glyph": "U+F003B", "action": { "type": "apps" } },
+    { "id": "files", "label": "File", "glyph": "U+F024B", "requires": ["pcmanfm-qt"], "action": { "type": "exec", "command": ["vela", "theme", "qt", "run", "pcmanfm-qt"] } },
     {
       "id": "toggles", "label": "Interruttori", "glyph": "U+F0521",
       "children": [

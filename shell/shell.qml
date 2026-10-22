@@ -7,6 +7,7 @@ import Quickshell.Io
 // si caricano dinamicamente, quindi ui e services vanno importati esplicitamente.
 import "core"
 import "ui"
+import "core/qtstyle.js" as QtStyle
 import "services"
 import "plugins/bar"
 import "plugins/menu"
@@ -140,6 +141,11 @@ ShellRoot {
         function touchpad(): void { Toggles.toggleTouchpad(); }
         function batteryLimit(): void { BatteryLimit.toggleLimit(); }
     }
+    IpcHandler {
+        target: "theme"    // `qss`: foglio di stile Qt dal tema (lo usa `vela theme qt`)
+        function qss(): string { return QtStyle.qss(Config.theme); }
+    }
+
     IpcHandler {
         target: "services"    // servizi runit: `status` (JSON), `run start|stop|restart|enable|disable <servizio>` (apre un terminale con doas/sudo)
         function status(): string { return JSON.stringify({ available: Services.available, items: Services.items }); }
