@@ -15,7 +15,7 @@ if [ "${1:-}" = theme ]; then
     # vela theme qt [write|print|run <programma> [argomenti]]: foglio di stile Qt dal tema di Vela (D-049).
     #   write (default)  salva ~/.local/share/vela/qt/vela.qss e ne stampa il percorso
     #   print            stampa il foglio di stile
-    #   run <p> [...]    rigenera il foglio di stile e lancia il programma Qt con `-style fusion -stylesheet` (e QT_QPA_PLATFORMTHEME=gtk3 se non è impostato)
+    #   run <p> [...]    rigenera il foglio di stile e lancia il programma Qt con `-style fusion -stylesheet` (icone da `qt.iconTheme` di theme.jsonc, solo per quel programma)
     [ "${2:-}" = qt ] || { echo "uso: vela theme qt [write|print|run <programma> [argomenti]]" >&2; exit 2; }
     dir="${XDG_DATA_HOME:-$HOME/.local/share}/vela/qt"; file="$dir/vela.qss"
     action=${3:-write}
@@ -27,14 +27,26 @@ if [ "${1:-}" = theme ]; then
         echo "vela theme qt: Vela non è in esecuzione e non c'è un foglio di stile salvato ($file)" >&2
         exit 1
     fi
+    # Tema delle icone solo per il programma lanciato: kdeglobals privato (cercato tramite XDG_CONFIG_DIRS) letto dal tema piattaforma «kde» di Qt
+    icons=$(quickshell ipc -p "$root/shell" call theme qtIconTheme 2>/dev/null) || icons=""
+    kdedir="$dir/kde"
+    if [ -n "$icons" ]; then
+        mkdir -p "$kdedir"
+        printf '[Icons]\nTheme=%s\n' "$icons" > "$kdedir/kdeglobals"
+    fi
     case "$action" in
         write) echo "$file" ;;
         print) cat "$file" ;;
         run)
             [ -n "${4:-}" ] || { echo "vela theme qt run: manca il programma" >&2; exit 2; }
             prog=$4; shift 4
-            # Il tema della piattaforma «gtk3» dà le icone del tema GTK dell'utente (solo per questo programma, non per Quickshell)
-            QT_QPA_PLATFORMTHEME=${QT_QPA_PLATFORMTHEME:-gtk3}; export QT_QPA_PLATFORMTHEME
+            if [ -r "$kdedir/kdeglobals" ]; then
+                # Tema piattaforma «kde» con kdeglobals privato (solo per questo programma): icone da `qt.iconTheme`
+                XDG_CONFIG_DIRS="$kdedir:${XDG_CONFIG_DIRS:-/etc/xdg}" XDG_CURRENT_DESKTOP=KDE KDE_SESSION_VERSION=6 QT_QPA_PLATFORMTHEME=kde
+            else
+                QT_QPA_PLATFORMTHEME=${QT_QPA_PLATFORMTHEME:-gtk3}   # senza tema configurato: icone del tema GTK dell'utente
+            fi
+            export XDG_CONFIG_DIRS XDG_CURRENT_DESKTOP KDE_SESSION_VERSION QT_QPA_PLATFORMTHEME
             exec "$prog" -style fusion -stylesheet "$file" "$@" ;;
         *) echo "azione sconosciuta: $action" >&2; exit 2 ;;
     esac

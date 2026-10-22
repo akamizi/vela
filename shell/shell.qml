@@ -144,6 +144,7 @@ ShellRoot {
     IpcHandler {
         target: "theme"    // `qss`: foglio di stile Qt dal tema (lo usa `vela theme qt`)
         function qss(): string { return QtStyle.qss(Config.theme); }
+        function qtIconTheme(): string { return String((Config.theme.qt || {}).iconTheme || ""); }
     }
 
     IpcHandler {
