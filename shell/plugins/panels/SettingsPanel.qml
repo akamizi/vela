@@ -121,6 +121,8 @@ PanelHost {
         out.push(textRow("theme", "font.family", I18n.tr("Carattere")));
         out.push(number("theme", "font.size", I18n.tr("Dimensione del testo (pannelli, menu, notifiche)"), 9, 22, 1, 0));
         out.push(number("theme", "layout.radius", I18n.tr("Angoli di pannelli, menu e notifiche"), 0, 16, 1, 0));
+        out.push(header(I18n.tr("App Qt (vela theme qt)")));
+        out.push(textRow("theme", "qt.iconTheme", I18n.tr("Tema delle icone (cartella in ~/.local/share/icons o /usr/share/icons)")));
         out.push({ kind: "action", label: I18n.tr("Ripristina questa scheda"), act: "resetTab", key: "a:resetTab" });
         return out;
     }
