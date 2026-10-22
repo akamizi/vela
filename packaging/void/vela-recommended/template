@@ -3,7 +3,7 @@
 # chi vuole tutte le funzioni installa questo e chi vuole il minimo installa solo `vela`. Con `xbps-install vela-recommended`.
 # Le funzioni senza il programma corrispondente spariscono da sole (vedi README): niente di questo è obbligatorio.
 pkgname=vela-recommended
-version=0.12.1
+version=0.12.2
 revision=1
 build_style=meta
 depends="vela>=${version}
