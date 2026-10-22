@@ -8,7 +8,7 @@ revision=1
 build_style=meta
 depends="vela>=${version}
  NetworkManager bluez pipewire wireplumber upower power-profiles-daemon brightnessctl gammastep curl
- cups avahi wl-mirror polkit xdg-desktop-portal xdg-desktop-portal-wlr swaylock swayidle libnotify pcmanfm-qt papirus-icon-theme"
+ cups avahi wl-mirror polkit xdg-desktop-portal xdg-desktop-portal-wlr swaylock swayidle libnotify pcmanfm-qt lxqt-archiver papirus-icon-theme"
 short_desc="Optional dependencies of the Vela desktop shell (meta package)"
 maintainer="Maurizio Cavalletti <maurizio@akabit.it>"
 license="EUPL-1.2"
