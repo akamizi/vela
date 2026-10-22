@@ -23,7 +23,7 @@
   },
   // App Qt lanciate con `vela theme qt run` (D-049): tema delle icone (cartella in /usr/share/icons; vuoto = quello di sistema)
   "qt": {
-    "iconTheme": "Papirus-Dark"
+    "iconTheme": "Nordzy-dark"
   },
   "layout": {
     "barHeight": 26,
