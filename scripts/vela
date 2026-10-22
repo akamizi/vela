@@ -23,6 +23,9 @@ if [ "${1:-}" = theme ]; then
     if [ -n "$new" ]; then
         mkdir -p "$dir"
         printf '%s\n' "$new" > "$file.tmp" && mv "$file.tmp" "$file"
+        # Ritocchi dell'utente per provare spazi e padding: ~/.config/vela/qt.qss si aggiunge in coda (vince sulle regole generate)
+        extra="${XDG_CONFIG_HOME:-$HOME/.config}/vela/qt.qss"
+        [ -r "$extra" ] && { printf '\n/* da %s */\n' "$extra"; cat "$extra"; } >> "$file"
     elif [ ! -r "$file" ]; then
         echo "vela theme qt: Vela non è in esecuzione e non c'è un foglio di stile salvato ($file)" >&2
         exit 1
