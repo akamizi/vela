@@ -32,6 +32,13 @@ if [ "${1:-}" = theme ]; then
     kde=$(quickshell ipc -p "$root/shell" call theme kdeglobals 2>/dev/null) || kde=""
     if [ -n "$kde" ]; then
         mkdir -p "$kdedir"
+        # Se il tema delle icone scelto non è installato si ripiega su Papirus-Dark (in vela-recommended)
+        want=$(printf '%s\n' "$kde" | sed -n 's/^Theme=//p')
+        if [ -n "$want" ]; then
+            found=0
+            for d in "${XDG_DATA_HOME:-$HOME/.local/share}/icons" "$HOME/.icons" /usr/share/icons; do [ -d "$d/$want" ] && found=1; done
+            [ "$found" = 1 ] || kde=$(printf '%s\n' "$kde" | sed 's/^Theme=.*/Theme=Papirus-Dark/')
+        fi
         printf '%s\n' "$kde" > "$kdedir/kdeglobals"
     fi
     case "$action" in
