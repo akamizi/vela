@@ -53,6 +53,7 @@ function qss(theme) {
         "QLabel { background: transparent; }",
         "QToolBar, QMenuBar, QStatusBar { background-color: " + c.background + "; border: none; }",
         "QToolBar { border-bottom: 1px solid " + soft + "; spacing: " + pad + "px; }",
+        "QMenuBar::item { background: transparent; padding: " + (pad + 4) + "px " + (pad + 8) + "px; }",
         "QMenuBar::item:selected { background-color: " + cursor + "; }",
         "QToolButton { background: transparent; border: none; padding: " + pad + "px; border-radius: " + r + "px; }",
         "QToolButton:hover { background-color: " + hover + "; }",
