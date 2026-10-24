@@ -16,7 +16,10 @@ fi
 if command -v pipewire >/dev/null 2>&1 && ! pgrep -u "$(id -u)" -fx 'pipewire|/usr/bin/pipewire' >/dev/null 2>&1; then
     # Un pipewire-pulse orfano tiene occupato il socket di pulse e il PipeWire nuovo non riuscirebbe a servire le app: va fermato prima.
     pkill -u "$(id -u)" -f '^/usr/bin/pipewire -c pipewire-pulse.conf' >/dev/null 2>&1 && sleep 1
-    pipewire >/dev/null 2>&1 &
+    # Il sottoprocesso registra come finisce PipeWire (codice 143 = TERM, 137 = KILL, 139 = crash) in $XDG_RUNTIME_DIR/vela-pipewire.log:
+    # se l'audio sparisce a sessione avviata, il motivo si legge lì (il file sparisce allo spegnimento, è in tmpfs).
+    plog="${XDG_RUNTIME_DIR:-/tmp}/vela-pipewire.log"
+    ( pipewire >"$plog" 2>&1; echo "pipewire uscito con codice $? alle $(date +%T)" >>"$plog" ) &
 fi
 
 # Agente polkit (finestra della password per montare dischi, stampanti...) e portale dei selettori di file, entrambi Qt (LXQt): partono
