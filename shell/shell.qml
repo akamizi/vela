@@ -111,7 +111,7 @@ ShellRoot {
     }
 
     Loader {
-        active: Config.shell.notifications.enabled
+        active: Notifications.active
         sourceComponent: Popups {}
     }
 

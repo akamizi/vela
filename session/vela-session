@@ -4,6 +4,7 @@
 # Lo lancia il login manager dalla voce «Vela» (vela.desktop). Non tocca ~/.config/sway/config: personalizzazioni in ~/.config/vela/sway.d/*.conf.
 # VELA_SWAY_CONFIG sostituisce il file di configurazione (prove).
 export XDG_SESSION_TYPE=wayland
+export VELA_SESSION=1               # la shell lo legge: nella sessione Vela le notifiche integrate sono accese
 export XDG_CURRENT_DESKTOP=sway     # i portali (xdg-desktop-portal-wlr) scelgono la configurazione da qui
 cfg=${VELA_SWAY_CONFIG:-/usr/share/vela/sway/config}
 [ -r "$cfg" ] || { echo "vela-session: manca $cfg" >&2; exit 1; }

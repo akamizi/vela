@@ -39,6 +39,7 @@ PanelHost {
     }
     readonly property var tabNames: tabs.map(function (t) { return t.label; })
     readonly property string tabId: (tabs[tab] || tabs[0]).id
+    property bool picking: false              // selettore grafico dello sfondo aperto
     property var editing: null                // riga in modifica (colore o testo)
     property bool confirmReset: false
     property string currentKey: ""
@@ -212,6 +213,7 @@ PanelHost {
 
     function wallpaperRows() {
         var out = [header(I18n.tr("Sfondo"))];
+        out.push({ kind: "action", label: I18n.tr("Scegli un'immagine…"), act: "pickWallpaper", key: "a:pickwp" });
         out.push(textRow("sway", "wallpaper.path", I18n.tr("Immagine (percorso)")));
         out.push(choice("sway", "wallpaper.mode", I18n.tr("Adattamento"), [{ v: "fill", t: "riempi" }, { v: "fit", t: "adatta" }, { v: "stretch", t: "allunga" },
                                                                  { v: "center", t: "centra" }, { v: "tile", t: "affianca" }]));
@@ -660,6 +662,7 @@ PanelHost {
         else if (r.act === "batteryFull") BatteryLimit.toggleFull();
         else if (r.act === "openHome") Quickshell.execDetached(["xdg-open", homeUrl]);
         else if (r.act === "openReleases") Quickshell.execDetached(["xdg-open", homeUrl + "/releases"]);
+        else if (r.act === "pickWallpaper") { picking = true; wallpaperPicker.begin(); }
         else if (r.act === "addBind") addBind();
         else if (r.act === "addAuto") addAuto();
         else if (r.act === "addStation") addStation();
@@ -713,7 +716,7 @@ PanelHost {
 
     onOpenChanged: {
         if (open) {
-            editing = null; confirmReset = false; pendingConfirm = null; note = "";
+            editing = null; picking = false; confirmReset = false; pendingConfirm = null; note = "";
             SwayBackend.refresh();
             Qt.callLater(function () { list.positionViewAtBeginning(); });
             for (var i = 0; i < rows.length; i++) if (selectable(rows[i])) { select(i); break; }
@@ -727,7 +730,7 @@ PanelHost {
         for (var i = 0; i < Math.min(rows.length, 60); i++) h += rows[i].kind === "header" ? sectionHeight : Theme.rowHeight;
         return Math.min(h, maxRows * Theme.rowHeight + 3 * sectionHeight);
     }
-    contentHeight: headerHeight + 1 + (editing ? Theme.rowHeight * 2 + Theme.padding : listHeight + Theme.padding) + footerHeight
+    contentHeight: picking ? cardHeight - 40 : headerHeight + 1 + (editing ? Theme.rowHeight * 2 + Theme.padding : listHeight + Theme.padding) + footerHeight
 
     FocusScope {
         id: keys
@@ -1006,6 +1009,14 @@ PanelHost {
                     }
                 }
             }
+        }
+
+        WallpaperPicker {
+            id: wallpaperPicker
+            anchors { fill: parent; leftMargin: panel.sidebarWidth }
+            visible: panel.picking
+            z: 10
+            onClosed: { panel.picking = false; keys.forceActiveFocus(); }
         }
 
         // Elenco

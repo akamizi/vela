@@ -11,7 +11,9 @@ import "../core"
 Singleton {
     id: root
 
+    // Attivo se abilitato, oppure nella sessione «Vela» (VELA_SESSION=1, impostata da vela-session) salvo `inVelaSession: false`.
     readonly property bool active: Config.shell.notifications.enabled
+        || (Quickshell.env("VELA_SESSION") === "1" && Config.shell.notifications.inVelaSession)
     property bool dnd: false          // non disturbare: le notifiche normali vengono scartate in silenzio
     readonly property var tracked: loader.item ? loader.item.trackedNotifications : null
 
