@@ -14,6 +14,8 @@ fi
 # Si controlla la riga di comando intera: `pipewire -c pipewire-pulse.conf` (figlio del principale, che può restare orfano dopo una
 # sessione precedente) ha lo stesso nome del processo e farebbe credere che l'audio sia già avviato.
 if command -v pipewire >/dev/null 2>&1 && ! pgrep -u "$(id -u)" -fx 'pipewire|/usr/bin/pipewire' >/dev/null 2>&1; then
+    # Un pipewire-pulse orfano tiene occupato il socket di pulse e il PipeWire nuovo non riuscirebbe a servire le app: va fermato prima.
+    pkill -u "$(id -u)" -f '^/usr/bin/pipewire -c pipewire-pulse.conf' >/dev/null 2>&1 && sleep 1
     pipewire >/dev/null 2>&1 &
 fi
 
