@@ -9,6 +9,8 @@ export XKB_DEFAULT_LAYOUT="${XKB_DEFAULT_LAYOUT:-it}"
 # Cartella scrivibile a `_greeter` (cache di Quickshell e Qt, ricordo di utente e sessione)
 export XDG_CACHE_HOME="${XDG_CACHE_HOME:-/var/cache/vela-greeter}"
 export QT_QPA_PLATFORM=wayland
+# Nessuna decorazione: cage non le disegna e Qt aggiungerebbe le sue (barra del titolo e bordi) alla finestra a schermo intero
+export QT_WAYLAND_DISABLE_WINDOWDECORATION=1
 [ -n "${VELA_GREETER_WALLPAPER:-}" ] && export VELA_GREETER_WALLPAPER
 [ -n "${VELA_GREETER_POWEROFF:-}" ] && export VELA_GREETER_POWEROFF
 [ -n "${VELA_GREETER_REBOOT:-}" ] && export VELA_GREETER_REBOOT

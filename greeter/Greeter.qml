@@ -32,7 +32,10 @@ Item {
     readonly property string wallpaper: Quickshell.env("VELA_GREETER_WALLPAPER") || "/usr/share/vela-greeter/background.jpg"
 
     // --- stato ---
-    property alias user: userInput.text
+    property string user: ""            // nome di login scelto dall'elenco
+    property var users: []              // [{ name, label }]: utenti con uid >= 1000
+    property string lastUser: ""
+    readonly property int uidMin: Number(Quickshell.env("VELA_GREETER_UID_MIN") || 1000)
     property alias password: passInput.text
     property var sessions: []           // [{ name, exec }]
     property int sessionIndex: 0
@@ -50,6 +53,26 @@ Item {
     readonly property var session: sessions.length > 0 ? sessions[sessionIndex] : null
 
     // Avvio di una sessione di accesso per l'utente indicato (poi arriva la richiesta della password).
+    function selectUser(name) {
+        for (var i = 0; i < users.length; i++)
+            if (users[i].name === name) { user = name; return true; }
+        return false;
+    }
+
+    // Cambio utente: chiude la sessione greetd in corso; il timer (300 ms, dopo la cancellazione) ne apre una per il nuovo utente.
+    function cycleUser(step) {
+        if (users.length < 2 || launching) return;
+        var cur = 0;
+        for (var i = 0; i < users.length; i++) if (users[i].name === user) cur = i;
+        user = users[(cur + users.length + step) % users.length].name;
+        passInput.text = "";
+        pending = "";
+        promptReady = false;
+        busy = false;
+        if (sessionOpen) { sessionOpen = false; Greetd.cancelSession(); }
+        retryTimer.restart();
+    }
+
     function submitUser() {
         if (user.trim() === "" || launching) return;
         promptReady = false;
@@ -90,16 +113,26 @@ Item {
         try {
             var s = JSON.parse(String(text));
             if (typeof s.session === "string") { lastSession = s.session; selectLastSession(); }
-            if (typeof s.user === "string" && s.user !== "" && user === "") {
-                user = s.user;
-                submitUser();       // la password si può digitare subito
-            }
+            if (typeof s.user === "string") lastUser = s.user;
+            pickInitialUser();
         } catch (e) { }
+    }
+
+    // Utente iniziale: l'ultimo che ha acceduto, altrimenti il primo dell'elenco; si apre subito la sessione greetd
+    // (la password si può digitare subito). Parte solo quando sono noti sia l'elenco sia il ricordo (o la sua assenza).
+    property bool stateKnown: false
+    function pickInitialUser() {
+        if (users.length === 0 || !stateKnown || user !== "") return;
+        if (!selectUser(lastUser)) user = users[0].name;
+        submitUser();
     }
 
     function selectLastSession() {
         for (var i = 0; i < sessions.length; i++)
             if (sessions[i].name === lastSession) { sessionIndex = i; return; }
+        // Nessun ricordo (primo accesso): meglio una sessione di Vela che la prima in ordine alfabetico
+        for (var k = 0; k < sessions.length; k++)
+            if (sessions[k].name.indexOf("Vela") === 0) { sessionIndex = k; return; }
     }
 
     function saveState() {
@@ -169,7 +202,11 @@ Item {
     }
 
     FileView { path: root.themeFile; printErrors: false; onLoaded: root.applyTheme(text()) }
-    FileView { id: stateView; path: root.stateFile; printErrors: false; onLoaded: root.applyState(text()) }
+    FileView {
+        id: stateView; path: root.stateFile; printErrors: false
+        onLoaded: { root.stateKnown = true; root.applyState(text()) }
+        onLoadFailed: { root.stateKnown = true; root.pickInitialUser() }
+    }
     Timer { id: armTimer; interval: 4000; onTriggered: root.armedPower = "" }
     Shortcut { sequence: "F11"; onActivated: root.requestPower("reboot") }
     Shortcut { sequence: "F12"; onActivated: root.requestPower("poweroff") }
@@ -179,7 +216,25 @@ Item {
     Timer {
         id: retryTimer
         interval: 300
-        onTriggered: { root.retry = false; if (!root.launching) root.submitUser(); }
+        onTriggered: { root.retry = false; if (!root.launching && !root.sessionOpen) root.submitUser(); }
+    }
+
+    // Elenco degli utenti di login: uid >= UID_MIN (e < 60000), con una shell vera
+    Process {
+        id: listUsers
+        command: ["sh", "-c", "getent passwd | awk -F: -v min=\"$1\" '$3 >= min && $3 < 60000 && $7 !~ /(nologin|false)$/ {split($5, g, \",\"); print $1 \"\\t\" g[1]}'", "sh", String(root.uidMin)]
+        running: true
+        stdout: StdioCollector {
+            onStreamFinished: {
+                var out = [];
+                text.split("\n").forEach(function (l) {
+                    var p = l.split("\t");
+                    if (p[0] !== "") out.push({ name: p[0], label: (p[1] || "") !== "" ? p[1] : p[0] });
+                });
+                root.users = out;
+                root.pickInitialUser();
+            }
+        }
     }
 
     // Elenco delle sessioni Wayland (nome e comando); Hidden/NoDisplay esclusi.
@@ -267,20 +322,14 @@ Item {
             bottomPadding: 12
         }
 
-        Rectangle {
-            width: parent.width; height: 38; color: root.cSurface
-            border.width: 1; border.color: userInput.activeFocus ? root.cAccent : root.cBorder
-            TextInput {
-                id: userInput
-                anchors.fill: parent; anchors.margins: 10
-                verticalAlignment: TextInput.AlignVCenter
-                color: root.cForeground; font.family: root.fontFamily; font.pixelSize: root.fontSize
-                selectionColor: root.cAccent; clip: true; focus: true
-                enabled: !root.launching
-                onAccepted: root.submitUser()
-                KeyNavigation.tab: passInput
-                Text { visible: !userInput.text && !userInput.activeFocus; text: "Utente"; color: root.cMuted; font: userInput.font; anchors.verticalCenter: parent.verticalCenter }
-            }
+        // Utente: elenco degli account (uid >= 1000); ←/→ nel campo password o un clic cambiano utente
+        Text {
+            anchors.horizontalCenter: parent.horizontalCenter
+            property var cur: { for (var i = 0; i < root.users.length; i++) if (root.users[i].name === root.user) return root.users[i]; return null; }
+            text: !cur ? "nessun utente" : (root.users.length > 1 ? "‹  " + cur.label + "  ›" : cur.label)
+            color: root.cForeground; font.family: root.fontFamily; font.pixelSize: root.fontSize + 3
+            bottomPadding: 4
+            MouseArea { anchors.fill: parent; onClicked: root.cycleUser(1) }
         }
         Rectangle {
             width: parent.width; height: 38; color: root.cSurface
@@ -291,24 +340,50 @@ Item {
                 verticalAlignment: TextInput.AlignVCenter
                 echoMode: TextInput.Password
                 color: root.cForeground; font.family: root.fontFamily; font.pixelSize: root.fontSize
-                selectionColor: root.cAccent; clip: true
+                selectionColor: root.cAccent; clip: true; focus: true
                 enabled: !root.launching
                 onAccepted: root.submitPassword()
-                KeyNavigation.tab: userInput
-                KeyNavigation.backtab: userInput
+                Keys.onLeftPressed: root.cycleUser(-1)
+                Keys.onRightPressed: root.cycleUser(1)
                 Keys.onUpPressed: root.cycleSession(-1)
                 Keys.onDownPressed: root.cycleSession(1)
                 Text { visible: !passInput.text && !passInput.activeFocus; text: "Password"; color: root.cMuted; font: passInput.font; anchors.verticalCenter: parent.verticalCenter }
             }
         }
 
-        // Sessione: ↑/↓ nel campo password
+        // Sessione (ambiente desktop): tutte le voci in vista, quella scelta evidenziata; clic oppure ↑/↓ nel campo password
         Text {
-            anchors.horizontalCenter: parent.horizontalCenter
-            text: root.session ? "‹  " + root.session.name + "  ›" : "nessuna sessione"
-            color: root.cMuted; font.family: root.fontFamily; font.pixelSize: root.fontSize - 1
+            text: "Sessione"
+            color: root.cMuted; font.family: root.fontFamily; font.pixelSize: root.fontSize - 2
             topPadding: 6
-            MouseArea { anchors.fill: parent; onClicked: root.cycleSession(1) }
+        }
+        Flow {
+            width: parent.width
+            spacing: 6
+            Repeater {
+                model: root.sessions
+                delegate: Rectangle {
+                    required property var modelData
+                    required property int index
+                    readonly property bool chosen: index === root.sessionIndex
+                    width: chipText.implicitWidth + 20; height: 30
+                    color: chosen ? root.cAccent : root.cSurface
+                    border.width: 1; border.color: chosen ? root.cAccent : root.cBorder
+                    Text {
+                        id: chipText
+                        anchors.centerIn: parent
+                        text: parent.modelData.name
+                        color: parent.chosen ? root.cBackground : root.cForeground
+                        font.family: root.fontFamily; font.pixelSize: root.fontSize - 1; font.weight: parent.chosen ? Font.DemiBold : Font.Normal
+                    }
+                    MouseArea { anchors.fill: parent; onClicked: root.sessionIndex = parent.index }
+                }
+            }
+        }
+        Text {
+            visible: root.sessions.length === 0
+            text: "nessuna sessione"; color: root.cError
+            font.family: root.fontFamily; font.pixelSize: root.fontSize - 1
         }
         // Messaggio (errore o avviso) su una fascia leggibile sopra lo sfondo
         Rectangle {

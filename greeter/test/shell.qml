@@ -16,7 +16,7 @@ ShellRoot {
         Timer { interval: 1000; running: true; onTriggered: { console.log("tema", g.cAccent, g.fontFamily, "utente iniziale:", g.user, "sessione:", g.session ? g.session.name : "-"); if (win.powerSafe) g.requestPower("reboot"); } }
         Timer { interval: 1300; running: true; onTriggered: if (win.powerSafe) g.requestPower("reboot") }
         Timer { interval: 1600; running: true; onTriggered: if (win.powerSafe) g.requestPower("poweroff") }
-        Timer { interval: 2200; running: true; onTriggered: { if (g.user === "") { g.user = "mizi"; g.submitUser(); } g.cycleSession(1); } }
+        Timer { interval: 2200; running: true; onTriggered: { g.cycleSession(1); } }
         Timer { interval: 3500; running: true; onTriggered: { g.password = "sbagliata"; g.submitPassword(); } }
         Timer { interval: 6500; running: true; onTriggered: { g.password = "ok"; g.submitPassword(); } }
     }
