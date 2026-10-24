@@ -51,6 +51,7 @@ install: install-system
 	install -Dm755 session/vela-session $(DESTDIR)$(PREFIX)/bin/vela-session
 	install -Dm755 session/session-init $(DESTDIR)$(LIBEXEC)/vela/session-init
 	install -Dm644 session/sway-config $(SHARE)/vela/sway/config
+	install -Dm644 session/portals.conf $(SHARE)/vela/portals.conf
 	install -Dm644 session/vela.desktop $(SHARE)/wayland-sessions/vela.desktop
 
 .PHONY: all helper daemon test install install-system

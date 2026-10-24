@@ -27,7 +27,7 @@ A ogni tag `v*` l'Action `.github/workflows/xbps-repo.yml` costruisce il pacchet
 ```sh
 scripts/build-xbps-direct.sh            # come l'Action: make install + xbps-create; .xbps in build-xbps/out
 # oppure, con xbps-src (void-packages):
-scripts/build-xbps.sh 0.14.4            # clona void-packages in build-xbps/work e costruisce; .xbps in build-xbps/out
+scripts/build-xbps.sh 0.14.5            # clona void-packages in build-xbps/work e costruisce; .xbps in build-xbps/out
 scripts/publish-xbps-repo.sh build-xbps/out build-xbps/repo vela-repo.pem "Nome"
 ```
 

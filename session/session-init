@@ -3,6 +3,7 @@
 # Avvii di sessione per la sessione «Vela» (D-048), lanciato da Sway (`exec`). Ogni passo parte solo se il programma c'è e non è già in
 # esecuzione; niente di ciò che richiede privilegi o una scelta dell'utente (portachiavi, applet di rete, servizi di sistema).
 running() { pgrep -u "$(id -u)" -x "$1" >/dev/null 2>&1; }
+runningcmd() { pgrep -u "$(id -u)" -f "^$1( |\$)" >/dev/null 2>&1; }   # per nomi oltre i 15 caratteri (nome del processo troncato)
 
 # I servizi attivati da D-Bus devono vedere il display e l'ambiente di Sway.
 if [ -n "${DBUS_SESSION_BUS_ADDRESS:-}" ] && command -v dbus-update-activation-environment >/dev/null 2>&1; then
@@ -12,6 +13,16 @@ fi
 # Audio (PipeWire; WirePlumber lo avvia la configurazione di PipeWire).
 if command -v pipewire >/dev/null 2>&1 && ! running pipewire; then
     pipewire >/dev/null 2>&1 &
+fi
+
+# Agente polkit (finestra della password per montare dischi, stampanti...) e portale dei selettori di file, entrambi Qt (LXQt): partono
+# col tema di Vela (`vela theme qt run`). Il nome dei processi supera i 15 caratteri di `pgrep -x`: si controlla la riga di comando.
+# Il portale parte prima di xdg-desktop-portal, altrimenti D-Bus lo attiverebbe senza tema.
+if command -v lxqt-policykit-agent >/dev/null 2>&1 && ! runningcmd lxqt-policykit-agent; then
+    vela theme qt run lxqt-policykit-agent >/dev/null 2>&1 &
+fi
+if [ -x /usr/libexec/xdg-desktop-portal-lxqt ] && ! runningcmd /usr/libexec/xdg-desktop-portal-lxqt; then
+    vela theme qt run /usr/libexec/xdg-desktop-portal-lxqt >/dev/null 2>&1 &
 fi
 
 # Portali per condivisione dello schermo e selettori di file.

@@ -38,7 +38,8 @@ bindsym $mod+m exec vela ipc call panel toggle radio
 bindsym $mod+Tab exec vela ipc call layout next
 bindsym $mod+l exec vela ipc call idle lock
 bindsym $mod+Shift+l exec vela ipc call idle lock
-bindsym $mod+i exec vela ipc call toggles awake
+bindsym $mod+i exec vela ipc call panel toggle settings
+bindsym $mod+Shift+i exec vela ipc call toggles awake
 bindsym $mod+b exec vela ipc call bar toggle
 bindsym $mod+Shift+e exec vela ipc call session logout
 bindsym XF86Display exec vela ipc call panel toggle display
