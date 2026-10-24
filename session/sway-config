@@ -20,6 +20,7 @@ exec vela
 bindsym $mod+Return exec $term
 bindsym $mod+t exec vela editor
 bindsym $mod+f exec vela files
+bindsym $mod+Shift+f exec $term --title="yazi" -e yazi
 bindsym $mod+w exec xdg-open http://
 bindsym $mod+e exec xdg-open mailto:
 
