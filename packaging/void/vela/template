@@ -1,7 +1,7 @@
 # Template file for 'vela'
-# Per void-packages: copiare in srcpkgs/vela/template (distfiles e checksum sono quelli della release v0.14.1).
+# Per void-packages: copiare in srcpkgs/vela/template (distfiles e checksum sono quelli della release v0.14.2).
 pkgname=vela
-version=0.14.1
+version=0.14.2
 revision=1
 build_style=gnu-makefile
 make_install_args="PREFIX=/usr"
