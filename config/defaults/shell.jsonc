@@ -7,10 +7,12 @@
   "bar": {
     "enabled": true,
     // "top" o "bottom"
-    "position": "bottom",
+    "position": "top",
     // Nome dell'uscita che ha la barra (es. "eDP-1", vedi `swaymsg -t get_outputs` o `wlr-randr`); "" = su tutti gli schermi.
     // Se l'uscita non c'è (scollegata) la barra torna su tutti.
     "screen": "",
+    // Dissolvenza della barra all'avvio (millisecondi, 0 = nessuna): in sessione fa da continuazione al greeter di accesso.
+    "fadeIn": 400,
     // Elementi di ciascuna zona, nell'ordine in cui compaiono. Disponibili:
     // Menu Workspaces WindowLayout WindowTitle Minimized Weather Recording Dnd NightLight Awake Media Radio Clock Tray
     // Indicators (raggruppa Recording Dnd NightLight Awake)

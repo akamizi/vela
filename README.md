@@ -105,7 +105,7 @@ focus direzionale; il ridimensionamento è Super+Ctrl+frecce. Le Impostazioni mo
 
 ```sh
 scripts/check-deps.sh      # controlla Quickshell e i moduli
-scripts/vela               # avvia la shell (barra in basso; Waybar non viene toccata)
+scripts/vela               # avvia la shell (barra in alto; Waybar non viene toccata)
 ```
 
 Spegni, Riavvia ed Esci dal menu chiudono prima le finestre in ordine (le app possono salvare) e agiscono quando non ne resta

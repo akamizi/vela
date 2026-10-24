@@ -97,7 +97,12 @@ Variants {
         }
 
         Rectangle {
+            id: barBody
             readonly property bool isBarZone: true
+            // Dissolvenza in entrata all'avvio della barra (bar.fadeIn, ms); 0 = comparsa immediata
+            readonly property int fadeMs: Math.max(0, Number(Config.shell.bar.fadeIn) || 0)
+            Component.onCompleted: if (fadeMs > 0) { opacity = 0; barFade.start(); }
+            NumberAnimation { id: barFade; target: barBody; property: "opacity"; from: 0; to: 1; duration: barBody.fadeMs; easing.type: Easing.OutCubic }
             anchors.fill: parent
             color: Theme.barBackground
             radius: Theme.barRadius

@@ -1,6 +1,6 @@
 # Greeter di Vela (D-055)
 
-Schermata di accesso in Quickshell per **greetd**, nello stile di Vela. **Fase 1**: greeter minimo (utente, password, sessione) con sfondo e orologio. **Fase 2**: ricordo di ultimo utente e sessione, spegni/riavvia, tema di Vela facoltativo.
+Schermata di accesso in Quickshell per **greetd**, nello stile di Vela. **Fase 1**: greeter minimo (utente, password, sessione) con sfondo e orologio. **Fase 2**: ricordo di ultimo utente e sessione, spegni/riavvia, tema di Vela facoltativo. **Fase 3**: dissolvenza all'accesso.
 Pacchetto separato da `vela` e **senza dipendenze reciproche**: colori, font e sfondo sono nel greeter, nessun file di Vela è richiesto (lo sfondo
 predefinito `/usr/share/backgrounds/vela/Vela-5.jpg`, se manca resta il colore di fondo).
 
@@ -12,6 +12,7 @@ predefinito `/usr/share/backgrounds/vela/Vela-5.jpg`, se manca resta il colore d
 - **Ricordo** (fase 2): all'accesso scrive `{"user","session"}` in `/var/cache/vela-greeter/state.json` (cartella da creare e rendere scrivibile a `_greeter`: lo farà il pacchetto; se non si può scrivere, niente ricordo e nessun errore). All'avvio ripristina l'utente (apre subito la sessione di accesso, quindi la password si digita subito) e la sessione. Nessun dato sensibile.
 - **Spegni/Riavvia** (fase 2): pulsanti in basso a destra e tasti F12/F11; il primo clic arma («Conferma?» per 4 s), il secondo esegue `loginctl poweroff` / `loginctl reboot` (`VELA_GREETER_POWEROFF`, `VELA_GREETER_REBOOT`). I permessi dipendono da elogind/polkit per l'utente `_greeter`: **da verificare con il sistema vero**.
 - **Tema facoltativo** (fase 2): se esiste `/usr/share/vela/config/defaults/theme.jsonc` (installato da Vela) il greeter ne legge colori e carattere; altrimenti usa i suoi default. Non è una dipendenza e non legge `~/.config`.
+- **Dissolvenza** (fase 3): alla conferma prima i contenuti, poi tutto lo schermo verso il nero (250 ms + 350 ms, `VELA_GREETER_FADE_MS`), poi parte la sessione. Tra l'uscita del greeter e il compositor dell'utente resta uno stacco nero (greetd avvia la sessione solo dopo l'uscita del greeter): così sembra voluto. Dal lato sessione la barra di Vela entra in dissolvenza (`bar.fadeIn`, 400 ms; 0 = disattivata).
 - Variabili per le prove: `VELA_GREETER_SESSIONS`, `VELA_GREETER_WALLPAPER`, `VELA_GREETER_STATE`, `VELA_GREETER_THEME`, `VELA_GREETER_POWEROFF`, `VELA_GREETER_REBOOT`.
 
 ## Prove senza root e senza toccare greetd

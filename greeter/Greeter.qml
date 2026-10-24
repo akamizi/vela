@@ -45,6 +45,7 @@ Item {
     property bool retry: false         // riaprire la sessione quando greetd torna Inactive
     property bool launching: false
     property string lastSession: ""     // nome della sessione dell'ultimo accesso
+    property real contentOpacity: 1     // dissolvenza dei contenuti all'accesso
     property string armedPower: ""      // "poweroff" | "reboot": premuto una volta, serve una seconda conferma
     readonly property var session: sessions.length > 0 ? sessions[sessionIndex] : null
 
@@ -199,6 +200,16 @@ Item {
         }
     }
 
+    // Dissolvenza all'accesso: prima i contenuti, poi lo schermo intero verso il nero; solo allora parte la sessione.
+    // Tra l'uscita del greeter e il compositor dell'utente c'è comunque un breve stacco nero: così sembra voluto.
+    readonly property int fadeMs: Math.max(0, Number(Quickshell.env("VELA_GREETER_FADE_MS") || 250))
+    SequentialAnimation {
+        id: fadeOut
+        NumberAnimation { target: root; property: "contentOpacity"; to: 0; duration: root.fadeMs }
+        NumberAnimation { target: blackout; property: "opacity"; to: 1; duration: root.fadeMs * 1.4 }
+        ScriptAction { script: Greetd.launch(["sh", "-c", root.session.exec], [], true) }
+    }
+
     // --- aspetto ---
     Rectangle { anchors.fill: parent; color: root.cBackground }
     Image {
@@ -214,7 +225,7 @@ Item {
         anchors.right: parent.right; anchors.bottom: parent.bottom
         anchors.margins: 16
         spacing: 8
-        opacity: root.launching ? 0 : 1
+        opacity: root.contentOpacity
         Repeater {
             model: [{ kind: "reboot", label: "Riavvia", key: "F11" }, { kind: "poweroff", label: "Spegni", key: "F12" }]
             delegate: Rectangle {
@@ -234,14 +245,14 @@ Item {
         }
     }
 
+    Rectangle { id: blackout; anchors.fill: parent; color: "black"; opacity: 0; z: 100 }
+
     Column {
         id: card
         anchors.centerIn: parent
         width: 340
         spacing: 12
-        opacity: root.launching ? 0 : 1
-        NumberAnimation { id: fadeOut; target: card; property: "opacity"; to: 0; duration: 350
-            onFinished: Greetd.launch(["sh", "-c", root.session.exec], [], true) }
+        opacity: root.contentOpacity
 
         SystemClock { id: clock; precision: SystemClock.Minutes }
         Text {
