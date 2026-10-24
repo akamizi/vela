@@ -28,25 +28,57 @@ Singleton {
     readonly property int lockSecs: secs(minutes("lockMinutes"))
     readonly property int screenOffSecs: secs(minutes("screenOffMinutes"))
     readonly property int suspendSecs: secs(minutes("suspendMinutes"))
+    // Secondi di dissolvenza prima del blocco per inattività (0 = subito, senza dissolvenza).
+    readonly property int fadeSecs: typeof cfg.fadeSeconds === "number" ? Math.max(0, Math.min(30, Math.round(cfg.fadeSeconds))) : 0
 
-    IdleMonitor {
-        enabled: root.enabled && root.lockSecs > 0
-        timeout: Math.max(1, root.lockSecs)
-        respectInhibitors: true
-        onIsIdleChanged: if (isIdle) root.lock()
+    // Un monitor per tempo: Variants lo ricrea quando il tempo cambia (il timeout di un IdleMonitor già creato non viene riletto).
+    Variants {
+        model: root.enabled && root.lockSecs > 0 ? [root.lockSecs] : []
+        IdleMonitor {
+            required property int modelData
+            timeout: modelData
+            respectInhibitors: true
+            onIsIdleChanged: if (isIdle) root.beginLock(); else root.cancelFade()
+        }
     }
-    IdleMonitor {
-        enabled: root.enabled && root.screenOffSecs > 0
-        timeout: Math.max(1, root.screenOffSecs)
-        respectInhibitors: true
-        onIsIdleChanged: Compositor.setScreensPower(!isIdle)    // spenge da inattivo, riaccende all'attività
+    Variants {
+        model: root.enabled && root.screenOffSecs > 0 ? [root.screenOffSecs] : []
+        IdleMonitor {
+            required property int modelData
+            timeout: modelData
+            respectInhibitors: true
+            onIsIdleChanged: Compositor.setScreensPower(!isIdle)    // spenge da inattivo, riaccende all'attività
+        }
     }
-    IdleMonitor {
-        enabled: root.enabled && root.suspendSecs > 0
-        timeout: Math.max(1, root.suspendSecs)
-        respectInhibitors: true
-        onIsIdleChanged: if (isIdle) root.suspend()
+    Variants {
+        model: root.enabled && root.suspendSecs > 0 ? [root.suspendSecs] : []
+        IdleMonitor {
+            required property int modelData
+            timeout: modelData
+            respectInhibitors: true
+            onIsIdleChanged: if (isIdle) root.suspend()
+        }
     }
+
+    // Blocco per inattività: prima la dissolvenza (se attiva), poi il blocco; l'attività la annulla.
+    property bool fading: false
+    function beginLock() {
+        if (fadeSecs <= 0) { lock(); return; }
+        fading = true;
+        fadeTimer.interval = fadeSecs * 1000;
+        fadeTimer.restart();
+    }
+    function cancelFade() {
+        fadeTimer.stop();
+        release.stop();
+        fading = false;
+    }
+    Timer {
+        id: fadeTimer
+        onTriggered: { root.lock(); release.restart(); }
+    }
+    // Il buio resta ancora un attimo, finché la schermata di blocco non è su.
+    Timer { id: release; interval: 1500; onTriggered: root.fading = false }
 
     // Blocca lo schermo, salvo che un blocco sia già attivo (il comando è un array: nessuna shell sulla stringa).
     function lock() {

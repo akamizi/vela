@@ -13,6 +13,7 @@ import "plugins/bar"
 import "plugins/menu"
 import "plugins/panels"
 import "plugins/osd"
+import "plugins/idle"
 import "plugins/notifications"
 
 ShellRoot {
@@ -103,6 +104,11 @@ ShellRoot {
     Loader {
         active: Config.shell.panels.radio.enabled
         sourceComponent: RadioPanel {}
+    }
+
+    Loader {
+        active: Idle.enabled && Idle.fadeSecs > 0
+        sourceComponent: IdleFade {}
     }
 
     Loader {

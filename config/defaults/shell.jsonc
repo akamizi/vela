@@ -12,12 +12,12 @@
     // Se l'uscita non c'è (scollegata) la barra torna su tutti.
     "screen": "",
     // Elementi di ciascuna zona, nell'ordine in cui compaiono. Disponibili:
-    // Menu Workspaces WindowLayout WindowTitle Weather Recording Dnd NightLight Awake Media Radio Clock Tray
+    // Menu Workspaces WindowLayout WindowTitle Minimized Weather Recording Dnd NightLight Awake Media Radio Clock Tray
     // Indicators (raggruppa Recording Dnd NightLight Awake)
     // Memory Cpu Temperature Fan KeyboardLayout Updates Bluetooth Network Vpn Mic Volume Brightness PowerProfile Battery User
-    // (WindowLayout compare solo con il demone dati; Mic è spento di default; KeyboardLayout compare solo con più di un layout di tastiera, Updates solo se ci sono aggiornamenti)
+    // (Minimized compare solo con finestre iconificate (labwc); WindowLayout compare solo con il demone dati; Mic è spento di default; KeyboardLayout compare solo con più di un layout di tastiera, Updates solo se ci sono aggiornamenti)
     "modules": {
-      "left": ["Menu", "Workspaces", "WindowLayout", "Weather", "WindowTitle"],
+      "left": ["Menu", "Workspaces", "WindowLayout", "Weather", "WindowTitle", "Minimized"],
       "center": ["Indicators", "Media", "Clock"],
       "right": ["Tray", "Memory", "Cpu", "Temperature", "Fan", "KeyboardLayout", "Updates", "Bluetooth", "Network", "Vpn",
                 "Volume", "Brightness", "PowerProfile", "Battery", "User"]
@@ -175,6 +175,8 @@
     "screenOffMinutesOnAc": 10,
     "suspendMinutes": 30,
     "suspendMinutesOnAc": 0,
+    // Secondi di dissolvenza (schermo che si oscura) prima del blocco per inattività; un movimento la annulla. 0 = nessuna
+    "fadeSeconds": 3,
     "lockCommand": ["swaylock", "-f"]
   },
   // position: "center" (centrato nello schermo) o "bar" (in basso/in alto, sopra la barra); scale: ingrandimento (1 = piccolo, 2 = grande).

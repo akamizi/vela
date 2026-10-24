@@ -446,6 +446,10 @@ PanelHost {
         out.push(minutesRow("idle.screenOffMinutesOnAc", I18n.tr("Spegni lo schermo dopo"), 10));
         out.push(minutesRow("idle.suspendMinutesOnAc", I18n.tr("Sospendi dopo"), 0));
         out.push(header(I18n.tr("Blocco")));
+        var fr = number("shell", "idle.fadeSeconds", I18n.tr("Dissolvenza prima del blocco"), 0, 30, 1, 0, 3);
+        var fv = Settings.get("shell", "idle.fadeSeconds");
+        fr.text = fv === 0 ? I18n.tr("nessuna") : (typeof fv === "number" ? I18n.tr("%1 s", fv) : I18n.tr("predefinito"));
+        out.push(fr);
         var lc = Idle.lockCommand.join(" ");
         out.push({ kind: "text", file: "shell", path: "idle.lockCommand", label: I18n.tr("Comando di blocco"), value: lc, text: lc,
                    over: Settings.overridden("shell", "idle.lockCommand"), key: "shell:idle.lockCommand" });
