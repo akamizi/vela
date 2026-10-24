@@ -1,0 +1,2 @@
+# Ambiente della sessione «Vela (labwc)». Layout di tastiera di partenza: labwc non ha un `swaymsg input`, lo si cambia qui.
+XKB_DEFAULT_LAYOUT=it

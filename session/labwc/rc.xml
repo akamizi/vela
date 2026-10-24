@@ -1,0 +1,102 @@
+<?xml version="1.0"?>
+<!-- Configurazione labwc della sessione «Vela (labwc)». Installata dal pacchetto: non va modificata.
+     Tasti tradotti da session/sway-config. Non ci sono: layout split/stacking/tabbed, scratchpad, modalità «resize»,
+     focus direzionale (labwc è a finestre sovrapposte). Barra, menu e pannelli sono di Vela. -->
+<labwc_config>
+  <core>
+    <gap>0</gap>
+  </core>
+
+  <desktops>
+    <number>5</number>
+  </desktops>
+
+  <theme>
+    <name>Clearlooks</name>
+  </theme>
+
+  <keyboard>
+    <repeatRate>25</repeatRate>
+    <repeatDelay>600</repeatDelay>
+
+    <!-- Applicazioni -->
+    <keybind key="W-Return"><action name="Execute" command="foot" /></keybind>
+    <keybind key="W-t"><action name="Execute" command="vela editor" /></keybind>
+    <keybind key="W-f"><action name="Execute" command="vela files" /></keybind>
+    <keybind key="W-S-f"><action name="Execute" command="foot --title=yazi -e yazi" /></keybind>
+    <keybind key="W-w"><action name="Execute" command="xdg-open http://" /></keybind>
+    <keybind key="W-e"><action name="Execute" command="xdg-open mailto:" /></keybind>
+
+    <!-- Menu, pannelli e sessione di Vela -->
+    <keybind key="W-space"><action name="Execute" command="vela ipc call menu toggle" /></keybind>
+    <keybind key="W-C-m"><action name="Execute" command="vela ipc call menu toggle" /></keybind>
+    <keybind key="W-A-space"><action name="Execute" command="vela ipc call menu apps" /></keybind>
+    <keybind key="W-d"><action name="Execute" command="vela ipc call menu apps" /></keybind>
+    <keybind key="W-C-a"><action name="Execute" command="vela ipc call menu apps" /></keybind>
+    <keybind key="W-S-space"><action name="Execute" command="vela ipc call menu calc" /></keybind>
+    <keybind key="W-C-space"><action name="Execute" command="vela ipc call menu power" /></keybind>
+    <keybind key="W-u"><action name="Execute" command="vela ipc call panel toggle user" /></keybind>
+    <keybind key="W-z"><action name="Execute" command="vela ipc call panel toggle shortcuts" /></keybind>
+    <keybind key="W-p"><action name="Execute" command="vela ipc call panel toggle power" /></keybind>
+    <keybind key="W-m"><action name="Execute" command="vela ipc call panel toggle radio" /></keybind>
+    <keybind key="W-l"><action name="Execute" command="vela ipc call idle lock" /></keybind>
+    <keybind key="W-S-l"><action name="Execute" command="vela ipc call idle lock" /></keybind>
+    <keybind key="W-i"><action name="Execute" command="vela ipc call panel toggle settings" /></keybind>
+    <keybind key="W-S-i"><action name="Execute" command="vela ipc call toggles awake" /></keybind>
+    <keybind key="W-b"><action name="Execute" command="vela ipc call bar toggle" /></keybind>
+    <keybind key="W-S-e"><action name="Execute" command="vela ipc call session logout" /></keybind>
+    <keybind key="XF86Display"><action name="Execute" command="vela ipc call panel toggle display" /></keybind>
+
+    <!-- Finestre -->
+    <keybind key="W-S-q"><action name="Close" /></keybind>
+    <keybind key="A-F4"><action name="Close" /></keybind>
+    <keybind key="W-S-c"><action name="Reconfigure" /></keybind>
+    <keybind key="W-S-r"><action name="Reconfigure" /></keybind>
+    <keybind key="W-F11"><action name="ToggleFullscreen" /></keybind>
+    <keybind key="A-Tab"><action name="NextWindow" /></keybind>
+    <keybind key="A-S-Tab"><action name="PreviousWindow" /></keybind>
+    <keybind key="W-minus"><action name="ToggleShowDesktop" /></keybind>
+
+    <!-- Spostamento (frecce) e ridimensionamento (Ctrl + frecce) -->
+    <keybind key="W-Left"><action name="MoveRelative" x="-20" y="0" /></keybind>
+    <keybind key="W-Right"><action name="MoveRelative" x="20" y="0" /></keybind>
+    <keybind key="W-Up"><action name="MoveRelative" x="0" y="-20" /></keybind>
+    <keybind key="W-Down"><action name="MoveRelative" x="0" y="20" /></keybind>
+    <keybind key="W-C-Left"><action name="ResizeRelative" right="-20" /></keybind>
+    <keybind key="W-C-Right"><action name="ResizeRelative" right="20" /></keybind>
+    <keybind key="W-C-Up"><action name="ResizeRelative" bottom="-20" /></keybind>
+    <keybind key="W-C-Down"><action name="ResizeRelative" bottom="20" /></keybind>
+
+    <!-- Schermate (grim + slurp + swappy): Stamp = area, Maiusc+Stamp = schermo intero -->
+    <keybind key="Print"><action name="Execute" command="sh -c 'grim -g &quot;$(slurp)&quot; - | swappy -f -'" /></keybind>
+    <keybind key="S-Print"><action name="Execute" command="sh -c 'grim - | swappy -f -'" /></keybind>
+
+    <!-- Spazi di lavoro: Ctrl+Alt+frecce cambia, Maiusc+Alt+frecce sposta la finestra -->
+    <keybind key="C-A-Left"><action name="GoToDesktop" to="left" wrap="no" /></keybind>
+    <keybind key="C-A-Right"><action name="GoToDesktop" to="right" wrap="no" /></keybind>
+    <keybind key="S-A-Left"><action name="SendToDesktop" to="left" follow="yes" wrap="no" /></keybind>
+    <keybind key="S-A-Right"><action name="SendToDesktop" to="right" follow="yes" wrap="no" /></keybind>
+    <keybind key="W-1"><action name="GoToDesktop" to="1" /></keybind>
+    <keybind key="W-S-1"><action name="SendToDesktop" to="1" /></keybind>
+    <keybind key="W-2"><action name="GoToDesktop" to="2" /></keybind>
+    <keybind key="W-S-2"><action name="SendToDesktop" to="2" /></keybind>
+    <keybind key="W-3"><action name="GoToDesktop" to="3" /></keybind>
+    <keybind key="W-S-3"><action name="SendToDesktop" to="3" /></keybind>
+    <keybind key="W-4"><action name="GoToDesktop" to="4" /></keybind>
+    <keybind key="W-S-4"><action name="SendToDesktop" to="4" /></keybind>
+    <keybind key="W-5"><action name="GoToDesktop" to="5" /></keybind>
+    <keybind key="W-S-5"><action name="SendToDesktop" to="5" /></keybind>
+
+    <!-- Tasti multimediali e di schermo (con l'OSD di Vela) -->
+    <keybind key="XF86AudioRaiseVolume" allowWhenLocked="yes"><action name="Execute" command="vela ipc call audio raise" /></keybind>
+    <keybind key="XF86AudioLowerVolume" allowWhenLocked="yes"><action name="Execute" command="vela ipc call audio lower" /></keybind>
+    <keybind key="XF86AudioMute" allowWhenLocked="yes"><action name="Execute" command="vela ipc call audio mute" /></keybind>
+    <keybind key="XF86AudioMicMute" allowWhenLocked="yes"><action name="Execute" command="vela ipc call audio micMute" /></keybind>
+    <keybind key="XF86MonBrightnessUp" allowWhenLocked="yes"><action name="Execute" command="vela ipc call brightness up" /></keybind>
+    <keybind key="XF86MonBrightnessDown" allowWhenLocked="yes"><action name="Execute" command="vela ipc call brightness down" /></keybind>
+  </keyboard>
+
+  <mouse>
+    <default />
+  </mouse>
+</labwc_config>

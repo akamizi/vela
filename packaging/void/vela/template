@@ -1,7 +1,7 @@
 # Template file for 'vela'
-# Per void-packages: copiare in srcpkgs/vela/template (distfiles e checksum sono quelli della release v0.14.8).
+# Per void-packages: copiare in srcpkgs/vela/template (distfiles e checksum sono quelli della release v0.15.0).
 pkgname=vela
-version=0.14.8
+version=0.15.0
 revision=1
 build_style=gnu-makefile
 make_install_args="PREFIX=/usr"
@@ -17,6 +17,7 @@ checksum=5d7d551b0248b8f1f439e94f742049fe460aeb9a725347e107b2aa98b10796f1
 # Dipendenze facoltative: senza, la voce relativa sparisce (vedi README).
 # NetworkManager (rete, VPN), bluez (Bluetooth), wireplumber (audio PipeWire), upower (batteria),
 # power-profiles-daemon (profilo energetico), brightnessctl (luminosità), gammastep (luce notturna),
+# labwc, wlr-randr e wlopm (sessione «Vela (labwc)»: compositor, schermi, spegnimento schermi; stanno in vela-recommended),
 # curl (meteo), polkit (limite di carica della batteria: helper di sistema, regola polkit e regola udev sono già installati da `make install`).
 
 post_install() {

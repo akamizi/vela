@@ -1,0 +1,8 @@
+#!/bin/sh
+# Avvii della sessione «Vela (labwc)» (equivalenti di `exec` in sway-config).
+# Impostazioni dell'utente: gli script in ~/.config/vela/labwc.d/ (quello degli schermi lo scrive Vela dalle Impostazioni)
+for f in "${VELA_USER_DIR:-$HOME/.config/vela}"/labwc.d/*.sh; do [ -r "$f" ] && sh "$f"; done
+# Sfondo predefinito (gli sfondi di Vela stanno in /usr/share/backgrounds/vela)
+command -v swaybg >/dev/null 2>&1 && swaybg -i /usr/share/backgrounds/vela/Vela-5.jpg -m fill >/dev/null 2>&1 &
+/usr/libexec/vela/session-init &
+vela &

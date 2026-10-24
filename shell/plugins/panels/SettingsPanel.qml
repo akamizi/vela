@@ -33,6 +33,7 @@ PanelHost {
                    { id: "keys", label: I18n.tr("Scorciatoie") }, { id: "autostart", label: I18n.tr("Avvio automatico") },
                    { id: "rules", label: I18n.tr("Regole delle finestre") }, { id: "gaps", label: I18n.tr("Bordi e spazi") });
         }
+        else if (Compositors.activeId === "labwc") t.push({ id: "outputs", label: I18n.tr("Schermi") });     // labwc: solo gli schermi (wlr-randr)
         if (BatteryLimit.supported) t.push({ id: "battery", label: I18n.tr("Batteria") });
         t.push({ id: "compositor", label: I18n.tr("Compositor") }, { id: "about", label: I18n.tr("Informazioni") });
         return t;

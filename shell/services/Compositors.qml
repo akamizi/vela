@@ -15,8 +15,8 @@ Singleton {
     readonly property var known: [
         { id: "sway", name: "Sway", binary: "sway", config: "~/.config/sway/config", backend: true,
           categories: { outputs: true, input: true, wallpaper: true, keybindings: true, autostart: true, rules: true, gaps: true } },
-        { id: "labwc", name: "labwc", binary: "labwc", config: "~/.config/labwc/rc.xml", backend: false,
-          categories: {} }
+        { id: "labwc", name: "labwc", binary: "labwc", config: "~/.config/labwc/rc.xml", backend: true,
+          categories: { outputs: true } }
     ]
 
     readonly property var categoryLabels: ({
@@ -29,8 +29,8 @@ Singleton {
 
     // Il compositor della sessione, dalle variabili d'ambiente che esporta.
     readonly property string activeId: {
+        if (Quickshell.env("LABWC_PID")) return "labwc";     // prima di Sway: una sessione annidata eredita SWAYSOCK
         if (Quickshell.env("SWAYSOCK")) return "sway";
-        if (Quickshell.env("LABWC_PID")) return "labwc";
         var d = (Quickshell.env("XDG_CURRENT_DESKTOP") || "").toLowerCase();
         for (var i = 0; i < known.length; i++) if (d.indexOf(known[i].id) >= 0) return known[i].id;
         return "";

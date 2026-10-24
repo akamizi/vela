@@ -53,5 +53,10 @@ install: install-system
 	install -Dm644 session/sway-config $(SHARE)/vela/sway/config
 	install -Dm644 session/portals.conf $(SHARE)/vela/portals.conf
 	install -Dm644 session/vela.desktop $(SHARE)/wayland-sessions/vela.desktop
+	install -Dm755 session/vela-labwc-session $(DESTDIR)$(PREFIX)/bin/vela-labwc-session
+	install -Dm644 session/labwc/rc.xml $(SHARE)/vela/labwc/rc.xml
+	install -Dm644 session/labwc/environment $(SHARE)/vela/labwc/environment
+	install -Dm755 session/labwc/autostart $(SHARE)/vela/labwc/autostart
+	install -Dm644 session/vela-labwc.desktop $(SHARE)/wayland-sessions/vela-labwc.desktop
 
 .PHONY: all helper daemon test install install-system

@@ -1,0 +1,14 @@
+#!/bin/sh
+# Copyright (C) 2026 Maurizio Cavalletti — Licensed under the EUPL-1.2
+# Avvia la sessione «Vela (labwc)»: labwc con la configurazione di sistema di Vela (/usr/share/vela/labwc), dentro una sessione D-Bus.
+# Lo lancia il login manager dalla voce «Vela (labwc)» (vela-labwc.desktop). Non tocca ~/.config/labwc (si usa `labwc -C`).
+# VELA_LABWC_CONFIG sostituisce la cartella di configurazione (prove).
+export XDG_SESSION_TYPE=wayland
+export VELA_SESSION=1               # la shell lo legge: nella sessione Vela le notifiche integrate sono accese
+export XDG_CURRENT_DESKTOP=labwc:wlroots   # i portali (xdg-desktop-portal-wlr) scelgono la configurazione da qui
+cfg=${VELA_LABWC_CONFIG:-/usr/share/vela/labwc}
+[ -r "$cfg/rc.xml" ] || { echo "vela-labwc-session: manca $cfg/rc.xml" >&2; exit 1; }
+if [ -z "${DBUS_SESSION_BUS_ADDRESS:-}" ] && command -v dbus-run-session >/dev/null 2>&1; then
+    exec dbus-run-session labwc -C "$cfg"
+fi
+exec labwc -C "$cfg"

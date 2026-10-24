@@ -2,6 +2,8 @@
 // Backend Sway delle impostazioni del compositor (D-022): schermi, tastiera, touchpad, sfondo.
 // Vela non modifica il config di Sway: genera ~/.config/vela/sway.d/vela.conf (da includere) e applica
 // subito le modifiche con `swaymsg`. Ogni comando è un solo argomento a swaymsg (nessuna shell).
+// Sotto labwc (sessione «Vela (labwc)») il backend gestisce solo gli schermi, con `wlr-randr`: stessa interfaccia, stessa conferma di
+// 15 secondi; le scelte confermate si salvano in ~/.config/vela/labwc.d/vela-outputs.sh, che l'autostart della sessione esegue.
 pragma Singleton
 import QtQuick
 import Quickshell
@@ -13,6 +15,7 @@ Singleton {
     id: root
 
     readonly property bool active: Compositors.activeId === "sway"
+    readonly property bool labwc: Compositors.activeId === "labwc"
     readonly property string home: Quickshell.env("HOME")
     readonly property string confDir: Config.userDir + "/sway.d"
     readonly property string confPath: confDir + "/vela.conf"
@@ -75,12 +78,29 @@ Singleton {
     // --- lettura dello stato -----------------------------------------------------------
     function modeString(m) { return m.width + "x" + m.height + "@" + (m.refresh / 1000).toFixed(3) + "Hz"; }
 
+    // Senza una frequenza valida (schermi virtuali, sessioni annidate) si indica solo la risoluzione: wlr-randr rifiuta «@0.000Hz».
+    function randrMode(m) { return m.width + "x" + m.height + (m.refresh > 0 ? "@" + m.refresh.toFixed(3) + "Hz" : ""); }
+    // Schermi da `wlr-randr --json`, nella stessa forma di quelli di Sway.
+    function parseRandr(text) {
+        return JSON.parse(text).map(function (o) {
+            var cur = null;
+            (o.modes || []).forEach(function (m) { if (m.current) cur = m; });
+            var sc = o.scale > 0 ? o.scale : 1, tr = o.transform || "normal";
+            var w = cur ? cur.width : 0, h = cur ? cur.height : 0;
+            if (/90|270/.test(tr)) { var t = w; w = h; h = t; }
+            return { name: o.name, label: ((o.make || "") + " " + (o.model || "")).trim(), active: o.enabled === true,
+                     mode: cur ? root.randrMode(cur) : "", scale: sc, transform: tr,
+                     x: o.position ? o.position.x : 0, y: o.position ? o.position.y : 0, w: Math.round(w / sc), h: Math.round(h / sc),
+                     modes: (o.modes || []).map(root.randrMode) };
+        });
+    }
     Process {
         id: outProc
-        command: ["swaymsg", "-r", "-t", "get_outputs"]
+        command: root.labwc ? ["wlr-randr", "--json"] : ["swaymsg", "-r", "-t", "get_outputs"]
         stdout: StdioCollector {
             onStreamFinished: {
                 try {
+                    if (root.labwc) { root.outputs = root.parseRandr(text); return; }
                     root.outputs = JSON.parse(text).map(function (o) {
                         var cur = o.current_mode;
                         return { name: o.name, label: (o.make + " " + o.model).trim(), active: o.active,
@@ -104,8 +124,9 @@ Singleton {
         }
     }
     function refresh() {
-        if (!active) return;
+        if (!active && !labwc) return;
         if (!outProc.running) outProc.running = true;
+        if (labwc) return;
         if (!inProc.running && !daemonInputs) inProc.running = true;
         swayCfg.reload();
     }
@@ -124,7 +145,8 @@ Singleton {
     function run(cmd) { queue.push(cmd); pump(); }
     function pump() {
         if (runner.running || queue.length === 0) return;
-        runner.command = ["swaymsg", "-r", queue.shift()];
+        var cmd = queue.shift();
+        runner.command = Array.isArray(cmd) ? cmd : ["swaymsg", "-r", cmd];     // lista = comando intero (wlr-randr)
         runner.running = true;
     }
     Process {
@@ -136,7 +158,7 @@ Singleton {
                 } catch (e) {}
             }
         }
-        onExited: root.pump()
+        onExited: code => { if (root.labwc && code !== 0) root.lastError = I18n.tr("comando rifiutato da wlr-randr"); root.pump(); }
     }
 
     // --- generazione dei comandi dalle impostazioni -----------------------------------------
@@ -154,6 +176,19 @@ Singleton {
         if (p.enabled === true) c += " enable"; else if (p.enabled === false) c += " disable";
         return c;
     }
+
+    // Lo stesso per labwc: argomenti di `wlr-randr` (lista vuota se non c'è niente da fare).
+    function randrArgs(name, p) {
+        if (!/^[A-Za-z0-9_\-]+$/.test(name)) return [];
+        var a = ["wlr-randr", "--output", name];
+        if (safe(p.mode) && p.mode) a.push("--mode", p.mode);
+        if (num(p.scale)) a.push("--scale", String(p.scale));
+        if (num(p.x) && num(p.y)) a.push("--pos", Math.round(p.x) + "," + Math.round(p.y));
+        if (["normal", "90", "180", "270"].indexOf(p.transform) >= 0) a.push("--transform", p.transform);
+        if (p.enabled === true) a.push("--on"); else if (p.enabled === false) a.push("--off");
+        return a.length > 3 ? a : [];
+    }
+    function outCmd(name, p) { return labwc ? randrArgs(name, p) : outputCommand(name, p); }
 
     // Comandi senza a capo né caratteri di controllo (li scrive l'utente: sono suoi, ma una riga sola).
     function oneLine(v) { return typeof v === "string" && v.trim() !== "" && !/[\u0000-\u001f]/.test(v); }
@@ -222,6 +257,7 @@ Singleton {
     Connections { target: Config; function onSwayChanged() { sync.restart(); } }
 
     function syncNow() {
+        if (labwc) { syncLabwc(); return; }
         if (!active) return;
         var live = inputWallpaperCommands(), next = {};
         // Una scorciatoia di Vela tolta torna libera subito (quella originale del config torna al prossimo reload).
@@ -235,6 +271,17 @@ Singleton {
                  + live.concat(execCommands(), outputCommands()).join("\n") + "\n";
         if (text !== lastConf) { lastConf = text; confText = text; mkdir.running = true; }
     }
+
+    // labwc: gli schermi confermati diventano righe di wlr-randr in uno script che l'autostart della sessione esegue.
+    property string labwcText: ""
+    function syncLabwc() {
+        var o = Config.sway.outputs, lines = [];
+        for (var name in o) { var a = randrArgs(name, o[name]); if (a.length > 0) lines.push(a.join(" ")); }
+        var text = "#!/bin/sh\n# Generato da Vela (Impostazioni): non modificare a mano, le modifiche verrebbero perse.\n" + lines.join("\n") + "\n";
+        if (text !== lastConf) { lastConf = text; labwcText = text; mkdirLabwc.running = true; }
+    }
+    Process { id: mkdirLabwc; command: ["mkdir", "-p", Config.userDir + "/labwc.d"]; onExited: labwcFile.setText(root.labwcText) }
+    FileView { id: labwcFile; path: Config.userDir + "/labwc.d/vela-outputs.sh"; atomicWrites: true; printErrors: false }
 
     property string confText: ""
     Process { id: mkdir; command: ["mkdir", "-p", root.confDir]; onExited: confFile.setText(root.confText) }
@@ -295,7 +342,7 @@ Singleton {
                            .map(function (o) { return { src: inn.name, dst: o.name }; });
         if (pairs.length === 0 || !validName(inn.name)) return;
         // La finestra del duplicato non deve rubare il focus.
-        if (!mirrorRuleSet) { run('no_focus [title="vela-mirror"]'); mirrorRuleSet = true; }
+        if (!labwc && !mirrorRuleSet) { run('no_focus [title="vela-mirror"]'); mirrorRuleSet = true; }
         mirrorPairs = pairs;
     }
     Instantiator {
@@ -388,8 +435,8 @@ Singleton {
             for (var q in it.next) next[q] = it.next[q];
             for (var p in ch.props) next[p] = ch.props[p];
             items[ch.name] = { prev: it.prev, next: next };
-            var c = outputCommand(ch.name, ch.props);
-            if (c) cmds.push({ off: ch.props.enabled === false, c: c });
+            var c = outCmd(ch.name, ch.props);
+            if (c.length > 0) cmds.push({ off: ch.props.enabled === false, c: c });
         });
         if (cmds.length === 0) return;
         pending = { items: items };
@@ -422,10 +469,12 @@ Singleton {
         var cmds = [];
         for (var n in pending.items) {
             var prev = pending.items[n].prev;
-            cmds.push({ off: prev.enabled === false, c: outputCommand(n, prev) });
+            cmds.push({ off: prev.enabled === false, c: outCmd(n, prev) });
         }
         cmds.sort(function (a, b) { return (a.off ? 1 : 0) - (b.off ? 1 : 0); });
-        cmds.forEach(function (x) { if (x.c !== "") run(x.c); });
+        cmds.forEach(function (x) { if (x.c.length > 0) run(x.c); });
+        // wlr-randr non accende lo schermo se la modalità richiesta non esiste: un `--on` a parte evita di restare senza schermi.
+        if (labwc) for (var m in pending.items) if (pending.items[m].prev.enabled !== false && validName(m)) run(["wlr-randr", "--output", m, "--on"]);
         pending = null;
         tick.stop();
         reread.restart();

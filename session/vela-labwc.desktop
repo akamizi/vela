@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=Vela (labwc)
+Comment=Il desktop Vela: labwc con barra, menu e pannelli di Vela
+Exec=vela-labwc-session
+TryExec=/usr/bin/labwc
+Type=Application
+DesktopNames=labwc;wlroots
