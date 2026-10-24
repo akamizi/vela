@@ -69,7 +69,32 @@
   // Web radio: stazioni [{ "name": "Rai Radio 3", "url": "http://icestreaming.rai.it/3.mp3" }] e player
   // (riceve l'indirizzo come ultimo argomento). Elemento di barra "Radio" e pannello `panel toggle radio`.
   "radio": {
-    "stations": [],
+    "stations": [
+      { "name": "RTL Radiofreccia", "url": "http://shoutcast.rtl.it:3060/" },
+      { "name": "Radio 24", "url": "http://shoutcast.radio24.it:8000/listen.pls" },
+      { "name": "LifeGate Radio", "url": "http://onair11.xdevel.com:8024" },
+      { "name": "Rai Radio 1", "url": "http://icestreaming.rai.it/1.mp3" },
+      { "name": "Rai Radio 2", "url": "http://icestreaming.rai.it/2.mp3" },
+      { "name": "Rai Radio 3", "url": "http://icestreaming.rai.it/3.mp3" },
+      { "name": "Rai Radio 4 TuttaIta", "url": "http://icestreaming.rai.it/4.mp3" },
+      { "name": "Rai Radio 5 Classica", "url": "http://icestreaming.rai.it/5.mp3" },
+      { "name": "Rai Radio 6 Techete", "url": "http://icestreaming.rai.it/9.mp3" },
+      { "name": "Rai Radio 7 Live", "url": "http://icestreaming.rai.it/10.mp3" },
+      { "name": "Rai Radio 8 Opera", "url": "http://icestreaming.rai.it/11.mp3" },
+      { "name": "Rai IsoRadio", "url": "http://icestreaming.rai.it/6.mp3" },
+      { "name": "Rai GrParlamento", "url": "http://icestreaming.rai.it/7.mp3" },
+      { "name": "RTÉ Radio 1", "url": "http://av.rasset.ie/av/live/radio/radio1.m3u" },
+      { "name": "RTÉ 2FM", "url": "http://av.rasset.ie/av/live/radio/2fm.m3u" },
+      { "name": "RTÉ Lyric FM", "url": "http://av.rasset.ie/av/live/radio/lyric.m3u" },
+      { "name": "RTÉ Gold", "url": "http://av.rasset.ie/av/live/radio/gold.m3u" },
+      { "name": "Newstalk", "url": "http://pri.gocaster.net/NT.m3u" },
+      { "name": "Exclusively Pink Floyd", "url": "https://streaming.exclusive.radio/er/pinkfloyd/icecast.audio" },
+      { "name": "Exclusively The Cure", "url": "https://streaming.exclusive.radio/er/thecure/icecast.audio" },
+      { "name": "VirginRadio Pink Floyd", "url": "http://icy.unitedradio.it/VirginRogerWaters.mp3" },
+      { "name": "Trip Hop Lounge", "url": "https://amoris.sknt.ru:443/triphop" },
+      { "name": "Trip Radio", "url": "https://a13.asurahosting.com/listen/trip-radio/radio.mp3" },
+      { "name": "Bristol Sound (trip-hop)", "url": "https://thebristolsoundwebradio.stream.laut.fm/thebristolsoundwebradio" }
+    ],
     "command": ["mpv", "--no-video", "--no-terminal"]
   },
   "tray": {
