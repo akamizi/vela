@@ -19,7 +19,7 @@ exec vela
 # Applicazioni
 bindsym $mod+Return exec $term
 bindsym $mod+t exec $term
-bindsym $mod+f exec $term --title="yazi" -e yazi
+bindsym $mod+f exec xdg-open "$HOME"
 bindsym $mod+w exec xdg-open http://
 bindsym $mod+e exec xdg-open mailto:
 
