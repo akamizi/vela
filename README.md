@@ -189,7 +189,7 @@ accensione con più schermi: dopo ogni modifica hai 15 secondi per confermare, a
 **Tastiera e touchpad** (layout, variante, opzioni, ripetizione; tocco, scorrimento naturale, disattiva mentre
 si scrive, velocità) e **Sfondo** (immagine con percorso assoluto e adattamento, oppure un colore). Tastiera,
 touchpad e sfondo si applicano subito con `swaymsg`; Canc torna al valore predefinito (lo stato attuale di Sway
-cambia al prossimo `swaymsg reload`). Vela scrive `~/.config/vela/sway.d/vela.conf`; perché valga anche dopo il
+cambia al prossimo `swaymsg reload`). Il pacchetto installa cinque sfondi in `/usr/share/backgrounds/vela` (predefinito: `Vela-5.jpg`, nella sessione Vela). Vela scrive `~/.config/vela/sway.d/vela.conf`; perché valga anche dopo il
 login, il config di Sway deve includerlo: la categoria **Compositor** ha l'azione "Aggiungi la riga include"
 (chiede conferma e fa una copia `config.bak-vela-include`), oppure aggiungi tu `include ~/.config/vela/sway.d/*.conf`.
 

@@ -46,6 +46,7 @@ install: install-system
 	install -Dm644 README.md THIRD-PARTY.md -t $(SHARE)/doc/vela
 	install -Dm644 VERSION $(SHARE)/vela/VERSION
 	install -Dm644 assets/logo.svg $(SHARE)/vela/assets/logo.svg
+	install -Dm644 wallpapers/*.jpg -t $(SHARE)/backgrounds/vela
 	install -Dm644 LICENSE $(SHARE)/licenses/vela/LICENSE
 	install -Dm755 session/vela-session $(DESTDIR)$(PREFIX)/bin/vela-session
 	install -Dm755 session/session-init $(DESTDIR)$(LIBEXEC)/vela/session-init

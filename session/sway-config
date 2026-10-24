@@ -9,6 +9,9 @@ floating_modifier $mod normal
 default_border pixel 1
 hide_edge_borders smart
 
+# Sfondo predefinito (gli sfondi di Vela stanno in /usr/share/backgrounds/vela); lo sfondo scelto dall'utente lo sostituisce
+output * bg /usr/share/backgrounds/vela/Vela-5.jpg fill
+
 # Avvii della sessione e della shell
 exec /usr/libexec/vela/session-init
 exec vela
