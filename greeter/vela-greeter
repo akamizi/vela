@@ -14,4 +14,10 @@ export QT_WAYLAND_DISABLE_WINDOWDECORATION=1
 [ -n "${VELA_GREETER_WALLPAPER:-}" ] && export VELA_GREETER_WALLPAPER
 [ -n "${VELA_GREETER_POWEROFF:-}" ] && export VELA_GREETER_POWEROFF
 [ -n "${VELA_GREETER_REBOOT:-}" ] && export VELA_GREETER_REBOOT
-exec cage -s -- quickshell -p "$share"
+# Messaggi di Quickshell, cage e Qt (avvisi, errori innocui) non vanno sul terminale: durante la transizione verso la sessione
+# comparirebbero a schermo. Restano nell'ultimo log (si legge come root: doas cat /var/cache/vela-greeter/greeter.log).
+log="$XDG_CACHE_HOME/greeter.log"
+{ : > "$log"; } 2>/dev/null || log=/dev/null
+# Terminale pulito e cursore nascosto: nessun testo vecchio visibile durante lo stacco tra greeter e sessione
+printf '\033[2J\033[H\033[?25l' 2>/dev/null
+exec cage -s -- quickshell -p "$share" >> "$log" 2>&1
