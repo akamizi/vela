@@ -62,6 +62,14 @@ if [ "${1:-}" = theme ]; then
     esac
     exit 0
 fi
+# vela files [cartella]: apre la cartella (default: la home) nel gestore di file predefinito; se è PCManFM-Qt lo lancia col tema di Vela.
+if [ "${1:-}" = files ]; then
+    dir=${2:-$HOME}
+    case $(xdg-mime query default inode/directory 2>/dev/null) in
+        pcmanfm-qt*) exec "$0" theme qt run pcmanfm-qt "$dir" ;;
+        *) exec xdg-open "$dir" ;;
+    esac
+fi
 if [ "${1:-}" = ipc ]; then
     shift
     exec quickshell ipc -p "$root/shell" "$@"
