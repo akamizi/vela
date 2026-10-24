@@ -39,7 +39,7 @@ FocusScope {
     Process {
         id: scan
         command: ["sh", "-c",
-                  "for d in \"$HOME/Immagini\" \"$HOME/Pictures\" \"$HOME/Immagini/backgrounds\" /usr/share/backgrounds /usr/share/vela/assets; do " +
+                  "for d in \"$HOME/Immagini/backgrounds\" \"$HOME/Pictures/backgrounds\" /usr/share/backgrounds /usr/share/vela/assets; do " +
                   "[ -d \"$d\" ] && find \"$d\" -maxdepth 2 -type f -size +60k \\( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.png' -o -iname '*.webp' \\) ; " +
                   "done | sort -u | head -400"]
         stdout: StdioCollector {
@@ -70,7 +70,7 @@ FocusScope {
         anchors.centerIn: parent
         visible: !picker.scanning && picker.files.length === 0
         color: Theme.dim
-        text: I18n.tr("Nessuna immagine in Immagini, Pictures o /usr/share/backgrounds")
+        text: I18n.tr("Nessuna immagine in Immagini/backgrounds o /usr/share/backgrounds")
     }
 
     GridView {

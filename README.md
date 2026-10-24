@@ -231,7 +231,7 @@ sopra o sotto l'altro (`vela ipc call display place <schermo> left|right|above|b
 
 ## Stampanti
 
-Impostazioni → **Sfondo** → «Scegli un'immagine…»: griglia di miniature delle immagini di `~/Immagini`, `~/Pictures`, `/usr/share/backgrounds` e `/usr/share/vela/assets` (file da 60 kB in su, due livelli di cartelle); ←/→/↑/↓ e Invio, oppure clic. Scrive `sway.wallpaper.path`; il percorso a mano resta disponibile sotto.
+Impostazioni → **Sfondo** → «Scegli un'immagine…»: griglia di miniature delle immagini di `~/Immagini/backgrounds`, `~/Pictures/backgrounds`, `/usr/share/backgrounds` e `/usr/share/vela/assets` (file da 60 kB in su, due livelli di cartelle); ←/→/↑/↓ e Invio, oppure clic. Scrive `sway.wallpaper.path`; il percorso a mano resta disponibile sotto.
 
 Pannello **Utente** (ultimo elemento a destra della barra, icona dell'omino, `Win+U`, oppure `vela ipc call panel toggle user`): la foto è `~/.face` (se manca, l'iniziale
 del nome), il nome completo è il campo GECOS dell'utente (`chfn`), altrimenti il nome di login. ↑/↓ scelgono, Invio attiva, I/L/S/E/R/P scelgono la riga
