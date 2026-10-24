@@ -51,7 +51,7 @@ Singleton {
     // Blocca lo schermo, salvo che un blocco sia già attivo (il comando è un array: nessuna shell sulla stringa).
     function lock() {
         var name = String(lockCommand[0]).split("/").pop();
-        Quickshell.execDetached(["sh", "-c", 'pgrep -x "$1" >/dev/null 2>&1 || exec "$@"', "sh", name].concat(lockCommand));
+        Quickshell.execDetached(["sh", "-c", 'pgrep -x "$1" >/dev/null 2>&1 || { shift; exec "$@"; }', "sh", name].concat(lockCommand));
     }
 
     // Sospende dopo aver avviato il blocco (si ritrova la schermata di blocco al risveglio).
