@@ -19,14 +19,17 @@ PanelWindow {
     property bool armed: false          // dopo l'avvio e a ogni cambio di uscita si ignora il primo valore
 
     readonly property bool atTop: Config.shell.bar.position === "top"
+    // osd.position: "center" (default, centrato nello schermo), "bar" (sopra la barra, vicino al bordo della barra); osd.scale: ingrandimento.
+    readonly property bool centered: Config.shell.osd.position !== "bar"
+    readonly property real zoom: Math.max(0.5, Config.shell.osd.scale || 1)
 
     screen: Compositor.focusedScreen
     visible: shown
     color: "transparent"
-    anchors { bottom: !atTop; top: atTop }
+    anchors { bottom: !centered && !atTop; top: !centered && atTop }
     margins { bottom: Theme.barHeight + Theme.panelMargin * 3; top: Theme.barHeight + Theme.panelMargin * 3 }
-    implicitWidth: card.width
-    implicitHeight: card.height
+    implicitWidth: Math.ceil(card.width * zoom)
+    implicitHeight: Math.ceil(card.height * zoom)
     exclusionMode: ExclusionMode.Ignore
     WlrLayershell.namespace: "vela-osd"
     WlrLayershell.layer: WlrLayer.Overlay
@@ -68,6 +71,8 @@ PanelWindow {
         border.color: Theme.softBorder
         border.width: 1
         radius: Theme.radius
+        scale: osd.zoom                  // il contenuto è vettoriale: si ingrandisce senza sgranare
+        transformOrigin: Item.TopLeft
 
         Row {
             anchors { fill: parent; leftMargin: Theme.padding; rightMargin: Theme.padding }

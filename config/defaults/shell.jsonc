@@ -177,7 +177,8 @@
     "suspendMinutesOnAc": 0,
     "lockCommand": ["swaylock", "-f"]
   },
-  "osd": { "enabled": true, "timeout": 1500 },
+  // position: "center" (centrato nello schermo) o "bar" (in basso/in alto, sopra la barra); scale: ingrandimento (1 = piccolo, 2 = grande).
+  "osd": { "enabled": true, "timeout": 1500, "position": "center", "scale": 2 },
   // Server di notifiche integrato (sostituisce dunst, D-006). Un solo programma alla volta può possedere
   // org.freedesktop.Notifications: attivarlo solo dopo aver fermato dunst/mako.
   // enabled: notifiche di Vela sempre accese (un altro server, come dunst, va fermato).
