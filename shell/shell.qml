@@ -66,6 +66,11 @@ ShellRoot {
     }
 
     Loader {
+        active: Config.shell.panels.user.enabled
+        sourceComponent: UserPanel {}
+    }
+
+    Loader {
         active: Config.shell.panels.weather.enabled
         sourceComponent: WeatherPanel {}
     }

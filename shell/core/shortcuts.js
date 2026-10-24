@@ -59,7 +59,7 @@ function keycaps(combo, vars) {
 }
 
 function dirNames() { return { left: tr("a sinistra"), right: tr("a destra"), up: tr("in alto"), down: tr("in basso") }; }
-function panelNames() { return { network: tr("Rete"), bluetooth: "Bluetooth", audio: "Audio", settings: tr("Impostazioni"), shortcuts: tr("Scorciatoie"), radio: "Radio", power: tr("Energia") }; }
+function panelNames() { return { network: tr("Rete"), bluetooth: "Bluetooth", audio: "Audio", settings: tr("Impostazioni"), shortcuts: tr("Scorciatoie"), radio: "Radio", power: tr("Energia"), user: tr("Utente") }; }
 var terminals = ["foot", "alacritty", "kitty", "wezterm", "xterm", "st", "footclient"];
 
 function base(path) { return path.replace(/^.*\//, ""); }

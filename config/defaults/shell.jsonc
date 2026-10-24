@@ -11,13 +11,13 @@
     // Elementi di ciascuna zona, nell'ordine in cui compaiono. Disponibili:
     // Menu Workspaces WindowLayout WindowTitle Weather Recording Dnd NightLight Awake Media Radio Clock Tray
     // Indicators (raggruppa Recording Dnd NightLight Awake)
-    // Memory Cpu Temperature Fan KeyboardLayout Updates Bluetooth Network Vpn Mic Volume Brightness PowerProfile Battery
+    // Memory Cpu Temperature Fan KeyboardLayout Updates Bluetooth Network Vpn Mic Volume Brightness PowerProfile Battery User
     // (WindowLayout compare solo con il demone dati; Mic è spento di default; KeyboardLayout compare solo con più di un layout di tastiera, Updates solo se ci sono aggiornamenti)
     "modules": {
       "left": ["Menu", "Workspaces", "WindowLayout", "Weather", "WindowTitle"],
       "center": ["Indicators", "Media", "Clock"],
       "right": ["Tray", "Memory", "Cpu", "Temperature", "Fan", "KeyboardLayout", "Updates", "Bluetooth", "Network", "Vpn",
-                "Volume", "Brightness", "PowerProfile", "Battery"]
+                "Volume", "Brightness", "PowerProfile", "Battery", "User"]
     },
     // Gruppi logici: tra elementi di gruppi diversi, vicini nella lista, si lascia groupGap pixel
     // (se manca, il doppio dello spazio del tema). Chi non è elencato fa gruppo con i vicini senza gruppo.
@@ -32,7 +32,8 @@
       "KeyboardLayout": "stato", "Updates": "stato",
       "Bluetooth": "rete", "Network": "rete", "Vpn": "rete",
       "Mic": "audio", "Volume": "audio", "Brightness": "audio",
-      "PowerProfile": "energia", "Battery": "energia"
+      "PowerProfile": "energia", "Battery": "energia",
+      "User": "utente"
     },
     "workspaces": { "persistent": [1, 2, 3, 4, 5] },
     "windowTitle": { "maxWidth": 360 },
@@ -62,7 +63,8 @@
     "brightness": { "enabled": true },
     "display": { "enabled": true },
     "printers": { "enabled": true },
-    "services": { "enabled": true }
+    "services": { "enabled": true },
+    "user": { "enabled": true }
   },
   // Web radio: stazioni [{ "name": "Rai Radio 3", "url": "http://icestreaming.rai.it/3.mp3" }] e player
   // (riceve l'indirizzo come ultimo argomento). Elemento di barra "Radio" e pannello `panel toggle radio`.

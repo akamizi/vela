@@ -31,6 +31,7 @@ bindsym $mod+d exec vela ipc call menu apps
 bindsym $mod+Ctrl+a exec vela ipc call menu apps
 bindsym $mod+Shift+space exec vela ipc call menu calc
 bindsym Ctrl+$mod+space exec vela ipc call menu power
+bindsym $mod+u exec vela ipc call panel toggle user
 bindsym $mod+z exec vela ipc call panel toggle shortcuts
 bindsym $mod+p exec vela ipc call panel toggle power
 bindsym $mod+m exec vela ipc call panel toggle radio

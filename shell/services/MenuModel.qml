@@ -12,7 +12,7 @@ Singleton {
 
     readonly property var items: Config.menu.items
     // Pannelli abilitati in configurazione e realmente presenti (si aggiungono nelle fasi 4-6)
-    readonly property var implementedPanels: ["network", "bluetooth", "audio", "settings", "shortcuts", "radio", "power", "brightness", "display", "printers", "services", "battery", "calendar", "weather"]
+    readonly property var implementedPanels: ["network", "bluetooth", "audio", "settings", "shortcuts", "radio", "power", "brightness", "display", "printers", "services", "battery", "calendar", "weather", "user"]
     readonly property var availablePanels: implementedPanels.filter(function (n) {
         var c = Config.shell.panels[n];
         return c !== undefined && c.enabled === true;
