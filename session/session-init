@@ -13,13 +13,24 @@ fi
 # Audio (PipeWire; WirePlumber lo avvia la configurazione di PipeWire).
 # Si controlla la riga di comando intera: `pipewire -c pipewire-pulse.conf` (figlio del principale, che può restare orfano dopo una
 # sessione precedente) ha lo stesso nome del processo e farebbe credere che l'audio sia già avviato.
+# Un PipeWire rimasto da una sessione già chiusa (processo vivo, ma la cartella di runtime è stata ricreata e il suo socket non c'è più)
+# non serve a nessuno e farebbe credere che l'audio sia avviato: si ferma e se ne avvia uno nuovo.
+pwsock="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/pipewire-0"
+if [ ! -S "$pwsock" ] && pgrep -u "$(id -u)" -fx 'pipewire|/usr/bin/pipewire' >/dev/null 2>&1; then
+    pkill -u "$(id -u)" -x wireplumber >/dev/null 2>&1
+    pkill -u "$(id -u)" -fx 'pipewire|/usr/bin/pipewire' >/dev/null 2>&1
+    sleep 1
+fi
 if command -v pipewire >/dev/null 2>&1 && ! pgrep -u "$(id -u)" -fx 'pipewire|/usr/bin/pipewire' >/dev/null 2>&1; then
     # Un pipewire-pulse orfano tiene occupato il socket di pulse e il PipeWire nuovo non riuscirebbe a servire le app: va fermato prima.
     pkill -u "$(id -u)" -f '^/usr/bin/pipewire -c pipewire-pulse.conf' >/dev/null 2>&1 && sleep 1
     # Il sottoprocesso registra come finisce PipeWire (codice 143 = TERM, 137 = KILL, 139 = crash) in $XDG_RUNTIME_DIR/vela-pipewire.log:
     # se l'audio sparisce a sessione avviata, il motivo si legge lì (il file sparisce allo spegnimento, è in tmpfs).
     plog="${XDG_RUNTIME_DIR:-/tmp}/vela-pipewire.log"
-    ( pipewire >"$plog" 2>&1; echo "pipewire uscito con codice $? alle $(date +%T)" >>"$plog" ) &
+    # Senza DISPLAY: il modulo module-x11-bell di PipeWire si collegherebbe a Xwayland e, quando Xwayland si chiude (accade da sé o dopo
+    # un aggiornamento), il gestore di errori di Xlib manda in crash PipeWire (visto il 2026-10-24: «X11 display (:0) has encountered a fatal I/O error»,
+    # poi Segmentation fault). Il campanello X11 non serve: il modulo è `nofail`, senza display semplicemente non parte.
+    ( env -u DISPLAY pipewire >"$plog" 2>&1; echo "pipewire uscito con codice $? alle $(date +%T)" >>"$plog" ) &
 fi
 
 # Agente polkit (finestra della password per montare dischi, stampanti...) e portale dei selettori di file, entrambi Qt (LXQt): partono
