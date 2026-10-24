@@ -54,8 +54,8 @@ gdesc=$(sed -n 's/^short_desc="\(.*\)"$/\1/p' "$gtpl")
 [ -n "$gdeps" ] && [ -n "$gdesc" ] || { echo "template di vela-greeter senza depends o short_desc" >&2; exit 1; }
 gstage=$(mktemp -d); trap 'rm -rf "$stage" "$meta" "$gstage"' EXIT
 make -C "$root/greeter" install PREFIX=/usr DESTDIR="$gstage"
-install -Dm755 packaging/void/vela-greeter/INSTALL "$gstage/INSTALL"
-install -Dm644 packaging/void/vela-greeter/INSTALL.msg "$gstage/INSTALL.msg"
+install -Dm755 "$root/packaging/void/vela-greeter/INSTALL" "$gstage/INSTALL"
+install -Dm644 "$root/packaging/void/vela-greeter/INSTALL.msg" "$gstage/INSTALL.msg"
 cd "$out"
 xbps-create -A noarch -n "vela-greeter-${gver}_1" -s "$gdesc" -D "$(versioned "$gdeps")" -l EUPL-1.2 \
     -H https://github.com/akamizi/vela -m "Maurizio Cavalletti <maurizio@akabit.it>" "$gstage"
