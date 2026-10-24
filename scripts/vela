@@ -70,6 +70,28 @@ if [ "${1:-}" = files ]; then
         *) exec xdg-open "$dir" ;;
     esac
 fi
+# vela editor [file]: apre l'editor di testo predefinito (text/plain); se è FeatherPad lo lancia col tema di Vela.
+if [ "${1:-}" = editor ]; then
+    shift
+    app=$(xdg-mime query default text/plain 2>/dev/null)
+    case $app in
+        featherpad*|FeatherPad*)
+            # FeatherPad dipinge l'area di testo con un suo schema colore: al primo avvio (nessun fp.conf) si parte dallo schema scuro
+            fp="${XDG_CONFIG_HOME:-$HOME/.config}/featherpad/fp.conf"
+            if [ ! -e "$fp" ]; then mkdir -p "$(dirname "$fp")" && printf '[text]\ndarkColorScheme=true\n' > "$fp"; fi
+            exec "$0" theme qt run featherpad "$@" ;;
+    esac
+    if [ -n "$app" ]; then
+        for d in "${XDG_DATA_HOME:-$HOME/.local/share}" /usr/local/share /usr/share; do
+            if [ -r "$d/applications/$app" ]; then
+                if command -v gio >/dev/null 2>&1; then exec gio launch "$d/applications/$app" "$@"; fi
+                exec gtk-launch "$app" "$@"
+            fi
+        done
+    fi
+    [ $# -gt 0 ] && exec xdg-open "$1"
+    echo "vela editor: nessun editor di testo predefinito (xdg-mime default <editor>.desktop text/plain)" >&2; exit 1
+fi
 if [ "${1:-}" = ipc ]; then
     shift
     exec quickshell ipc -p "$root/shell" "$@"
