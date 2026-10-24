@@ -1,0 +1,13 @@
+# Template file for 'vela-greeter' (D-055): schermata di accesso in Quickshell per greetd.
+# Pacchetto separato da `vela`, SENZA dipendenze reciproche con lui. Versione propria: greeter/VERSION.
+# Per void-packages: distfiles e checksum andrebbero adattati (qui il pacchetto è costruito da scripts/build-xbps-direct.sh).
+pkgname=vela-greeter
+version=0.1.0
+revision=1
+build_style=gnu-makefile
+make_dirs="/var/cache/vela-greeter 0750 root root"
+depends="greetd cage quickshell font-inter qt6-wayland"
+short_desc="Login screen for greetd in the style of the Vela desktop shell"
+maintainer="Maurizio Cavalletti <maurizio@akabit.it>"
+license="EUPL-1.2"
+homepage="https://github.com/akamizi/vela"

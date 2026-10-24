@@ -1,0 +1,15 @@
+#!/bin/sh
+# Copyright (C) 2026 Maurizio Cavalletti — Licensed under the EUPL-1.2
+# Avvia il greeter di Vela (D-055): `cage` (compositor a una sola finestra) con Quickshell e la schermata di accesso.
+# È il comando che greetd lancia come utente `_greeter` (vedi greetd-config.toml.example). Impostazioni facoltative in
+# /etc/vela-greeter.conf (variabili di shell): XKB_DEFAULT_LAYOUT (default it), VELA_GREETER_WALLPAPER, VELA_GREETER_POWEROFF, VELA_GREETER_REBOOT.
+share=${VELA_GREETER_SHARE:-/usr/share/vela-greeter}
+[ -r /etc/vela-greeter.conf ] && . /etc/vela-greeter.conf
+export XKB_DEFAULT_LAYOUT="${XKB_DEFAULT_LAYOUT:-it}"
+# Cartella scrivibile a `_greeter` (cache di Quickshell e Qt, ricordo di utente e sessione)
+export XDG_CACHE_HOME="${XDG_CACHE_HOME:-/var/cache/vela-greeter}"
+export QT_QPA_PLATFORM=wayland
+[ -n "${VELA_GREETER_WALLPAPER:-}" ] && export VELA_GREETER_WALLPAPER
+[ -n "${VELA_GREETER_POWEROFF:-}" ] && export VELA_GREETER_POWEROFF
+[ -n "${VELA_GREETER_REBOOT:-}" ] && export VELA_GREETER_REBOOT
+exec cage -s -- quickshell -p "$share"

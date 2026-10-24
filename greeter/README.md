@@ -28,3 +28,10 @@ Quickshell non accetta moduli fuori dalla cartella della configurazione: per la 
 - Provato in più (fase 2, greetd finto): ricordo di utente e sessione tra due avvii, tema letto dal file (colore e carattere), spegni/riavvia con conferma (comando finto). Il ricordo scrive nel file di prova; la cartella vera non esiste ancora.
 - **Mancano** (fase 3+): dissolvenza coordinata con la sessione, pacchetto `vela-greeter`, configurazione di greetd (`/etc/greetd/config.toml`, solo con conferma e copia di sicurezza; oggi usa `tuigreet`).
 - Nel log di Quickshell compare «Received unexpected greetd response success»: è la risposta di greetd alla cancellazione che Quickshell invia da solo dopo un errore; è innocuo.
+
+## Pacchetto `vela-greeter` (fase 4, punto 1)
+
+- Template: `packaging/void/vela-greeter/` (con `INSTALL` e `INSTALL.msg`); installazione: `make -C greeter install`; versione propria in `greeter/VERSION`.
+- Dipendenze: `greetd cage quickshell font-inter qt6-wayland`. **Nessuna dipendenza da `vela`** (e viceversa).
+- Il pacchetto **non attiva niente**: non tocca `/etc/greetd`. Crea solo `/var/cache/vela-greeter` (di `_greeter` se esiste). La configurazione di esempio è in `/usr/share/doc/vela-greeter/greetd-config.toml.example`; il comando che greetd lancia è `/usr/libexec/vela-greeter/vela-greeter` (cage + Quickshell, layout tastiera `it`, impostazioni in `/etc/vela-greeter.conf`).
+- `scripts/build-xbps-direct.sh` lo costruisce insieme a `vela` e `vela-recommended` (stesso repository xbps).

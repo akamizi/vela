@@ -1,0 +1,13 @@
+#!/bin/sh
+# Script di installazione di xbps (root). Crea la cartella di stato del greeter (cache di Quickshell/Qt e ricordo di utente e sessione)
+# e la rende scrivibile a `_greeter`, se l'utente esiste. Non tocca /etc/greetd, non avvia servizi, non fa mai fallire l'installazione.
+case "${ACTION}" in
+post)
+	if id -u _greeter >/dev/null 2>&1; then
+		install -d -o _greeter -g _greeter -m 0750 /var/cache/vela-greeter >/dev/null 2>&1 || true
+	else
+		install -d -m 0750 /var/cache/vela-greeter >/dev/null 2>&1 || true
+	fi
+	;;
+esac
+exit 0

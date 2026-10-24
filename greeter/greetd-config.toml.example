@@ -1,0 +1,10 @@
+# Esempio di /etc/greetd/config.toml per il greeter di Vela (D-055). NON viene applicato dal pacchetto:
+# copia la tua configurazione attuale (cp /etc/greetd/config.toml /etc/greetd/config.toml.bak-tuigreet) prima di sostituirla.
+# `_greeter` deve poter usare la scheda grafica e il seat: di solito basta il gruppo `video` (e, con seatd, `_seatd`); con elogind
+# la sessione del greeter ottiene il seat da PAM. Se il greeter non parte, ripristina la copia (da un altro terminale: Ctrl+Alt+F3).
+[terminal]
+vt = 7
+
+[default_session]
+command = "/usr/libexec/vela-greeter/vela-greeter"
+user = "_greeter"

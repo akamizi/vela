@@ -29,7 +29,7 @@ Item {
     // Comandi di spegnimento e riavvio (separati da spazi)
     readonly property var poweroffCmd: (Quickshell.env("VELA_GREETER_POWEROFF") || "loginctl poweroff").split(" ")
     readonly property var rebootCmd: (Quickshell.env("VELA_GREETER_REBOOT") || "loginctl reboot").split(" ")
-    readonly property string wallpaper: Quickshell.env("VELA_GREETER_WALLPAPER") || "/usr/share/backgrounds/vela/Vela-5.jpg"
+    readonly property string wallpaper: Quickshell.env("VELA_GREETER_WALLPAPER") || "/usr/share/vela-greeter/background.jpg"
 
     // --- stato ---
     property alias user: userInput.text

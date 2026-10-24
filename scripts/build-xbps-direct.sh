@@ -45,3 +45,18 @@ meta=$(mktemp -d); trap 'rm -rf "$stage" "$meta"' EXIT
 xbps-create -A noarch -n "vela-recommended-${version}_1" -s "$rdesc" -D "$(versioned "$rdeps")" -l EUPL-1.2 \
     -H https://github.com/akamizi/vela -m "Maurizio Cavalletti <maurizio@akabit.it>" "$meta"
 ls -l "$out"/vela-*.xbps
+
+# Pacchetto vela-greeter (D-055): separato da vela, senza dipendenze reciproche, con versione propria (greeter/VERSION)
+gtpl="$root/packaging/void/vela-greeter/template"
+gver=$(cat "$root/greeter/VERSION")
+gdeps=$(sed -n 's/^depends="\(.*\)"$/\1/p' "$gtpl")
+gdesc=$(sed -n 's/^short_desc="\(.*\)"$/\1/p' "$gtpl")
+[ -n "$gdeps" ] && [ -n "$gdesc" ] || { echo "template di vela-greeter senza depends o short_desc" >&2; exit 1; }
+gstage=$(mktemp -d); trap 'rm -rf "$stage" "$meta" "$gstage"' EXIT
+make -C "$root/greeter" install PREFIX=/usr DESTDIR="$gstage"
+install -Dm755 packaging/void/vela-greeter/INSTALL "$gstage/INSTALL"
+install -Dm644 packaging/void/vela-greeter/INSTALL.msg "$gstage/INSTALL.msg"
+cd "$out"
+xbps-create -A noarch -n "vela-greeter-${gver}_1" -s "$gdesc" -D "$(versioned "$gdeps")" -l EUPL-1.2 \
+    -H https://github.com/akamizi/vela -m "Maurizio Cavalletti <maurizio@akabit.it>" "$gstage"
+ls -l "$out"/vela-greeter-*.xbps
