@@ -6,7 +6,14 @@ import Quickshell.Wayland
 import "../../core"
 
 Variants {
-    model: Quickshell.screens
+    // bar.screen: nome dell'uscita (es. "eDP-1") che ha la barra; vuoto, o nome assente (schermo scollegato), = tutti gli schermi.
+    readonly property string only: Config.shell.bar.screen || ""
+    model: {
+        var all = Quickshell.screens;
+        if (only === "") return all;
+        var one = all.filter(function (s) { return s.name === only; });
+        return one.length > 0 ? one : all;
+    }
 
     PanelWindow {
         id: bar

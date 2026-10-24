@@ -63,6 +63,8 @@ PanelHost {
 
     // --- luminosità e luce notturna -------------------------------------------------
     readonly property bool hasNight: MenuModel.found["gammastep"] === true || Toggles.night
+    // Uscita che ha la barra (bar.screen); vuoto = tutte.
+    readonly property string barScreen: Config.shell.bar.screen || ""
     readonly property real brightnessStep: Config.shell.brightness.step / 100
     function nudgeBrightness(delta) { Brightness.set(Math.max(0.01, Math.min(1, Brightness.level + delta))); }
 
@@ -100,13 +102,15 @@ PanelHost {
             if (!o.active) { out.push({ kind: "message", text: I18n.tr("spento"), key: "m:" + o.name }); return; }
             out.push({ kind: "res", name: o.name, label: I18n.tr("Risoluzione e frequenza"), value: o.mode, key: "res:" + o.name });
             out.push({ kind: "scale", name: o.name, label: I18n.tr("Scala"), value: String(o.scale), key: "scale:" + o.name });
+            if (activeOuts.length >= 2)
+                out.push({ kind: "barhere", name: o.name, label: I18n.tr("Barra solo su questo schermo"), key: "barhere:" + o.name });
         });
         if (outs.length === 0) out.push({ kind: "message", text: I18n.tr("nessuno schermo rilevato"), key: "m-none" });
         return out;
     }
     readonly property var rows: buildRows()
 
-    function selectable(r) { return r && (r.kind === "mode" || r.kind === "res" || r.kind === "scale" || r.kind === "action" || r.kind === "map" || r.kind === "bright" || r.kind === "night"); }
+    function selectable(r) { return r && (r.kind === "mode" || r.kind === "res" || r.kind === "scale" || r.kind === "barhere" || r.kind === "action" || r.kind === "map" || r.kind === "bright" || r.kind === "night"); }
     function current() { var r = rows[list.currentIndex]; return selectable(r) ? r : null; }
 
     function select(i) {
@@ -135,6 +139,7 @@ PanelHost {
         if (!r) return;
         if (r.kind === "night") Toggles.toggleNight();
         else if (r.kind === "mode") applyMode(r.id);
+        else if (r.kind === "barhere") Settings.set("shell", "bar.screen", barScreen === r.name ? "" : r.name);
         else if (r.kind === "action") { if (r.act === "keep") SwayBackend.confirm(); else SwayBackend.revert(); }
     }
     function change(r, dir) {
@@ -308,7 +313,7 @@ PanelHost {
                     visible: panel.selectable(entry.r) && entry.r.kind !== "map"
                     anchors { fill: parent; leftMargin: Theme.spacing; rightMargin: Theme.spacing }
                     hasCursor: ListView.isCurrentItem
-                    selected: entry.r.kind === "mode" && entry.r.id === panel.currentMode
+                    selected: (entry.r.kind === "mode" && entry.r.id === panel.currentMode) || (entry.r.kind === "barhere" && entry.r.name === panel.barScreen)
                     icon: entry.r.kind === "mode" || entry.r.kind === "action" ? entry.r.icon
                         : entry.r.kind === "bright" ? Icons.pick(Icons.brightness, Brightness.level)
                         : entry.r.kind === "night" ? Icons.night : ""
