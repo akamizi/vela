@@ -86,7 +86,7 @@ PanelWindow {
     }
 
     function reset() {
-        path = [];
+        path = Runtime.menuMode === "power" ? ["power"] : [];
         appsView = false;
         confirming = null;
         Calc.evaluate("");

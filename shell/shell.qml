@@ -120,6 +120,7 @@ ShellRoot {
         function toggle(): void { Runtime.toggleMenu("menu"); }   // menu completo
         function apps(): void { Runtime.toggleMenu("apps"); }     // solo applicazioni
         function calc(): void { Runtime.toggleMenu("calc"); }     // calcolatrice
+        function power(): void { Runtime.toggleMenu("power"); }   // direttamente la sezione Alimentazione (blocca, sospendi, esci, riavvia, spegni)
         function close(): void { Runtime.closeMenu(); }
     }
     IpcHandler {

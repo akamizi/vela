@@ -16,39 +16,79 @@ output * bg /usr/share/backgrounds/vela/Vela-5.jpg fill
 exec /usr/libexec/vela/session-init
 exec vela
 
-# Applicazioni e finestre
+# Applicazioni
 bindsym $mod+Return exec $term
-bindsym $mod+Shift+q kill
-bindsym Mod1+F4 kill
-bindsym $mod+Shift+c reload
-bindsym $mod+f fullscreen toggle
-bindsym $mod+Shift+space floating toggle
+bindsym $mod+t exec $term
+bindsym $mod+f exec $term --title="yazi" -e yazi
+bindsym $mod+w exec xdg-open http://
+bindsym $mod+e exec xdg-open mailto:
 
-# Menu, pannelli e layout di Vela
+# Menu, pannelli e sessione di Vela
+bindsym $mod+space exec vela ipc call menu toggle
 bindsym $mod+Ctrl+m exec vela ipc call menu toggle
+bindsym $mod+Mod1+space exec vela ipc call menu apps
 bindsym $mod+d exec vela ipc call menu apps
 bindsym $mod+Ctrl+a exec vela ipc call menu apps
+bindsym $mod+Shift+space exec vela ipc call menu calc
+bindsym Ctrl+$mod+space exec vela ipc call menu power
+bindsym $mod+z exec vela ipc call panel toggle shortcuts
+bindsym $mod+p exec vela ipc call panel toggle power
+bindsym $mod+m exec vela ipc call panel toggle radio
 bindsym $mod+Tab exec vela ipc call layout next
+bindsym $mod+l exec vela ipc call idle lock
 bindsym $mod+Shift+l exec vela ipc call idle lock
+bindsym $mod+i exec vela ipc call toggles awake
+bindsym $mod+b exec vela ipc call bar toggle
 bindsym $mod+Shift+e exec vela ipc call session logout
 bindsym XF86Display exec vela ipc call panel toggle display
 
-# Focus e spostamento (frecce)
-bindsym $mod+Left focus left
-bindsym $mod+Right focus right
-bindsym $mod+Up focus up
-bindsym $mod+Down focus down
-bindsym $mod+Shift+Left move left
-bindsym $mod+Shift+Right move right
-bindsym $mod+Shift+Up move up
-bindsym $mod+Shift+Down move down
+# Finestre
+bindsym $mod+Shift+q kill
+bindsym Mod1+F4 kill
+bindsym $mod+Shift+c reload
+bindsym $mod+Shift+r reload
+bindsym $mod+Ctrl+f floating toggle
+bindsym $mod+F11 fullscreen toggle
+bindsym Mod1+Tab focus next sibling
+bindsym Mod1+Shift+Tab focus prev sibling
+bindsym $mod+Shift+minus move scratchpad
+bindsym $mod+minus scratchpad show
+
+# Spostamento (frecce) e focus (Maiusc + frecce)
+bindsym $mod+Left move left 20
+bindsym $mod+Right move right 20
+bindsym $mod+Up move up 20
+bindsym $mod+Down move down 20
+bindsym $mod+Shift+Left focus left
+bindsym $mod+Shift+Right focus right
+bindsym $mod+Shift+Up focus up
+bindsym $mod+Shift+Down focus down
 
 # Disposizione
-bindsym $mod+b split horizontal
+bindsym $mod+h split horizontal
 bindsym $mod+v split vertical
 bindsym $mod+s layout stacking
-bindsym $mod+w layout tabbed
-bindsym $mod+e layout toggle split
+
+# Ridimensiona
+mode "resize" {
+    bindsym Left resize shrink width 20px
+    bindsym Right resize grow width 20px
+    bindsym Up resize shrink height 20px
+    bindsym Down resize grow height 20px
+    bindsym Return mode "default"
+    bindsym Escape mode "default"
+}
+bindsym $mod+r mode "resize"
+
+# Schermate (grim + slurp + swappy): Stamp = area, Maiusc+Stamp = schermo intero
+bindsym Print exec sh -c 'grim -g "$(slurp)" - | swappy -f -'
+bindsym Shift+Print exec sh -c 'grim - | swappy -f -'
+
+# Cambio spazio di lavoro con Ctrl+Alt+frecce, spostamento della finestra con Maiusc+Alt+frecce
+bindsym Ctrl+Mod1+Left workspace prev_on_output
+bindsym Ctrl+Mod1+Right workspace next_on_output
+bindsym Shift+Mod1+Left move container to workspace prev_on_output; workspace prev_on_output
+bindsym Shift+Mod1+Right move container to workspace next_on_output; workspace next_on_output
 
 # Spazi di lavoro
 bindsym $mod+1 workspace number 1

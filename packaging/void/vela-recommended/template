@@ -3,12 +3,12 @@
 # chi vuole tutte le funzioni installa questo e chi vuole il minimo installa solo `vela`. Con `xbps-install vela-recommended`.
 # Le funzioni senza il programma corrispondente spariscono da sole (vedi README): niente di questo è obbligatorio.
 pkgname=vela-recommended
-version=0.12.3
+version=0.13.0
 revision=1
 build_style=meta
 depends="vela>=${version}
  NetworkManager bluez pipewire wireplumber upower power-profiles-daemon brightnessctl gammastep curl
- cups avahi wl-mirror polkit xdg-desktop-portal xdg-desktop-portal-wlr swaylock swayidle libnotify pcmanfm-qt lxqt-archiver papirus-icon-theme"
+ cups avahi wl-mirror polkit xdg-desktop-portal xdg-desktop-portal-wlr swaylock swayidle libnotify pcmanfm-qt lxqt-archiver papirus-icon-theme grim slurp swappy yazi xdg-utils"
 short_desc="Optional dependencies of the Vela desktop shell (meta package)"
 maintainer="Maurizio Cavalletti <maurizio@akabit.it>"
 license="EUPL-1.2"
