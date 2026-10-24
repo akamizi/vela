@@ -164,7 +164,8 @@
   // Minuti; 0 = mai. `xxxMinutes` vale a batteria, `xxxMinutesOnAc` con l'alimentatore collegato (e sui PC senza batteria).
   // Il comando di blocco è un array di argomenti.
   "idle": {
-    "enabled": false,
+    // null = automatico: acceso nella sessione «Vela» (blocco, schermo spento, sospensione), spento in un Sway tuo; true/false lo fissano
+    "enabled": null,
     "lockMinutes": 5,
     "lockMinutesOnAc": 5,
     "screenOffMinutes": 10,

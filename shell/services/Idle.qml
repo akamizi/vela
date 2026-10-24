@@ -13,7 +13,7 @@ Singleton {
     id: root
 
     readonly property var cfg: Config.shell.idle
-    readonly property bool enabled: cfg.enabled === true
+    readonly property bool enabled: cfg.enabled === true || ((cfg.enabled === null || cfg.enabled === undefined) && Quickshell.env("VELA_SESSION") === "1")
     readonly property var lockCommand: Array.isArray(cfg.lockCommand) && cfg.lockCommand.length > 0 ? cfg.lockCommand : ["swaylock", "-f"]
 
     function secs(minutes) { return typeof minutes === "number" && minutes > 0 ? Math.round(minutes * 60) : 0; }
