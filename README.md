@@ -37,7 +37,6 @@ Aggiungere a `~/.config/sway/config`:
 exec vela                                           # avvia la shell (barra, menu, pannelli, OSD)
 bindsym $mod+Ctrl+m exec vela ipc call menu toggle  # menu completo
 bindsym $mod+Ctrl+a exec vela ipc call menu apps    # solo applicazioni
-bindsym $mod+Ctrl+m ...
 bindsym $mod+Tab exec vela ipc call layout next      # cambia la disposizione delle finestre (indicatore WindowLayout)
 bindsym XF86AudioRaiseVolume exec wpctl set-volume @DEFAULT_AUDIO_SINK@ 2%+
 bindsym XF86AudioLowerVolume exec wpctl set-volume @DEFAULT_AUDIO_SINK@ 2%-
