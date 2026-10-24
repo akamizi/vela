@@ -12,7 +12,7 @@ maintainer="Maurizio Cavalletti <maurizio@akabit.it>"
 license="EUPL-1.2"
 homepage="https://github.com/akamizi/vela"
 distfiles="${homepage}/archive/v${version}.tar.gz>vela-${version}.tar.gz"
-checksum=ce557959e4426967b0fe3d9686a2ab73c396c96bcaf9e2ee133694c9be0ccc1f
+checksum=2c490b82682e35fc03ab61c7ff357fad5aae633cb8cd2e6716047a21376fbe2b
 
 # Dipendenze facoltative: senza, la voce relativa sparisce (vedi README).
 # NetworkManager (rete, VPN), bluez (Bluetooth), wireplumber (audio PipeWire), upower (batteria),
