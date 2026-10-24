@@ -10,18 +10,25 @@ Item {
     id: root
 
     // --- tema (stessi valori predefiniti di Vela; il greeter non legge file di Vela) ---
-    readonly property color cBackground: "#1a1a1a"
-    readonly property color cSurface: "#1e1e1e"
-    readonly property color cForeground: "#e4e5e6"
-    readonly property color cMuted: "#7e8087"
-    readonly property color cAccent: "#3689e6"
-    readonly property color cError: "#c6262e"
+    property color cBackground: "#1a1a1a"
+    property color cSurface: "#1e1e1e"
+    property color cForeground: "#e4e5e6"
+    property color cMuted: "#7e8087"
+    property color cAccent: "#3689e6"
+    property color cError: "#c6262e"
     readonly property color cBorder: Qt.alpha(cForeground, 0.22)
-    readonly property string fontFamily: "Inter"
+    property string fontFamily: "Inter"
     readonly property int fontSize: 14
 
     // --- configurazione (variabili d'ambiente, utili alle prove) ---
     readonly property string sessionsDir: Quickshell.env("VELA_GREETER_SESSIONS") || "/usr/share/wayland-sessions"
+    // Tema di Vela, solo se installato (lettura facoltativa: nessuna dipendenza dal pacchetto vela)
+    readonly property string themeFile: Quickshell.env("VELA_GREETER_THEME") || "/usr/share/vela/config/defaults/theme.jsonc"
+    // Ultimo utente e ultima sessione (la cartella la crea e la rende scrivibile a `_greeter` il pacchetto)
+    readonly property string stateFile: Quickshell.env("VELA_GREETER_STATE") || "/var/cache/vela-greeter/state.json"
+    // Comandi di spegnimento e riavvio (separati da spazi)
+    readonly property var poweroffCmd: (Quickshell.env("VELA_GREETER_POWEROFF") || "loginctl poweroff").split(" ")
+    readonly property var rebootCmd: (Quickshell.env("VELA_GREETER_REBOOT") || "loginctl reboot").split(" ")
     readonly property string wallpaper: Quickshell.env("VELA_GREETER_WALLPAPER") || "/usr/share/backgrounds/vela/Vela-5.jpg"
 
     // --- stato ---
@@ -37,6 +44,8 @@ Item {
     property bool sessionOpen: false   // c'è una sessione greetd aperta per l'utente (create_session inviata)
     property bool retry: false         // riaprire la sessione quando greetd torna Inactive
     property bool launching: false
+    property string lastSession: ""     // nome della sessione dell'ultimo accesso
+    property string armedPower: ""      // "poweroff" | "reboot": premuto una volta, serve una seconda conferma
     readonly property var session: sessions.length > 0 ? sessions[sessionIndex] : null
 
     // Avvio di una sessione di accesso per l'utente indicato (poi arriva la richiesta della password).
@@ -60,6 +69,46 @@ Item {
         pending = "";
         busy = true;
         Greetd.respond(text);
+    }
+
+    function applyTheme(text) {
+        try {
+            var t = JSON.parse(String(text).replace(/(^|\s)\/\/.*$/gm, "").replace(/,(\s*[}\]])/g, "$1"));
+            var c = t.colors || {};
+            if (c.background) cBackground = c.background;
+            if (c.surface) cSurface = c.surface;
+            if (c.foreground) cForeground = c.foreground;
+            if (c.muted) cMuted = c.muted;
+            if (c.accent) cAccent = c.accent;
+            if (c.error) cError = c.error;
+            if (t.font && t.font.family) fontFamily = t.font.family;
+        } catch (e) { }
+    }
+
+    function applyState(text) {
+        try {
+            var s = JSON.parse(String(text));
+            if (typeof s.session === "string") { lastSession = s.session; selectLastSession(); }
+            if (typeof s.user === "string" && s.user !== "" && user === "") {
+                user = s.user;
+                submitUser();       // la password si può digitare subito
+            }
+        } catch (e) { }
+    }
+
+    function selectLastSession() {
+        for (var i = 0; i < sessions.length; i++)
+            if (sessions[i].name === lastSession) { sessionIndex = i; return; }
+    }
+
+    function saveState() {
+        if (session !== null) stateView.setText(JSON.stringify({ user: user.trim(), session: session.name }));
+    }
+
+    function requestPower(kind) {
+        if (armedPower !== kind) { armedPower = kind; armTimer.restart(); return; }
+        armedPower = "";
+        Quickshell.execDetached(kind === "poweroff" ? poweroffCmd : rebootCmd);
     }
 
     function cycleSession(step) {
@@ -105,6 +154,7 @@ Item {
                 Greetd.cancelSession();
                 return;
             }
+            root.saveState();
             root.launching = true;
             fadeOut.start();
         }
@@ -116,6 +166,12 @@ Item {
             root.infoIsError = true;
         }
     }
+
+    FileView { path: root.themeFile; printErrors: false; onLoaded: root.applyTheme(text()) }
+    FileView { id: stateView; path: root.stateFile; printErrors: false; onLoaded: root.applyState(text()) }
+    Timer { id: armTimer; interval: 4000; onTriggered: root.armedPower = "" }
+    Shortcut { sequence: "F11"; onActivated: root.requestPower("reboot") }
+    Shortcut { sequence: "F12"; onActivated: root.requestPower("poweroff") }
 
     // Pausa prima di riaprire la sessione: la risposta di greetd alla cancellazione (che Quickshell invia da sé dopo un errore)
     // deve arrivare prima della nuova richiesta, altrimenti le risposte si sfasano di una.
@@ -138,6 +194,7 @@ Item {
                     if (p.length === 2 && p[0] !== "") out.push({ name: p[0], exec: p[1] });
                 });
                 root.sessions = out;
+                root.selectLastSession();
             }
         }
     }
@@ -152,6 +209,30 @@ Item {
         opacity: status === Image.Ready ? 1 : 0
     }
     Rectangle { anchors.fill: parent; color: Qt.alpha(root.cBackground, 0.45) }
+
+    Row {
+        anchors.right: parent.right; anchors.bottom: parent.bottom
+        anchors.margins: 16
+        spacing: 8
+        opacity: root.launching ? 0 : 1
+        Repeater {
+            model: [{ kind: "reboot", label: "Riavvia", key: "F11" }, { kind: "poweroff", label: "Spegni", key: "F12" }]
+            delegate: Rectangle {
+                required property var modelData
+                width: powerLabel.implicitWidth + 24; height: 30
+                color: root.cSurface
+                border.width: 1; border.color: root.armedPower === modelData.kind ? root.cAccent : root.cBorder
+                Text {
+                    id: powerLabel
+                    anchors.centerIn: parent
+                    text: root.armedPower === modelData.kind ? "Conferma?" : modelData.label + " (" + modelData.key + ")"
+                    color: root.armedPower === modelData.kind ? root.cForeground : root.cMuted
+                    font.family: root.fontFamily; font.pixelSize: root.fontSize - 2
+                }
+                MouseArea { anchors.fill: parent; onClicked: root.requestPower(modelData.kind) }
+            }
+        }
+    }
 
     Column {
         id: card
@@ -216,6 +297,7 @@ Item {
             text: root.session ? "‹  " + root.session.name + "  ›" : "nessuna sessione"
             color: root.cMuted; font.family: root.fontFamily; font.pixelSize: root.fontSize - 1
             topPadding: 6
+            MouseArea { anchors.fill: parent; onClicked: root.cycleSession(1) }
         }
         // Messaggio (errore o avviso) su una fascia leggibile sopra lo sfondo
         Rectangle {
