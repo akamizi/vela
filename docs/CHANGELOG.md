@@ -2,6 +2,7 @@
 
 Dalla più recente. Le versioni «Dalla X» riassumono più rilasci.
 
+- Versione 0.15.9: README riscritto e più breve (avvertenza: progetto sperimentale e potenzialmente distruttivo; progetto personale per Void Linux, senza supporto; scritto con l'AI; screenshot di greeter, pannello audio e Impostazioni); il vecchio testo è in `docs/MANUAL.md` e il registro delle versioni in `docs/CHANGELOG.md`, entrambi installati in `/usr/share/doc/vela`.
 - Versione 0.15.8: gli script di installazione di `vela` e `vela-greeter` leggono l'azione anche dal primo argomento (con i pacchetti costruiti da `xbps-create` la variabile `ACTION` non c'è e non facevano nulla: mancava `/var/cache/vela-greeter` e `greetd` non faceva partire il greeter); `vela-greeter` 0.1.2.
 - Versione 0.15.7: `session-init` avvia PipeWire senza `DISPLAY` (il modulo del campanello X11 mandava in crash PipeWire quando Xwayland si chiudeva, e il volume spariva) e ferma un PipeWire rimasto da una sessione chiusa (processo vivo ma senza socket) prima di avviarne uno nuovo.
 - Versione 0.15.6: `session-init` registra come termina PipeWire in `$XDG_RUNTIME_DIR/vela-pipewire.log` (diagnosi di un audio sparito dopo il primo avvio, non riprodotto); `vela-greeter` 0.1.1 (elenco utenti, sessioni come pulsanti con «Vela» preselezionata, finestra senza decorazioni, output di cage e Quickshell su `/var/cache/vela-greeter/greeter.log` e console pulita durante la transizione).
