@@ -2,6 +2,8 @@
 # Script di installazione di xbps (eseguito come root). Volutamente minimo, senza rete e senza mai far fallire l'installazione:
 # ricarica solo le regole udev, perché la regola del limite di carica della batteria si veda senza riavviare. Non attiva servizi,
 # non tocca le home degli utenti né i gruppi (vedi INSTALL.msg e D-048).
+# xbps-src antepone l'intestazione che imposta ACTION; con xbps-create (build-xbps-direct.sh) arriva solo $1
+ACTION=${ACTION:-$1}
 case "${ACTION}" in
 post)
 	if command -v udevadm >/dev/null 2>&1; then

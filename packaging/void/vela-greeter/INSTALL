@@ -1,6 +1,8 @@
 #!/bin/sh
 # Script di installazione di xbps (root). Crea la cartella di stato del greeter (cache di Quickshell/Qt e ricordo di utente e sessione)
 # e la rende scrivibile a `_greeter`, se l'utente esiste. Non tocca /etc/greetd, non avvia servizi, non fa mai fallire l'installazione.
+# xbps-src antepone l'intestazione che imposta ACTION; con xbps-create (build-xbps-direct.sh) arriva solo $1
+ACTION=${ACTION:-$1}
 case "${ACTION}" in
 post)
 	if id -u _greeter >/dev/null 2>&1; then
