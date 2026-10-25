@@ -1,7 +1,7 @@
 # Template file for 'vela-recommended' (meta-pacchetto, D-048)
 # Per void-packages: copiare in srcpkgs/vela-recommended/template. Non ha file: porta solo le dipendenze facoltative di Vela, così
 # chi vuole tutte le funzioni installa questo e chi vuole il minimo installa solo `vela`. Con `xbps-install vela-recommended`.
-# Le funzioni senza il programma corrispondente spariscono da sole (vedi README): niente di questo è obbligatorio.
+# Le funzioni senza il programma corrispondente spariscono da sole (vedi docs/MANUAL.md): niente di questo è obbligatorio.
 pkgname=vela-recommended
 version=0.15.8
 revision=1

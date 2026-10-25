@@ -43,7 +43,7 @@ install: install-system
 	install -Dm755 scripts/vela $(DESTDIR)$(PREFIX)/bin/vela
 	find shell config/defaults i18n -type f -exec install -Dm644 {} $(SHARE)/vela/{} \;
 	find config/user.example -type f -exec install -Dm644 {} $(SHARE)/doc/vela/{} \;
-	install -Dm644 README.md THIRD-PARTY.md -t $(SHARE)/doc/vela
+	install -Dm644 README.md THIRD-PARTY.md docs/MANUAL.md docs/CHANGELOG.md -t $(SHARE)/doc/vela
 	install -Dm644 VERSION $(SHARE)/vela/VERSION
 	install -Dm644 assets/logo.svg $(SHARE)/vela/assets/logo.svg
 	install -Dm644 wallpapers/*.jpg -t $(SHARE)/backgrounds/vela

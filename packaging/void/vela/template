@@ -14,7 +14,7 @@ homepage="https://github.com/akamizi/vela"
 distfiles="${homepage}/archive/v${version}.tar.gz>vela-${version}.tar.gz"
 checksum=15321a02ec2c39388a92a1f5294ed645bdfce15627e85bbf01036f21b737309a
 
-# Dipendenze facoltative: senza, la voce relativa sparisce (vedi README).
+# Dipendenze facoltative: senza, la voce relativa sparisce (vedi docs/MANUAL.md).
 # NetworkManager (rete, VPN), bluez (Bluetooth), wireplumber (audio PipeWire), upower (batteria),
 # power-profiles-daemon (profilo energetico), brightnessctl (luminosità), gammastep (luce notturna),
 # labwc, wlr-randr e wlopm (sessione «Vela (labwc)»: compositor, schermi, spegnimento schermi; stanno in vela-recommended),
