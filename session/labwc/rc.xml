@@ -72,6 +72,8 @@
     <!-- Schermate (grim + slurp + swappy): Stamp = area, Maiusc+Stamp = schermo intero -->
     <keybind key="Print"><action name="Execute" command="sh -c 'grim -g &quot;$(slurp)&quot; - | swappy -f -'" /></keybind>
     <keybind key="S-Print"><action name="Execute" command="sh -c 'grim - | swappy -f -'" /></keybind>
+    <!-- Registrazione dello schermo (senza audio): Win+Stamp = schermo intero; lo stesso comando ferma una registrazione in corso -->
+    <keybind key="W-Print"><action name="Execute" command="vela ipc call recorder toggle screen" /></keybind>
 
     <!-- Spazi di lavoro: Ctrl+Alt+frecce cambia, Maiusc+Alt+frecce sposta la finestra -->
     <keybind key="C-A-Left"><action name="GoToDesktop" to="left" wrap="no" /></keybind>

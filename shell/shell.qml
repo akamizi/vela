@@ -224,6 +224,12 @@ ShellRoot {
         function status(): string { return Daemon.status(); }
     }
     IpcHandler {
+        target: "recorder"  // registrazione dello schermo: toggle screen|area (lo stesso comando ferma), stop, status
+        function toggle(mode: string): void { Recorder.toggle(mode); }
+        function stop(): void { Recorder.stop(); }
+        function status(): string { return JSON.stringify({ state: Recorder.state, mode: Recorder.mode, file: Recorder.file }); }
+    }
+    IpcHandler {
         target: "player"    // ferma qualunque flusso (radio, musica, Subsonic)
         function stop(): void { Player.stop(); }
     }

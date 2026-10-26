@@ -88,6 +88,8 @@ bindsym $mod+r mode "resize"
 # Schermate (grim + slurp + swappy): Stamp = area, Maiusc+Stamp = schermo intero
 bindsym Print exec sh -c 'grim -g "$(slurp)" - | swappy -f -'
 bindsym Shift+Print exec sh -c 'grim - | swappy -f -'
+# Registrazione dello schermo (senza audio): Win+Stamp = schermo intero; lo stesso comando ferma una registrazione in corso
+bindsym $mod+Print exec vela ipc call recorder toggle screen
 
 # Cambio spazio di lavoro con Ctrl+Alt+frecce, spostamento della finestra con Maiusc+Alt+frecce
 bindsym Ctrl+Mod1+Left workspace prev_on_output

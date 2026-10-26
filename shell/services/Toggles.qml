@@ -14,7 +14,9 @@ Singleton {
     property bool awake: false          // stato interno, nessun processo esterno
     property bool night: false
     property bool dnd: false
-    property bool recording: false
+    // Registrazione in corso: quella nativa di Vela (Recorder) o quella di un comando esterno (toggles.recordingCommand).
+    property bool recordingExternal: false
+    readonly property bool recording: recordingExternal || Recorder.state === "recording"
     property bool dndAvailable: false
 
     // Touchpad: lo stato e il comando vengono dal backend del compositor (oggi Sway).
@@ -106,10 +108,11 @@ Singleton {
     Process {
         id: recCheck
         command: root.recordingCommand ? root.recordingCommand : ["true"]
-        onExited: code => root.recording = (root.recordingCommand !== null && code === 0)
+        onExited: code => root.recordingExternal = (root.recordingCommand !== null && code === 0)
     }
 
     function stopRecording() {
+        if (Recorder.busy) { Recorder.stop(); return; }
         var c = Config.shell.toggles.recordingStopCommand;
         if (c) Quickshell.execDetached(c);
         refreshSoon.restart();
