@@ -7,6 +7,7 @@
 // Azioni: {"type":"exec","command":[...]} (array di argomenti, mai una stringa da shell),
 //         {"type":"toggle","target":"night|awake|dnd|touchpad|bar"}, {"type":"panel","target":"..."},
 //         {"type":"compositor","command":"reload"}, {"type":"apps"} (elenco applicazioni),
+//         {"type":"idle","command":"lock|suspend"} (blocco col comando di `idle.lockCommand`; la sospensione blocca prima e sospende solo a blocco avvenuto),
 //         {"type":"session","command":"logout|reboot|poweroff"} (chiude prima le finestre in ordine, vedi `session` in shell.jsonc).
 {
   "items": [
@@ -47,8 +48,8 @@
     {
       "id": "power", "label": "Alimentazione", "glyph": "U+F0425",
       "children": [
-        { "id": "lock", "label": "Blocca", "requires": ["swaylock"], "action": { "type": "exec", "command": ["swaylock", "-f"] } },
-        { "id": "suspend", "label": "Sospendi", "requires": ["loginctl"], "action": { "type": "exec", "command": ["loginctl", "suspend"] } },
+        { "id": "lock", "label": "Blocca", "requires": ["swaylock"], "action": { "type": "idle", "command": "lock" } },
+        { "id": "suspend", "label": "Sospendi", "requires": ["loginctl"], "action": { "type": "idle", "command": "suspend" } },
         { "id": "logout", "label": "Esci dalla sessione", "confirm": true, "action": { "type": "session", "command": "logout" } },
         { "id": "reboot", "label": "Riavvia", "confirm": true, "requires": ["loginctl"], "action": { "type": "session", "command": "reboot" } },
         { "id": "poweroff", "label": "Spegni", "confirm": true, "requires": ["loginctl"], "action": { "type": "session", "command": "poweroff" } }

@@ -50,7 +50,7 @@ PanelHost {
         Runtime.closePanel();
         if (r.run === "settings") Runtime.openPanel("settings");
         else if (r.run === "lock") Idle.lock();
-        else if (r.run === "suspend") Quickshell.execDetached(["loginctl", "suspend"]);
+        else if (r.run === "suspend") Idle.suspend();
         else Session.request(r.run);
     }
 

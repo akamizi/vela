@@ -157,6 +157,11 @@ Singleton {
             return Compositor.run(a.command);
         case "session":
             return Session.request(a.command);
+        case "idle":
+            if (a.command === "lock") Idle.lock();
+            else if (a.command === "suspend") Idle.suspend();
+            else return false;
+            return true;
         }
         console.warn("[vela] menu: tipo di azione sconosciuto in '" + item.id + "': " + a.type);
         return false;

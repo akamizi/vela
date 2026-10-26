@@ -8,6 +8,7 @@ import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland
 import "../core"
+import "../core/lock.js" as Lock
 
 Singleton {
     id: root
@@ -80,18 +81,32 @@ Singleton {
     // Il buio resta ancora un attimo, finché la schermata di blocco non è su.
     Timer { id: release; interval: 1500; onTriggered: root.fading = false }
 
-    // Blocca lo schermo, salvo che un blocco sia già attivo (il comando è un array: nessuna shell sulla stringa).
-    function lock() {
-        var name = String(lockCommand[0]).split("/").pop();
-        Quickshell.execDetached(["sh", "-c", 'pgrep -x "$1" >/dev/null 2>&1 || { shift; exec "$@"; }', "sh", name].concat(lockCommand));
+    // Comando di blocco con i colori del tema (solo se è il predefinito `swaylock -f`, vedi core/lock.js).
+    function themedLock() {
+        return Lock.themedCommand(lockCommand, {
+            background: Theme.background.toString(), surface: Theme.surface.toString(), foreground: Theme.foreground.toString(),
+            accent: Theme.accent.toString(), error: Theme.error.toString(), font: Theme.fontFamily
+        });
     }
 
-    // Sospende dopo aver avviato il blocco (si ritrova la schermata di blocco al risveglio).
+    // Blocca lo schermo, salvo che un blocco dello stesso utente sia già attivo (il comando è un array: nessuna shell sulla stringa).
+    function lock() { Quickshell.execDetached(Lock.waitLockArgv(themedLock())); }
+
+    // Sospende (unico ingresso: menu, pannello utente, IPC e inattività). Prima il blocco, e si sospende solo se è confermato:
+    // se il comando di blocco fallisce il PC resta acceso con un avviso, mai sospeso e sbloccato.
     function suspend() {
-        lock();
-        suspendDelay.restart();
+        if (locker.running) return;
+        locker.command = Lock.waitLockArgv(themedLock());
+        locker.running = true;
     }
-    Timer { id: suspendDelay; interval: 1200; onTriggered: Quickshell.execDetached(["loginctl", "suspend"]) }
+    Process {
+        id: locker
+        onExited: code => {
+            if (code === 0) Quickshell.execDetached(["loginctl", "suspend"]);
+            else Quickshell.execDetached(["notify-send", "-a", "Vela", "-u", "critical", "-i", "dialog-warning", I18n.tr("Sospensione annullata"),
+                I18n.tr("Il blocco dello schermo non è partito: non sospendo con lo schermo sbloccato.")]);
+        }
+    }
 
     // Un altro gestore dell'inattività in esecuzione causerebbe doppioni: il pannello lo segnala.
     property bool externalRunning: false
