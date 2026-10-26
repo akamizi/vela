@@ -32,87 +32,87 @@ ShellRoot {
     }
 
     Loader {
-        active: Config.shell.panels.network.enabled
+        active: Config.shell.panels.network.enabled && Runtime.panel === "network"
         sourceComponent: NetworkPanel {}
     }
 
     Loader {
-        active: Config.shell.panels.bluetooth.enabled
+        active: Config.shell.panels.bluetooth.enabled && Runtime.panel === "bluetooth"
         sourceComponent: BluetoothPanel {}
     }
 
     Loader {
-        active: Config.shell.panels.audio.enabled
+        active: Config.shell.panels.audio.enabled && Runtime.panel === "audio"
         sourceComponent: AudioPanel {}
     }
 
     Loader {
-        active: Config.shell.panels.settings.enabled
+        active: Config.shell.panels.settings.enabled && Runtime.panel === "settings"
         sourceComponent: SettingsPanel {}
     }
 
     Loader {
-        active: Config.shell.panels.shortcuts.enabled
+        active: Config.shell.panels.shortcuts.enabled && Runtime.panel === "shortcuts"
         sourceComponent: ShortcutsPanel {}
     }
 
     Loader {
-        active: Config.shell.panels.power.enabled
+        active: Config.shell.panels.power.enabled && Runtime.panel === "power"
         sourceComponent: PowerPanel {}
     }
 
     Loader {
-        active: Config.shell.panels.battery.enabled && BatteryLimit.supported
+        active: Config.shell.panels.battery.enabled && BatteryLimit.supported && Runtime.panel === "battery"
         sourceComponent: BatteryPanel {}
     }
 
     Loader {
-        active: Config.shell.panels.user.enabled
+        active: Config.shell.panels.user.enabled && Runtime.panel === "user"
         sourceComponent: UserPanel {}
     }
 
     Loader {
-        active: Config.shell.panels.weather.enabled
+        active: Config.shell.panels.weather.enabled && Runtime.panel === "weather"
         sourceComponent: WeatherPanel {}
     }
 
     Loader {
-        active: Config.shell.panels.calendar.enabled
+        active: Config.shell.panels.calendar.enabled && Runtime.panel === "calendar"
         sourceComponent: CalendarPanel {}
     }
 
     Loader {
-        active: Config.shell.panels.brightness.enabled
+        active: Config.shell.panels.brightness.enabled && Runtime.panel === "brightness"
         sourceComponent: BrightnessPanel {}
     }
 
     Loader {
-        active: Config.shell.panels.display.enabled
+        active: Config.shell.panels.display.enabled && Runtime.panel === "display"
         sourceComponent: DisplayPanel {}
     }
 
     Loader {
-        active: Config.shell.panels.printers.enabled
+        active: Config.shell.panels.printers.enabled && Runtime.panel === "printers"
         sourceComponent: PrintersPanel {}
     }
 
     Loader {
-        active: Config.shell.panels.services.enabled
+        active: Config.shell.panels.services.enabled && Runtime.panel === "services"
         sourceComponent: ServicesPanel {}
     }
 
     Loader {
-        active: Config.shell.panels.radio.enabled
+        active: Config.shell.panels.radio.enabled && Runtime.panel === "radio"
         sourceComponent: RadioPanel {}
     }
 
     Loader {
-        active: Config.shell.panels.music.enabled
+        active: Config.shell.panels.music.enabled && Runtime.panel === "music"
         sourceComponent: MusicPanel {}
     }
 
     Loader {
-        active: Config.shell.panels.subsonic.enabled
+        active: Config.shell.panels.subsonic.enabled && Runtime.panel === "subsonic"
         sourceComponent: SubsonicPanel {}
     }
 

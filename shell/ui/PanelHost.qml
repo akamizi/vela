@@ -17,7 +17,10 @@ PanelWindow {
     property bool centered: false
     property int cardHeight: 0
     default property alias content: card.data
-    readonly property bool open: Runtime.panel === name
+    // Il pannello nasce solo quando serve (Loader in shell.qml) e «si apre» un giro di eventi dopo, così onOpenChanged scatta come prima.
+    property bool armed: false
+    Component.onCompleted: Qt.callLater(function () { host.armed = true; })
+    readonly property bool open: armed && Runtime.panel === name
     readonly property bool atTop: Config.shell.bar.position === "top"
 
     screen: Compositor.focusedScreen
