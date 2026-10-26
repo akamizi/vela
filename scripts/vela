@@ -96,4 +96,12 @@ if [ "${1:-}" = ipc ]; then
     shift
     exec quickshell ipc -p "$root/shell" "$@"
 fi
+# Nella sessione Vela parte insieme a session-init, che lancia PipeWire in background: se Quickshell si collega prima che il
+# socket esista, non si ricollega più e il volume resta morto fino al riavvio (visto il 2026-10-26: Vela alle 19:33:44, PipeWire
+# alle 19:33:46). Si aspetta il socket, al massimo 5 s (VELA_PIPEWIRE_WAIT, in decimi di secondo); senza pipewire non si aspetta.
+if command -v pipewire >/dev/null 2>&1; then
+    pwsock="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/pipewire-0"
+    n=0
+    while [ ! -S "$pwsock" ] && [ "$n" -lt "${VELA_PIPEWIRE_WAIT:-50}" ]; do sleep 0.1; n=$((n + 1)); done
+fi
 exec quickshell -p "$root/shell" "$@"
