@@ -19,7 +19,16 @@ Singleton {
     readonly property string home: Quickshell.env("HOME")
     readonly property string confDir: Config.userDir + "/sway.d"
     readonly property string confPath: confDir + "/vela.conf"
-    readonly property string swayConfigPath: (Quickshell.env("XDG_CONFIG_HOME") || (home + "/.config")) + "/sway/config"
+    // Config di Sway: quello che il compositor ha caricato davvero (la sessione Vela usa `sway -c /usr/share/vela/sway/config`),
+    // altrimenti quello dell'utente. Elenco scorciatoie e conflitti devono leggere lo stesso file che Sway esegue.
+    readonly property string defaultConfigPath: (Quickshell.env("XDG_CONFIG_HOME") || (home + "/.config")) + "/sway/config"
+    property string loadedConfig: ""
+    readonly property string swayConfigPath: loadedConfig !== "" ? loadedConfig : defaultConfigPath
+    Process {
+        id: verProc
+        command: ["swaymsg", "-r", "-t", "get_version"]
+        stdout: StdioCollector { onStreamFinished: root.loadedConfig = SwayConf.loadedConfigPath(text) }
+    }
 
     property var outputs: []          // [{name, label, active, mode, modes, scale, transform, x, y}]
     property var inputs: []           // [{identifier, name, type}]
@@ -127,6 +136,7 @@ Singleton {
         if (!active && !labwc) return;
         if (!outProc.running) outProc.running = true;
         if (labwc) return;
+        if (loadedConfig === "" && !verProc.running) verProc.running = true;
         if (!inProc.running && !daemonInputs) inProc.running = true;
         swayCfg.reload();
     }

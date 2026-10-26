@@ -26,4 +26,8 @@ assert.strictEqual(sc.safeList("ctrl:nocaps, exec foot"), false);
 assert.strictEqual(sc.safeList("us,it;exec foot"), false);
 assert.strictEqual(sc.safeList("us #x"), false);
 assert.strictEqual(sc.safeList(7), false);
+
+// File di configurazione realmente caricato da Sway (get_version): la sessione Vela usa `sway -c /usr/share/vela/sway/config`
+assert.strictEqual(sc.loadedConfigPath('{"human_readable":"1.10","loaded_config_file_name":"/usr/share/vela/sway/config"}'), "/usr/share/vela/sway/config");
+for (const bad of ['{"loaded_config_file_name":""}', '{"loaded_config_file_name":"relativo/config"}', '{"loaded_config_file_name":5}', '{}', "non json", "", null]) assert.strictEqual(sc.loadedConfigPath(bad), "", String(bad));
 console.log("ok swayconf");

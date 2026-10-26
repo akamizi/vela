@@ -147,6 +147,10 @@ function describeVela(target, fn, arg) {
     }
     if (target === "toggles") return { label: ({ awake: tr("Resta sveglio"), night: tr("Luce notturna"), dnd: tr("Non disturbare"), touchpad: tr("Touchpad"), batteryLimit: tr("Limite di carica") })[fn] || tr("Interruttore %1", fn), group: v };
     if (target === "idle") return { label: fn === "lock" ? tr("Blocca lo schermo") : fn === "suspend" ? tr("Sospendi") : tr("Inattività (%1)", fn), group: "Sistema" };
+    if (target === "session") return { label: ({ logout: tr("Esci dalla sessione"), reboot: tr("Riavvia"), poweroff: tr("Spegni") })[fn] || tr("Sessione (%1)", fn), group: "Sistema" };
+    if (target === "layout") return { label: fn === "next" ? tr("Layout successivo della finestra") : fn === "prev" ? tr("Layout precedente della finestra") : tr("Layout della finestra"), group: v };
+    if (target === "keyboard") return { label: fn === "next" ? tr("Layout di tastiera successivo") : fn === "prev" ? tr("Layout di tastiera precedente") : tr("Layout di tastiera"), group: v };
+    if (target === "player" || target === "radio" || target === "music" || target === "subsonic") return { label: fn === "stop" ? tr("Ferma la riproduzione") : tr("Riproduci (%1)", target), group: "Schermo e audio" };
     return { label: tr("Vela: %1 %2", target, fn), group: v };
 }
 

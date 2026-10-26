@@ -65,3 +65,12 @@ function safe(v) { return typeof v === "string" && /^[A-Za-z0-9_:.()+\-\/ @]*$/.
 
 // Liste XKB (layout, varianti, opzioni): la virgola separa gli elementi, ma ogni elemento è una sola parola (niente spazi).
 function safeList(v) { return typeof v === "string" && /^[A-Za-z0-9_:.()+\-]*(,[A-Za-z0-9_:.()+\-]*)*$/.test(v); }
+
+// Percorso del config che Sway ha caricato davvero, dalla risposta di `swaymsg -t get_version` ("" se non c'è o non è assoluto).
+// Serve perché la sessione Vela avvia `sway -c /usr/share/vela/sway/config`: ~/.config/sway/config può essere un file mai usato.
+function loadedConfigPath(text) {
+    try {
+        var p = JSON.parse(text).loaded_config_file_name;
+        return typeof p === "string" && p.charAt(0) === "/" ? p : "";
+    } catch (e) { return ""; }
+}
