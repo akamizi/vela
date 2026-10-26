@@ -25,6 +25,23 @@ function parseEnv(text) {
 
 function validUrl(u) { return typeof u === "string" && /^https?:\/\/[^\s\/]+/.test(u); }
 
+// Token e salt viaggiano nell'URL (anche in quello dei brani): in chiaro solo dove non c'è nessuno in mezzo, cioè la rete locale.
+// https vale sempre; http solo verso localhost, indirizzi privati/loopback, nomi senza punto o con suffisso .local/.lan/.home.arpa.
+function transportOk(u) {
+    if (!validUrl(u)) return false;
+    if (/^https:/.test(u)) return true;
+    var m = /^http:\/\/(?:[^@\/]*@)?(\[[^\]]+\]|[^:\/]+)/.exec(u);
+    if (!m) return false;
+    var h = m[1].toLowerCase();
+    if (h.charAt(0) === "[") return /^\[(::1|f[cd][0-9a-f:]*|fe80[0-9a-f:]*)\]$/.test(h);
+    var ip = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/.exec(h);
+    if (ip) {
+        var a = +ip[1], b = +ip[2];
+        return a === 127 || a === 10 || (a === 192 && b === 168) || (a === 172 && b >= 16 && b <= 31);
+    }
+    return h.indexOf(".") < 0 || /\.(local|lan|home\.arpa)$/.test(h);
+}
+
 // Parametri di autenticazione: token = md5(password + salt). `md5` (stringa → esadecimale) la fornisce chi chiama.
 function authQuery(user, pass, salt, md5) {
     return "u=" + encodeURIComponent(user) + "&t=" + md5(pass + salt) + "&s=" + encodeURIComponent(salt)
@@ -68,4 +85,10 @@ function playlistText(entries) {
         out += "#EXTINF:-1," + name.replace(/[\r\n]+/g, " ") + "\n" + e.url + "\n";
     });
     return out;
+}
+
+// Percorso della playlist temporanea (contiene il token): "" se la cartella non è privata (vuota, /tmp, /var/tmp o non assoluta).
+function playlistPath(dir, n) {
+    if (typeof dir !== "string" || dir.charAt(0) !== "/" || /^\/(var\/)?tmp\/*$/.test(dir)) return "";
+    return dir.replace(/\/+$/, "") + "/vela-subsonic-" + n + ".m3u";
 }

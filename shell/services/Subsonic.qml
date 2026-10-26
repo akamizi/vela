@@ -15,7 +15,7 @@ Singleton {
 
     readonly property string home: Quickshell.env("HOME") || ""
     readonly property string envPath: home + "/.config/subsonic-mpv/env"
-    readonly property string runtimeDir: Quickshell.env("XDG_RUNTIME_DIR") || "/tmp"
+    readonly property string runtimeDir: Quickshell.env("XDG_RUNTIME_DIR") || ""
     // Una playlist per ogni riproduzione (contiene il token): `files` tiene i percorsi da cancellare.
     property var files: []
     property int playlistSerial: 0
@@ -53,6 +53,7 @@ Singleton {
                 if (perms !== "600") { root.status = "perms"; root.error = ""; root.albums = []; return; }
                 if (root.cred.missing.length > 0) { root.status = "incomplete"; root.albums = []; return; }
                 if (!Sub.validUrl(root.cred.url)) { root.status = "error"; root.error = I18n.tr("SUBSONIC_URL non valido (serve http o https)"); return; }
+                if (!Sub.transportOk(root.cred.url)) { root.status = "error"; root.error = I18n.tr("SUBSONIC_URL usa http verso un server fuori dalla rete locale: token e password della sessione viaggerebbero in chiaro, serve https"); return; }
                 if (root.status === "none" || root.status === "perms" || root.status === "incomplete") root.status = "ready";
                 if (root.wantLoad) root.loadAlbums();
             }
@@ -105,7 +106,8 @@ Singleton {
     // --- riproduzione: playlist con permessi 600, cancellata alla fine ---------------------------------------------
     property var pendingPlay: null
     function writePlaylist(name, key, entries) {
-        var path = runtimeDir + "/vela-subsonic-" + (++playlistSerial) + ".m3u";
+        var path = Sub.playlistPath(runtimeDir, ++playlistSerial);
+        if (path === "") { status = "error"; error = I18n.tr("XDG_RUNTIME_DIR non disponibile: la playlist contiene il token e non va scritta in una cartella condivisa"); return; }
         pendingPlay = { name: name, key: key, path: path };
         files = files.concat([path]);
         var text = Sub.playlistText(entries.map(function (s) {
@@ -138,6 +140,7 @@ Singleton {
         var gone = files.filter(function (f) { return f !== keep; });
         files = keep === "" ? [] : [keep];
         // Con "all" ci sono anche i file di una sessione precedente: si cancellano per modello.
+        if (which === "all" && runtimeDir === "") return;
         cleanup.command = which === "all"
             ? ["sh", "-c", 'rm -f "$1"/vela-subsonic-*.m3u', "sh", root.runtimeDir]
             : ["rm", "-f", "--"].concat(gone);

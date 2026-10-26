@@ -17,6 +17,13 @@ assert.strictEqual(sub.validUrl("https://a.b"), true);
 assert.strictEqual(sub.validUrl("http://a.b:4533/x"), true);
 assert.strictEqual(sub.validUrl("file:///x"), false);
 assert.strictEqual(sub.validUrl(""), false);
+// Token e salt viaggiano nell'URL: con http in chiaro solo verso la rete locale
+for (const ok of ["https://musica.example.org", "https://1.2.3.4", "http://localhost:4533", "http://127.0.0.1:4533", "http://192.168.1.10:4533",
+                  "http://10.0.0.5", "http://172.16.0.2", "http://172.31.255.1", "http://nas", "http://nas.local:4533", "http://casa.lan", "http://[::1]:4533", "http://[fd12::1]"])
+    assert.strictEqual(sub.transportOk(ok), true, ok);
+for (const bad of ["http://musica.example.org", "http://8.8.8.8", "http://172.32.0.1", "http://192.169.1.1", "http://localhost.example.org",
+                   "http://user@evil.example.org", "http://127.0.0.1.example.org", "ftp://x", "", null])
+    assert.strictEqual(sub.transportOk(bad), false, String(bad));
 
 // autenticazione e indirizzi
 const md5 = s => "MD5(" + s + ")";
@@ -52,4 +59,7 @@ assert.strictEqual(sub.parseSongs({ "subsonic-response": { status: "ok", album: 
 const pl = sub.playlistText([{ artist: "A", title: "T", url: "https://s/x" }]);
 assert.strictEqual(pl, "#EXTM3U\n#EXTINF:-1,A - T\nhttps://s/x\n");
 assert.ok(!sub.playlistText([{ artist: "A\nB", title: "T", url: "https://s/x" }]).includes("A\nB"));
+// Le playlist contengono il token: solo in una cartella privata dell'utente (XDG_RUNTIME_DIR), mai in /tmp
+assert.strictEqual(sub.playlistPath("/run/user/1000", 3), "/run/user/1000/vela-subsonic-3.m3u");
+for (const bad of ["", "/tmp", "/tmp/", "/var/tmp", "relativo", null, undefined]) assert.strictEqual(sub.playlistPath(bad, 1), "", String(bad));
 console.log("ok subsonic");
