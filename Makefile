@@ -20,9 +20,13 @@ daemon:
 helper:
 	cargo build --release --locked --manifest-path $(HELPER_DIR)/Cargo.toml --target-dir $(HELPER_DIR)/target
 
-test:
+test: test-js
 	cargo test --locked --manifest-path $(HELPER_DIR)/Cargo.toml --target-dir $(HELPER_DIR)/target
 	cargo test --locked --manifest-path $(DAEMON_DIR)/Cargo.toml --target-dir $(DAEMON_DIR)/target
+
+# Librerie JS della shell (shell/core/*.js): serve node.
+test-js:
+	@if command -v node >/dev/null; then node tests/js/run.mjs; else echo "node assente: test JS saltati"; fi
 
 # Parte privilegiata (D-032): helper delle soglie di carica, regola polkit e regola udev.
 # Serve root: `make` come utente, poi `doas make install-system` (installa il binario già compilato).
@@ -59,4 +63,4 @@ install: install-system
 	install -Dm755 session/labwc/autostart $(SHARE)/vela/labwc/autostart
 	install -Dm644 session/vela-labwc.desktop $(SHARE)/wayland-sessions/vela-labwc.desktop
 
-.PHONY: all helper daemon test install install-system
+.PHONY: all helper daemon test test-js install install-system
