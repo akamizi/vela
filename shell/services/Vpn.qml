@@ -57,9 +57,9 @@ Singleton {
     function toggle() {
         if (active.length > 0) {
             for (var i = 0; i < active.length; i++)
-                Quickshell.execDetached(["nmcli", "connection", "down", active[i]]);
+                Quickshell.execDetached(["nmcli", "connection", "down", "id", active[i]]);
         } else if (known.length > 0) {
-            Quickshell.execDetached(["nmcli", "connection", "up", known[0]]);
+            Quickshell.execDetached(["nmcli", "connection", "up", "id", known[0]]);
         }
     }
 
@@ -67,6 +67,6 @@ Singleton {
 
     // Accende o spegne una VPN precisa (dal pannello rete).
     function toggleOne(name) {
-        Quickshell.execDetached(["nmcli", "connection", isActive(name) ? "down" : "up", name]);
+        Quickshell.execDetached(["nmcli", "connection", isActive(name) ? "down" : "up", "id", name]);
     }
 }

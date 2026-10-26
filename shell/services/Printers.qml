@@ -7,6 +7,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import "../core"
+import "../core/names.js" as Names
 
 Singleton {
     id: root
@@ -23,7 +24,7 @@ Singleton {
     property bool scanned: false          // almeno una ricerca completata
 
     // Nomi di stampante e id di lavoro finiscono come argomenti (mai in una shell), ma si accettano solo caratteri attesi.
-    function validName(n) { return typeof n === "string" && /^[A-Za-z0-9_.\-]+$/.test(n); }
+    function validName(n) { return Names.validName(n); }
 
     // Lettura in lingua C: i messaggi di lpstat sono tradotti e non si possono interpretare altrimenti.
     function parse(text) {

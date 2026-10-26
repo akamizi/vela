@@ -8,6 +8,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import "../core"
+import "../core/names.js" as Names
 
 Singleton {
     id: root
@@ -17,7 +18,7 @@ Singleton {
     property var items: []                // [{id, label, process, installed, enabled, running}]
     property string status: ""            // messaggio dell'ultima azione
 
-    function validName(n) { return typeof n === "string" && /^[A-Za-z0-9_.\-]+$/.test(n); }
+    function validName(n) { return Names.validName(n); }
     function entries() {
         var l = cfg && Array.isArray(cfg.list) ? cfg.list : [];
         return l.filter(function (e) { return e && validName(e.id) && typeof e.label === "string"; })
