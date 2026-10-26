@@ -336,6 +336,36 @@ Invio o clic = ascolta (di nuovo = ferma), digitando si filtra. Le stazioni si g
 L'elemento di barra `Radio` compare mentre suona: clic = pannello, clic destro = ferma.
 `vela ipc call radio stop` e `vela ipc call radio play "Rai Radio 3"` per le scorciatoie.
 
+## Musica locale e Subsonic
+
+Due pannelli come la Radio, con un solo flusso audio alla volta (avviarne uno ferma gli altri) e lo stesso elemento di barra `Radio`
+(clic destro = ferma). `vela ipc call player stop` ferma qualunque flusso.
+
+- **Musica** (`Win+Shift+M`, menu Sistema › Musica, `vela ipc call panel toggle music`): le cartelle con file audio (mp3, flac, ogg, m4a, wav, opus)
+  della cartella Musica dell'utente, in qualunque lingua: `XDG_MUSIC_DIR` di `~/.config/user-dirs.dirs`, altrimenti `~/Musica` o `~/Music`.
+  Invio apre la cartella, poi «Tutta la cartella» o un brano; Esc cancella il filtro, torna alle cartelle, chiude. La voce di menu compare solo se la cartella esiste
+  (si ricontrolla a ogni apertura del menu).
+- **Subsonic** (`Win+N`, menu Sistema › Subsonic, `panel toggle subsonic`): gli ultimi 100 album del server (API 1.16.1, anche Navidrome), poi i brani.
+  Le credenziali stanno in `~/.config/subsonic-mpv/env` (`SUBSONIC_URL`, `SUBSONIC_USER`, `SUBSONIC_PASS`, una per riga), che Vela non scrive e rifiuta se
+  non è leggibile solo dall'utente (`chmod 600`: il pannello lo dice). La password non esce da Vela: ai server va il token e a mpv un file di playlist in
+  `$XDG_RUNTIME_DIR` (permessi 600, cancellato alla fine). La voce di menu compare se il file esiste.
+- `Win+,` e `Win+.` (`vela ipc call media previous|next`): brano precedente e successivo del player MPRIS mostrato dalla barra. Con mpv serve il plugin `mpv-mpris`.
+
+## Registrazione dello schermo
+
+`Win+Stamp` registra lo schermo intero; lo stesso tasto (o il tasto «ritaglio» con Win, per un'area) ferma la registrazione. `vela ipc call recorder toggle screen|area`,
+`recorder stop`, `recorder status`. Senza audio. Usa `wf-recorder` (e `slurp` per l'area): file `rec-AAAAMMGG-HHMMSS.mp4` in `Registrazioni` nella cartella Video
+dell'utente (XDG; altrimenti `~/Video`). Codifica VA-API se `vainfo` la offre (H.264 e ridimensionamento), altrimenti x264. L'indicatore `Recording` della barra
+si accende e il clic ferma. Se Vela si chiude durante la registrazione, il file viene chiuso. Alternativa esterna: `toggles.recordingCommand`.
+
+## Tasti in più del PC
+
+Su Sway Vela legge le capacità dei dispositivi di input (`/proc/bus/input/devices`, senza privilegi) e associa solo i tasti che esistono, scrivendoli in
+`~/.config/vela/sway.d/vela.conf`: `XF86AudioPlay/Next/Prev` (brano), `XF86Favorites` (gestore di file), il tasto «ritaglio» del ThinkPad (area; con Win registra
+un'area) e il tasto Copilot (`Win+Maiusc+F23`, keycode 201, sempre associato: apre il gestore di file). Una combinazione già assegnata nel config di Sway o nelle
+scorciatoie di Vela vince. Compaiono nel pannello Scorciatoie. Per le prove: `VELA_INPUT_DEVICES=<file>` al posto di `/proc/bus/input/devices`.
+Su labwc gli stessi tasti sono fissi in `rc.xml` (nessun rilevamento) e il tasto Copilot non c'è.
+
 ## Pannello delle scorciatoie
 
 `vela ipc call panel toggle shortcuts` o menu Sistema › Scorciatoie: finestra al centro con le scorciatoie attuali,

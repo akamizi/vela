@@ -100,6 +100,16 @@
     <keybind key="XF86AudioMicMute" allowWhenLocked="yes"><action name="Execute" command="vela ipc call audio micMute" /></keybind>
     <keybind key="XF86MonBrightnessUp" allowWhenLocked="yes"><action name="Execute" command="vela ipc call brightness up" /></keybind>
     <keybind key="XF86MonBrightnessDown" allowWhenLocked="yes"><action name="Execute" command="vela ipc call brightness down" /></keybind>
+
+    <!-- Tasti in più (multimediali, preferiti, ritaglio del ThinkPad T14). Qui sono fissi: rc.xml è del pacchetto e labwc non ha
+         include, quindi niente rilevamento come su Sway (un tasto che manca non scatta mai). Il tasto Copilot (Win+Maiusc+F23) non
+         c'è: labwc non associa i keycode e con Win+Maiusc il keysym diventa XF86Assistant. -->
+    <keybind key="XF86AudioPlay" allowWhenLocked="yes"><action name="Execute" command="vela ipc call media playPause" /></keybind>
+    <keybind key="XF86AudioNext" allowWhenLocked="yes"><action name="Execute" command="vela ipc call media next" /></keybind>
+    <keybind key="XF86AudioPrev" allowWhenLocked="yes"><action name="Execute" command="vela ipc call media previous" /></keybind>
+    <keybind key="XF86Favorites"><action name="Execute" command="vela files" /></keybind>
+    <keybind key="XF86SelectiveScreenshot"><action name="Execute" command="sh -c 'grim -g &quot;$(slurp)&quot; - | swappy -f -'" /></keybind>
+    <keybind key="W-XF86SelectiveScreenshot"><action name="Execute" command="vela ipc call recorder toggle area" /></keybind>
   </keyboard>
 
   <mouse>
