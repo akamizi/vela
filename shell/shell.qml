@@ -107,6 +107,11 @@ ShellRoot {
     }
 
     Loader {
+        active: Config.shell.panels.music.enabled
+        sourceComponent: MusicPanel {}
+    }
+
+    Loader {
         active: Idle.enabled && Idle.fadeSecs > 0
         sourceComponent: IdleFade {}
     }
@@ -216,6 +221,10 @@ ShellRoot {
     IpcHandler {
         target: "player"    // ferma qualunque flusso (radio, musica, Subsonic)
         function stop(): void { Player.stop(); }
+    }
+    IpcHandler {
+        target: "music"
+        function stop(): void { if (Player.kind === "music") Player.stop(); }
     }
     IpcHandler {
         target: "radio"

@@ -12,7 +12,7 @@ Singleton {
 
     readonly property var items: Config.menu.items
     // Pannelli abilitati in configurazione e realmente presenti (si aggiungono nelle fasi 4-6)
-    readonly property var implementedPanels: ["network", "bluetooth", "audio", "settings", "shortcuts", "radio", "power", "brightness", "display", "printers", "services", "battery", "calendar", "weather", "user"]
+    readonly property var implementedPanels: ["network", "bluetooth", "audio", "settings", "shortcuts", "radio", "music", "power", "brightness", "display", "printers", "services", "battery", "calendar", "weather", "user"]
     readonly property var availablePanels: implementedPanels.filter(function (n) {
         var c = Config.shell.panels[n];
         return c !== undefined && c.enabled === true;
@@ -44,6 +44,12 @@ Singleton {
         }
     }
 
+    // Cartella Musica (e in seguito il file di Subsonic): si ricontrollano a ogni apertura del menu.
+    Connections {
+        target: Runtime
+        function onMenuModeChanged() { if (Runtime.menuMode !== "") Music.refresh(); }
+    }
+
     function isSubmenu(item) { return Array.isArray(item.children); }
 
     function usable(item) {
@@ -56,6 +62,7 @@ Singleton {
         if (a && a.type === "panel" && a.target === "battery" && !BatteryLimit.supported) return false;
         if (a && a.type === "panel" && a.target === "services" && !Services.available) return false;
         if (a && a.type === "panel" && a.target === "weather" && !Weather.enabled) return false;
+        if (a && a.type === "panel" && a.target === "music" && !Music.available) return false;
         return true;
     }
 

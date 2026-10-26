@@ -36,6 +36,7 @@ bindsym $mod+u exec vela ipc call panel toggle user
 bindsym $mod+z exec vela ipc call panel toggle shortcuts
 bindsym $mod+p exec vela ipc call panel toggle power
 bindsym $mod+m exec vela ipc call panel toggle radio
+bindsym $mod+Shift+m exec vela ipc call panel toggle music
 bindsym $mod+Tab exec vela ipc call layout next
 bindsym $mod+l exec vela ipc call idle lock
 bindsym $mod+Shift+l exec vela ipc call idle lock
