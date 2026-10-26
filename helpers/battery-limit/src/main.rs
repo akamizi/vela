@@ -8,6 +8,7 @@
 //! battery-limit full stop       annulla la carica piena e ripristina subito
 //! battery-limit boot            riapplica la scelta all'avvio (regola udev); non fa nulla se non è mai stata fatta
 //! ```
+//! (`__watch` e `__boot-wait` sono interni: li lancia l'helper stesso e da fuori sono rifiutati.)
 //!
 //! Due tipi di batteria: a soglie (`charge_control_*_threshold`) o con limite fisso (`charge_types`: `Long_Life`).
 //! Gira come root tramite pkexec (regola polkit per il gruppo wheel). Accetta SOLO queste parole e nessun valore
@@ -292,17 +293,21 @@ fn limit(ctx: &Ctx, bat: &Battery, arg: &str) -> Result<(), String> {
     if arg != "on" && arg != "off" {
         return Err("uso: limit on|off".into());
     }
-    // La scelta deve poter essere letta senza root (la legge `status` lanciato dalla shell).
-    // pkexec parte con umask 077: i permessi si impostano a mano.
-    fs::create_dir_all(&ctx.paths.state_dir).map_err(|e| format!("cartella di stato: {e}"))?;
-    chmod(&ctx.paths.state_dir, 0o755)?;
-    Ctx::put(&ctx.paths.choice, arg)?;
-    chmod(&ctx.paths.choice, 0o644)?;
+    save_choice(ctx, arg)?;
     // Durante la carica piena le soglie restano 99/100: la scelta si applica al termine.
     if ctx.full_alive() {
         return Ok(());
     }
     ctx.apply_choice(bat).map_err(|_| "scrittura delle soglie fallita.".to_string())
+}
+
+/// Salva la scelta ("on"|"off"). Deve poter essere letta senza root (la legge `status` lanciato dalla shell);
+/// pkexec parte con umask 077: i permessi si impostano a mano.
+fn save_choice(ctx: &Ctx, value: &str) -> Result<(), String> {
+    fs::create_dir_all(&ctx.paths.state_dir).map_err(|e| format!("cartella di stato: {e}"))?;
+    chmod(&ctx.paths.state_dir, 0o755)?;
+    Ctx::put(&ctx.paths.choice, value)?;
+    chmod(&ctx.paths.choice, 0o644)
 }
 
 fn chmod(p: &Path, mode: u32) -> Result<(), String> {
@@ -353,13 +358,13 @@ fn spawn_detached(arg: &str) -> bool {
         c.stdin(Stdio::null()).stdout(Stdio::null()).stderr(Stdio::null());
     };
     let mut c = Command::new("setsid");
-    c.arg(&exe).arg(arg);
+    c.arg(&exe).arg(arg).env(INTERNAL_ENV, "1");
     quiet(&mut c);
     if c.spawn().is_ok() {
         return true;
     }
     let mut c = Command::new(&exe);
-    c.arg(arg).process_group(0);
+    c.arg(arg).env(INTERNAL_ENV, "1").process_group(0);
     quiet(&mut c);
     c.spawn().is_ok()
 }
@@ -372,6 +377,10 @@ fn full(ctx: &Ctx, bat: &Battery, arg: &str) -> Result<(), String> {
             }
             if !ctx.is_limited(bat) && ctx.choice() != "on" {
                 return Err("il limite è già disattivo: niente da fare.".into());
+            }
+            // Limite già presente ma scelta mai fatta (firmware, regola udev): a fine carica deve tornare quello, non "off".
+            if ctx.choice().is_empty() {
+                save_choice(ctx, "on")?;
             }
             fs::create_dir_all(&ctx.paths.run_dir).map_err(|e| format!("cartella di stato: {e}"))?;
             ctx.set_full(bat).map_err(|_| "scrittura fallita.".to_string())?;
@@ -453,6 +462,15 @@ fn paths() -> Paths {
     }
 }
 
+/// Marcatore che l'helper mette nell'ambiente dei propri figli staccati. pkexec ripulisce l'ambiente di chi lo lancia, quindi
+/// i sottocomandi interni non sono raggiungibili da un utente, nemmeno dal gruppo wheel autorizzato da polkit.
+const INTERNAL_ENV: &str = "VELA_BATTERY_INTERNAL";
+
+/// Sottocomandi che esistono solo per essere lanciati dall'helper stesso (sorvegliante e attesa all'avvio).
+fn is_internal(args: &[&str]) -> bool {
+    matches!(args, ["__watch"] | ["__boot-wait"])
+}
+
 fn die(msg: &str) -> ! {
     eprintln!("battery-limit: {msg}");
     process::exit(1);
@@ -476,6 +494,10 @@ fn main() {
         Ok(())
     };
 
+    if is_internal(&args) && std::env::var_os(INTERNAL_ENV).is_none_or(|v| v != "1") {
+        die("comando interno: non si lancia a mano.");
+    }
+
     let result = match args.as_slice() {
         ["status"] => {
             print!("{}", ctx.status_text());
@@ -487,10 +509,6 @@ fn main() {
             boot(&ctx);
             Ok(())
         }
-        ["boot-retry"] => match &ctx.bat {
-            Some(bat) => ctx.apply_choice(bat),
-            None => Err("batteria non ancora disponibile.".into()),
-        },
         ["__watch"] => match &ctx.bat {
             Some(bat) => watch(&ctx, bat, &WatchParams::standard()),
             None => Err("batteria non disponibile.".into()),
@@ -658,6 +676,32 @@ mod tests {
         assert!(limit(&ctx, bat, "").is_err());
         limit(&ctx, bat, "off").unwrap();
         assert_eq!(f.r("sys/BAT0/charge_control_end_threshold"), "100");
+    }
+
+    #[test]
+    fn la_carica_piena_non_cancella_un_limite_preesistente() {
+        // Limite messo da altro (firmware, regola udev) e scelta mai fatta con Vela: alla fine della carica piena
+        // il limite deve tornare, non sparire. Qui il sorvegliante non parte (il binario di prova non lo sa fare):
+        // `full start` ripristina subito, ed è lo stesso percorso di ripristino della fine carica.
+        let f = Fake::new();
+        f.thresholds("40", "80");
+        let ctx = f.ctx();
+        let bat = ctx.bat.as_ref().unwrap();
+        assert_eq!(ctx.choice(), "");
+        let _ = full(&ctx, bat, "start");
+        assert_eq!(f.r("var/battery-limit"), "on", "la scelta va salvata prima di alzare le soglie");
+        assert_eq!(f.r("sys/BAT0/charge_control_end_threshold"), "80");
+        assert!(ctx.is_limited(bat));
+    }
+
+    #[test]
+    fn solo_i_sottocomandi_interni_richiedono_il_marcatore() {
+        for a in ["__watch", "__boot-wait"] {
+            assert!(is_internal(&[a]), "{a}");
+        }
+        for a in [&["status"][..], &["limit", "on"], &["full", "start"], &["boot"], &[]] {
+            assert!(!is_internal(a), "{a:?}");
+        }
     }
 
     #[test]
