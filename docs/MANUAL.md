@@ -211,7 +211,10 @@ spessore del bordo (per le finestre nuove), niente spazi o bordi con una sola fi
 **Blocco e inattività**: Vela può gestire da sé l'inattività (spenta di default: va attivata solo se non usi
 già `swayidle`). Dopo X minuti blocca lo schermo (comando configurabile, `swaylock -f` di default), dopo Y lo
 spegne e dopo Z sospende (di default solo a batteria); 0 = mai. Rispetta le finestre a schermo intero e
-"Resta sveglio". `vela ipc call idle lock` blocca subito. Per passare a Vela togli `swayidle` dal config del
+"Resta sveglio". `vela ipc call idle lock` blocca subito. Ogni sospensione (voce «Sospendi» del menu, pannello utente,
+`vela ipc call idle suspend`, inattività) passa da Vela: prima blocca lo schermo e sospende **solo a blocco confermato**; se il
+comando di blocco fallisce arriva un avviso e il PC non si sospende. Per questo `idle.lockCommand` deve tornare a blocco avvenuto
+(come `swaylock -f`). Il comando predefinito usa i colori e il carattere del tema di Vela; un comando personalizzato non viene toccato. Per passare a Vela togli `swayidle` dal config del
 compositor (il pannello avvisa se è in esecuzione). Chiusura del coperchio e pulsante di accensione dipendono da
 elogind e non sono ancora configurabili da qui.
 
@@ -348,7 +351,9 @@ Due pannelli come la Radio, con un solo flusso audio alla volta (avviarne uno fe
 - **Subsonic** (`Win+N`, menu Sistema › Subsonic, `panel toggle subsonic`): gli ultimi 100 album del server (API 1.16.1, anche Navidrome), poi i brani.
   Le credenziali stanno in `~/.config/subsonic-mpv/env` (`SUBSONIC_URL`, `SUBSONIC_USER`, `SUBSONIC_PASS`, una per riga), che Vela non scrive e rifiuta se
   non è leggibile solo dall'utente (`chmod 600`: il pannello lo dice). La password non esce da Vela: ai server va il token e a mpv un file di playlist in
-  `$XDG_RUNTIME_DIR` (permessi 600, cancellato alla fine). La voce di menu compare se il file esiste.
+  `$XDG_RUNTIME_DIR` (permessi 600, cancellato alla fine; senza quella cartella Vela non suona, mai in `/tmp`). Il token viaggia nell'URL dei
+  brani: `SUBSONIC_URL` deve essere `https://`; `http://` è accettato solo verso localhost e la rete locale (indirizzi privati, `.local`, `.lan`).
+  La voce di menu compare se il file esiste.
 - `Win+,` e `Win+.` (`vela ipc call media previous|next`): brano precedente e successivo del player MPRIS mostrato dalla barra. Con mpv serve il plugin `mpv-mpris`.
 
 ## Registrazione dello schermo
