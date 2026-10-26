@@ -62,6 +62,7 @@
     "shortcuts": { "enabled": true },
     "radio": { "enabled": true },
     "music": { "enabled": true },
+    "subsonic": { "enabled": true },
     "power": { "enabled": true },
     "battery": { "enabled": true },
     "calendar": { "enabled": true },

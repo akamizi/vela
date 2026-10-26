@@ -112,6 +112,11 @@ ShellRoot {
     }
 
     Loader {
+        active: Config.shell.panels.subsonic.enabled
+        sourceComponent: SubsonicPanel {}
+    }
+
+    Loader {
         active: Idle.enabled && Idle.fadeSecs > 0
         sourceComponent: IdleFade {}
     }
@@ -225,6 +230,10 @@ ShellRoot {
     IpcHandler {
         target: "music"
         function stop(): void { if (Player.kind === "music") Player.stop(); }
+    }
+    IpcHandler {
+        target: "subsonic"
+        function stop(): void { if (Player.kind === "subsonic") Player.stop(); }
     }
     IpcHandler {
         target: "radio"

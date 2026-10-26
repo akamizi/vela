@@ -156,11 +156,12 @@ PanelHost {
                 required property int index
                 readonly property var r: modelData
                 width: ListView.view.width
-                height: r.kind === "header" ? 28 : Theme.rowHeight
+                height: r.kind === "header" ? 28 : r.kind === "message" ? Math.max(Theme.rowHeight, note.implicitHeight + Theme.spacing * 2) : Theme.rowHeight
 
                 PanelSectionHeader { visible: entry.r.kind === "header"; text: entry.r.kind === "header" ? entry.r.label : "" }
 
                 BarText {
+                    id: note
                     visible: entry.r.kind === "message"
                     anchors { left: parent.left; right: parent.right; leftMargin: Theme.padding; rightMargin: Theme.padding; verticalCenter: parent.verticalCenter }
                     wrapMode: Text.WordWrap

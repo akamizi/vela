@@ -40,7 +40,8 @@
         { "id": "battery-limit", "label": "Limite di carica", "action": { "type": "panel", "target": "battery" } },
         { "id": "brightness", "label": "Luminosità", "requires": ["brightnessctl"], "action": { "type": "panel", "target": "brightness" } },
         { "id": "radio", "label": "Radio", "requires": ["mpv"], "action": { "type": "panel", "target": "radio" } },
-        { "id": "music", "label": "Musica", "requires": ["mpv"], "action": { "type": "panel", "target": "music" } }
+        { "id": "music", "label": "Musica", "requires": ["mpv"], "action": { "type": "panel", "target": "music" } },
+        { "id": "subsonic", "label": "Subsonic", "requires": ["mpv"], "action": { "type": "panel", "target": "subsonic" } }
       ]
     },
     {

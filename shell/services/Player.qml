@@ -25,6 +25,8 @@ Singleton {
 
     property var pending: null
     property bool stopping: false
+    // Il tipo del processo in corso: `kind` si azzera subito con Stop, ma chi ascolta `exited` deve sapere chi è uscito.
+    property string runKind: ""
 
     // `args`: argomenti dopo il comando base (per esempio ["--", indirizzo] o ["--", file1, file2]).
     function play(kind, name, key, args) {
@@ -40,7 +42,7 @@ Singleton {
     }
 
     function start(p) {
-        kind = p.kind; name = p.name; key = p.key; error = ""; state = "starting"; stopping = false;
+        kind = p.kind; runKind = p.kind; name = p.name; key = p.key; error = ""; state = "starting"; stopping = false;
         var base = Config.shell.radio.command;
         if (!Array.isArray(base) || base.length === 0) base = ["mpv", "--no-video", "--no-terminal"];
         // setpriv ferma il player se Vela muore.
@@ -54,7 +56,7 @@ Singleton {
         id: proc
         onExited: code => {
             confirm.stop();
-            var k = root.kind, wanted = root.stopping;
+            var k = root.runKind, wanted = root.stopping;
             if (root.pending) { var p = root.pending; root.pending = null; root.exited(k, code, true); root.start(p); return; }
             if (root.stopping) { root.stopping = false; root.state = "stopped"; root.exited(k, code, true); return; }
             // Un brano o un album che finisce da solo (codice 0 dopo la conferma) non è un errore.
