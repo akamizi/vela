@@ -11,6 +11,9 @@ import { spawnSync } from "node:child_process";
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.join(here, "../..");
 
+// Gli oggetti creati nel contesto di vm hanno prototipi diversi: per confrontarli con deepStrictEqual si passa da JSON.
+export const plain = x => JSON.parse(JSON.stringify(x));
+
 // Carica un file della shell: toglie `.pragma …`, risolve `.import "x.js" as Nome` come globale `Nome`,
 // lo esegue in un contesto isolato e restituisce l'oggetto con funzioni e `var` dichiarate.
 export function load(rel, globals = {}) {
