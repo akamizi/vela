@@ -162,8 +162,8 @@ Singleton {
     }
 
     // --- generazione dei comandi dalle impostazioni -----------------------------------------
-    // Valori che finiscono in un comando: solo caratteri innocui (niente virgolette, $, ;, a capo).
-    function safe(v) { return typeof v === "string" && /^[A-Za-z0-9_,:.()+\-\/ @#]*$/.test(v); }
+    // Valori che finiscono in un comando: solo caratteri innocui (vedi swayconf.js: niente virgole, virgolette, $, ;, a capo).
+    function safe(v) { return SwayConf.safe(v); }
     function num(v) { return typeof v === "number" && isFinite(v); }
 
     function outputCommand(name, p) {
@@ -229,7 +229,7 @@ Singleton {
     function inputWallpaperCommands() {
         var s = Config.sway, out = [];
         var k = s.input.keyboard, t = s.input.touchpad, w = s.wallpaper;
-        function kb(key, v) { if (v !== null && v !== undefined && safe(String(v))) out.push("input type:keyboard " + key + " " + v); }
+        function kb(key, v) { if (v !== null && v !== undefined && SwayConf.safeList(String(v))) out.push("input type:keyboard " + key + " " + v); }
         kb("xkb_layout", k.layout); kb("xkb_variant", k.variant); kb("xkb_options", k.options);
         if (num(k.repeatDelay)) out.push("input type:keyboard repeat_delay " + Math.round(k.repeatDelay));
         if (num(k.repeatRate)) out.push("input type:keyboard repeat_rate " + Math.round(k.repeatRate));

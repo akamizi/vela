@@ -13,4 +13,17 @@ assert.strictEqual(p.binds[2].combo, "99");
 // dentro una modalità
 const m = sc.parse("mode \"resize\" {\n  bindcode 113 resize shrink width 20px\n}\n");
 assert.strictEqual(m.modeBinds.length, 1);
+
+// Valori che finiscono in un comando di Sway: la virgola e il «;» separano i comandi, «#» apre un commento
+assert.strictEqual(sc.safe("1920x1080@60Hz"), true);
+assert.strictEqual(sc.safe("/home/u/Immagini/sfondo uno.png"), true);
+for (const bad of ["a, exec foot", "a,b", "a;b", "#abc", "a\nb", 'a"b', "a$b", 5, null]) assert.strictEqual(sc.safe(bad), false, String(bad));
+// Liste XKB: la virgola separa gli elementi (legittimo), ma ogni elemento è una sola parola
+assert.strictEqual(sc.safeList("us,it"), true);
+assert.strictEqual(sc.safeList("ctrl:nocaps,compose:ralt"), true);
+assert.strictEqual(sc.safeList(",intl"), true);          // variante vuota per il primo layout
+assert.strictEqual(sc.safeList("ctrl:nocaps, exec foot"), false);
+assert.strictEqual(sc.safeList("us,it;exec foot"), false);
+assert.strictEqual(sc.safeList("us #x"), false);
+assert.strictEqual(sc.safeList(7), false);
 console.log("ok swayconf");

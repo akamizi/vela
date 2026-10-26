@@ -59,3 +59,9 @@ function normalize(combo, vars) {
     var keys = parts.filter(function (p) { return !modifiers[p]; });
     return mods.concat(keys).join("+");
 }
+
+// Valori che finiscono in un comando di Sway: niente virgola e «;» (separano i comandi), «#» (commento), virgolette, $, a capo.
+function safe(v) { return typeof v === "string" && /^[A-Za-z0-9_:.()+\-\/ @]*$/.test(v); }
+
+// Liste XKB (layout, varianti, opzioni): la virgola separa gli elementi, ma ogni elemento è una sola parola (niente spazi).
+function safeList(v) { return typeof v === "string" && /^[A-Za-z0-9_:.()+\-]*(,[A-Za-z0-9_:.()+\-]*)*$/.test(v); }
