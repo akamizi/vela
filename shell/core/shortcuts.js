@@ -34,7 +34,9 @@ function keyNames() {
         minus: "-", plus: "+", backslash: "\\", slash: "/", comma: ",", period: ".", print: tr("Stamp"),
         prior: tr("PagSu"), next: tr("PagGiù"), grave: "`", equal: "=", bracketleft: "[", bracketright: "]",
         xf86audioraisevolume: tr("Vol+"), xf86audiolowervolume: tr("Vol-"), xf86audiomute: tr("Muto"), xf86audiomicmute: tr("Muto mic"),
-        xf86monbrightnessup: tr("Lum+"), xf86monbrightnessdown: tr("Lum-"), xf86display: tr("Schermo")
+        xf86monbrightnessup: tr("Lum+"), xf86monbrightnessdown: tr("Lum-"), xf86display: tr("Schermo"),
+        xf86audioplay: tr("Riproduci"), xf86audionext: tr("Avanti"), xf86audioprev: tr("Indietro"), xf86favorites: tr("Preferiti"),
+        xf86selectivescreenshot: tr("Ritaglio"), "201": tr("Copilot")
     };
 }
 var modLabels = { super: "Super", ctrl: "Ctrl", alt: "Alt", shift: "Shift" };

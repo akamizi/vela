@@ -209,6 +209,20 @@ Singleton {
         return Config.sway.autostart.filter(oneLine).map(function (c) { return "exec " + c.trim(); });
     }
 
+    // Tasti in più del PC (HardwareKeys), senza `$mod` (nel config della sessione Vela la variabile non è nota a swaymsg) e
+    // solo se la combinazione non è già assegnata dall'utente (config di Sway o scorciatoie di Vela): la riga dell'utente vince.
+    function hwCombo(b) { return b.combo.replace(/\$mod/g, "Mod4"); }
+    readonly property var hardwareShown: HardwareKeys.bindings.filter(function (b) {
+        return conflictFor(hwCombo(b), "") === null;
+    }).map(function (b) { return { combo: hwCombo(b), command: b.command, description: b.description, code: b.code === true }; })
+    function hardwareCommands() {
+        return hardwareShown.map(function (b) {
+            // i tasti multimediali valgono anche a schermo bloccato, come gli altri tasti di volume
+            return (b.code ? "bindcode " : "bindsym ") + (/^XF86Audio/.test(b.combo) ? "--locked " : "") + b.combo + " " + b.command;
+        });
+    }
+    Connections { target: HardwareKeys; function onBindingsChanged() { sync.restart(); } }
+
     // Comandi di tastiera, touchpad e sfondo (applicati subito e scritti nel file da includere).
     function inputWallpaperCommands() {
         var s = Config.sway, out = [];
@@ -220,6 +234,8 @@ Singleton {
         function tp(key, v) { if (v === "enabled" || v === "disabled") out.push("input type:touchpad " + key + " " + v); }
         tp("tap", t.tap); tp("natural_scroll", t.naturalScroll); tp("dwt", t.disableWhileTyping);
         if (num(t.accel)) out.push("input type:touchpad pointer_accel " + Math.max(-1, Math.min(1, t.accel)));
+        // tasti in più del PC, prima di quelle dell'utente
+        hardwareCommands().forEach(function (c) { out.push(c); });
         // scorciatoie (le variabili del config, es. $mod, vanno risolte: swaymsg non le conosce)
         s.keybindings.forEach(function (b) {
             var cmd = bindCommand(b);

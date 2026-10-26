@@ -31,7 +31,7 @@ PanelHost {
     readonly property var allRows: {
         if (!SwayBackend.active) return [{ kind: "message", text: I18n.tr("Nessun backend per questo compositor"), key: "m:none" }];
         var loaded = DesktopEntries.applications.values.length;   // rilegge i nomi quando l'elenco delle app è pronto
-        var rows = Shortcuts.build(SwayBackend.userConfig, Config.sway.keybindings, panel.programName, I18n.tr);
+        var rows = Shortcuts.build(SwayBackend.userConfig, Config.sway.keybindings.concat(SwayBackend.hardwareShown), panel.programName, I18n.tr);
         if (rows.length === 0) rows = [{ kind: "message", text: I18n.tr("Nessuna scorciatoia trovata nel config di Sway"), key: "m:empty" }];
         return rows;
     }
