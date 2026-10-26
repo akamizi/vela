@@ -117,6 +117,10 @@ bindsym $mod+Shift+8 move container to workspace number 8
 bindsym $mod+9 workspace number 9
 bindsym $mod+Shift+9 move container to workspace number 9
 
+# Brano precedente / successivo (MPRIS: Radio, Musica, Subsonic e qualunque player)
+bindsym $mod+comma exec vela ipc call media previous
+bindsym $mod+period exec vela ipc call media next
+
 # Tasti multimediali e di schermo (con l'OSD di Vela)
 bindsym --locked XF86AudioRaiseVolume exec vela ipc call audio raise
 bindsym --locked XF86AudioLowerVolume exec vela ipc call audio lower

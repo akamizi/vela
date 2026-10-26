@@ -224,6 +224,12 @@ ShellRoot {
         function status(): string { return Daemon.status(); }
     }
     IpcHandler {
+        target: "media"     // tasti multimediali via MPRIS (il player mostrato dalla barra): next, previous, playPause
+        function next(): void { var p = Media.player; if (p && p.canGoNext) p.next(); }
+        function previous(): void { var p = Media.player; if (p && p.canGoPrevious) p.previous(); }
+        function playPause(): void { var p = Media.player; if (p && p.canTogglePlaying) p.togglePlaying(); }
+    }
+    IpcHandler {
         target: "recorder"  // registrazione dello schermo: toggle screen|area (lo stesso comando ferma), stop, status
         function toggle(mode: string): void { Recorder.toggle(mode); }
         function stop(): void { Recorder.stop(); }

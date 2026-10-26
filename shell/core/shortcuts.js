@@ -136,6 +136,7 @@ function describeVela(target, fn, arg) {
     if (target === "audio") return { label: ({ raise: tr("Alza il volume"), lower: tr("Abbassa il volume"), mute: tr("Muto"), micMute: tr("Muto del microfono") })[fn] || tr("Vela: %1 %2", target, fn), group: "Schermo e audio" };
     if (target === "brightness") return { label: fn === "up" ? tr("Aumenta la luminosità") : tr("Riduci la luminosità"), group: "Schermo e audio" };
     if (target === "screens") return { label: tr("Accendi / spegni lo schermo"), group: "Schermo e audio" };
+    if (target === "media") return { label: fn === "next" ? tr("Brano successivo") : fn === "previous" ? tr("Brano precedente") : tr("Riproduci / pausa"), group: "Schermo e audio" };
     if (target === "recorder") return { label: fn === "stop" ? tr("Ferma la registrazione") : arg === "area" ? tr("Registra un'area") : tr("Registra lo schermo"), group: "Schermo e audio" };
     if (target === "bar") return { label: tr("Mostra / nascondi la barra"), group: v };
     if (target === "panel") {
