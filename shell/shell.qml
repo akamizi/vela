@@ -214,6 +214,10 @@ ShellRoot {
         function status(): string { return Daemon.status(); }
     }
     IpcHandler {
+        target: "player"    // ferma qualunque flusso (radio, musica, Subsonic)
+        function stop(): void { Player.stop(); }
+    }
+    IpcHandler {
         target: "radio"
         function stop(): void { Radio.stop(); }
         function play(name: string): void {
