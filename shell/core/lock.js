@@ -28,3 +28,16 @@ function themedCommand(cmd, theme) {
     if (theme.font && typeof theme.font === "string") out.push("--font", theme.font);
     return out;
 }
+
+// Blocco prima di ogni sospensione (coperchio, tasto di accensione, `loginctl suspend`): `swayidle -w before-sleep` tiene un
+// inibitore di elogind (ritardo, 5 s di default) finché il comando di blocco non è finito, quindi al risveglio lo schermo è già
+// bloccato. Il comando per swayidle è una stringa di shell: ogni argomento è quotato. Se swayidle manca non si fa nulla; se Vela
+// muore, swayidle termina con lei (setpriv --pdeathsig, se disponibile).
+function shellQuote(a) { return "'" + String(a).replace(/'/g, "'\\''") + "'"; }
+
+function sleepLockCommand(cmd) {
+    var line = waitLockArgv(cmd).map(shellQuote).join(" ");
+    return ["sh", "-c",
+        'command -v "$1" >/dev/null 2>&1 || exit 0; if command -v setpriv >/dev/null 2>&1; then exec setpriv --pdeathsig TERM "$@"; fi; exec "$@"',
+        "sh", "swayidle", "-w", "before-sleep", line];
+}

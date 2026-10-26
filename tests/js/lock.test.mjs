@@ -41,5 +41,25 @@ assert.deepStrictEqual(lock.themedCommand(["swaylock", "-f", "-c", "000000"], th
 assert.deepStrictEqual(lock.themedCommand(["gtklock"], th), ["gtklock"]);
 assert.deepStrictEqual(lock.themedCommand(["swaylock", "-f"], { background: "rosso" }), ["swaylock", "-f"]);                // tema non valido
 
+// Blocco prima della sospensione (coperchio, tasto di accensione, qualunque sospensione): swayidle tiene l'inibitore di elogind
+// finché il comando di blocco non è finito. Qui un finto swayidle registra gli argomenti ricevuti.
+const rec = path.join(dir, "swayidle-args.json");
+mk("swayidle", `printf '%s\\n' "$@" > ${rec}`);
+const lockLog = path.join(dir, "lock-args.txt");
+const fakeLock = mk("fakelock", `printf '%s\\n' "$@" > ${lockLog}`);
+const sl = lock.sleepLockCommand([fakeLock, "a b", "it's"]);
+const r = spawnSync("/bin/sh", sl.slice(1), { env: { PATH: dir + ":/usr/bin:/bin" }, encoding: "utf8", timeout: 10000 });
+assert.strictEqual(r.status, 0, r.stderr);
+const got = fs.readFileSync(rec, "utf8").split("\n").slice(0, -1);
+assert.deepStrictEqual(got.slice(0, 2), ["-w", "before-sleep"]);
+// il comando passato a swayidle (che lo esegue con sh -c) deve ridare gli argomenti identici, anche con spazi e apici
+const r2 = spawnSync("/bin/sh", ["-c", got[2]], { env: { PATH: "/usr/bin:/bin" }, encoding: "utf8", timeout: 10000 });
+assert.strictEqual(r2.status, 0, r2.stderr);
+assert.deepStrictEqual(fs.readFileSync(lockLog, "utf8").split("\n").slice(0, -1), ["a b", "it's"]);
+// senza swayidle installato non è un errore
+const empty = fs.mkdtempSync(path.join(os.tmpdir(), "vela-empty-"));
+assert.strictEqual(spawnSync("/bin/sh", sl.slice(1), { env: { PATH: empty }, timeout: 10000 }).status, 0);
+fs.rmSync(empty, { recursive: true, force: true });
+
 fs.rmSync(dir, { recursive: true, force: true });
 console.log("ok lock");

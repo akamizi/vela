@@ -108,11 +108,24 @@ Singleton {
         }
     }
 
+    // Blocco prima di ogni sospensione, anche se non parte da Vela (coperchio chiuso, tasto di accensione, altri programmi):
+    // swayidle tiene l'inibitore di elogind finché il blocco non è fatto (core/lock.js). Si ricrea se cambia il comando di blocco.
+    readonly property bool lockOnSleep: enabled && cfg.lockOnSleep !== false
+    Variants {
+        model: root.lockOnSleep ? [JSON.stringify(Lock.sleepLockCommand(root.themedLock()))] : []
+        Process {
+            required property string modelData
+            command: JSON.parse(modelData)
+            running: true
+        }
+    }
+
     // Un altro gestore dell'inattività in esecuzione causerebbe doppioni: il pannello lo segnala.
+    // Il nostro swayidle (solo `before-sleep`, senza timeout) non conta.
     property bool externalRunning: false
     Process {
         id: probe
-        command: ["pgrep", "-x", "swayidle"]
+        command: ["pgrep", "-f", "^swayidle .* timeout "]
         onExited: code => root.externalRunning = (code === 0)
     }
     function checkExternal() { if (!probe.running) probe.running = true; }

@@ -181,6 +181,8 @@
     "suspendMinutesOnAc": 0,
     // Secondi di dissolvenza (schermo che si oscura) prima del blocco per inattività; un movimento la annulla. 0 = nessuna
     "fadeSeconds": 3,
+    // Blocca lo schermo prima di ogni sospensione (coperchio chiuso, tasto di accensione, `loginctl suspend`): usa swayidle (before-sleep). Segue "enabled"
+    "lockOnSleep": true,
     "lockCommand": ["swaylock", "-f"]
   },
   // position: "center" (centrato nello schermo) o "bar" (in basso/in alto, sopra la barra); scale: ingrandimento (1 = piccolo, 2 = grande).

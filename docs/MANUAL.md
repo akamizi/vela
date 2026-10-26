@@ -215,8 +215,10 @@ spegne e dopo Z sospende (di default solo a batteria); 0 = mai. Rispetta le fine
 `vela ipc call idle suspend`, inattività) passa da Vela: prima blocca lo schermo e sospende **solo a blocco confermato**; se il
 comando di blocco fallisce arriva un avviso e il PC non si sospende. Per questo `idle.lockCommand` deve tornare a blocco avvenuto
 (come `swaylock -f`). Il comando predefinito usa i colori e il carattere del tema di Vela; un comando personalizzato non viene toccato. Per passare a Vela togli `swayidle` dal config del
-compositor (il pannello avvisa se è in esecuzione). Chiusura del coperchio e pulsante di accensione dipendono da
-elogind e non sono ancora configurabili da qui.
+compositor (il pannello avvisa se è in esecuzione). **Blocco prima di ogni sospensione** (`idle.lockOnSleep`, acceso): Vela avvia
+`swayidle -w before-sleep`, che tiene un inibitore di elogind finché lo schermo non è bloccato; vale anche per coperchio chiuso, tasto di
+accensione e `loginctl suspend` lanciato da altri. Serve `swayidle` (in `vela-recommended`); il comportamento del coperchio resta quello di
+elogind (`HandleLidSwitch` in `/etc/elogind/logind.conf`), che Vela non modifica.
 
 **App predefinite**: sceglie, per ogni tipo di file, l'applicazione che lo apre: browser web, gestore di file,
 editor di testo, lettore PDF, immagini, video, audio e client di posta. Legge lo stato con `xdg-mime query
