@@ -20,8 +20,9 @@ Singleton {
     property string error: ""
     readonly property bool playing: state === "starting" || state === "playing"
 
-    // Uscita del player: wanted = fermato da noi (Stop o cambio di flusso), non un errore.
-    signal exited(string kind, int code, bool wanted)
+    // Uscita del player: wanted = fermato da noi (Stop o cambio di flusso), non un errore; next = tipo del flusso che parte subito dopo
+    // ("" se non ne parte nessuno).
+    signal exited(string kind, int code, bool wanted, string next)
 
     property var pending: null
     property bool stopping: false
@@ -57,13 +58,13 @@ Singleton {
         onExited: code => {
             confirm.stop();
             var k = root.runKind, wanted = root.stopping;
-            if (root.pending) { var p = root.pending; root.pending = null; root.exited(k, code, true); root.start(p); return; }
-            if (root.stopping) { root.stopping = false; root.state = "stopped"; root.exited(k, code, true); return; }
+            if (root.pending) { var p = root.pending; root.pending = null; root.exited(k, code, true, p.kind); root.start(p); return; }
+            if (root.stopping) { root.stopping = false; root.state = "stopped"; root.exited(k, code, true, ""); return; }
             // Un brano o un album che finisce da solo (codice 0 dopo la conferma) non è un errore.
-            if (code === 0 && root.state === "playing") { root.state = "stopped"; root.name = ""; root.key = ""; root.kind = ""; root.exited(k, code, false); return; }
+            if (code === 0 && root.state === "playing") { root.state = "stopped"; root.name = ""; root.key = ""; root.kind = ""; root.exited(k, code, false, ""); return; }
             root.state = "error";
             root.error = code === 127 ? I18n.tr("player non trovato") : (k === "radio" ? I18n.tr("stazione non raggiungibile") : I18n.tr("riproduzione non riuscita"));
-            root.exited(k, code, wanted);
+            root.exited(k, code, wanted, "");
         }
     }
     // Se dopo qualche secondo il player è ancora vivo, il flusso è partito.

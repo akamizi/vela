@@ -16,7 +16,9 @@ Singleton {
     readonly property string home: Quickshell.env("HOME") || ""
     readonly property string envPath: home + "/.config/subsonic-mpv/env"
     readonly property string runtimeDir: Quickshell.env("XDG_RUNTIME_DIR") || "/tmp"
-    readonly property string playlistPath: runtimeDir + "/vela-subsonic.m3u"
+    // Una playlist per ogni riproduzione (contiene il token): `files` tiene i percorsi da cancellare.
+    property var files: []
+    property int playlistSerial: 0
 
     // Il file env esiste (anche se i permessi o i campi non vanno: il pannello lo spiega).
     property bool available: false
@@ -32,7 +34,7 @@ Singleton {
     property var cred: ({ url: "", user: "", pass: "", missing: [] })
     property int serial: 0                   // scarta le risposte di richieste superate
 
-    Component.onCompleted: cleanup.running = true
+    Component.onCompleted: removeFiles("all")
 
     // Lettura del file: prima riga i permessi (ottale), poi il contenuto. Senza file cat/stat falliscono.
     function refresh() { if (!reader.running) reader.running = true; }
@@ -103,12 +105,14 @@ Singleton {
     // --- riproduzione: playlist con permessi 600, cancellata alla fine ---------------------------------------------
     property var pendingPlay: null
     function writePlaylist(name, key, entries) {
-        pendingPlay = { name: name, key: key };
+        var path = runtimeDir + "/vela-subsonic-" + (++playlistSerial) + ".m3u";
+        pendingPlay = { name: name, key: key, path: path };
+        files = files.concat([path]);
         var text = Sub.playlistText(entries.map(function (s) {
             return { artist: s.artist, title: s.title, url: Sub.streamUrl(cred.url, s.id, auth()) };
         }));
         // umask 077 prima di creare il file; il testo arriva da stdin, mai dagli argomenti del processo.
-        writer.command = ["sh", "-c", 'rm -f "$1"; umask 077; cat > "$1"', "sh", root.playlistPath];
+        writer.command = ["sh", "-c", 'rm -f "$1"; umask 077; cat > "$1"', "sh", path];
         writer.pendingText = text;
         writer.running = true;
     }
@@ -122,12 +126,24 @@ Singleton {
         onStarted: { write(pendingText); stdinEnabled = false; pendingText = ""; }
         onExited: code => {
             stdinEnabled = true;
-            if (code === 0 && root.pendingPlay) Player.play("subsonic", root.pendingPlay.name, root.pendingPlay.key, ["--", root.playlistPath]);
+            if (code === 0 && root.pendingPlay) Player.play("subsonic", root.pendingPlay.name, root.pendingPlay.key, ["--", root.pendingPlay.path]);
             root.pendingPlay = null;
         }
     }
 
-    Process { id: cleanup; command: ["rm", "-f", root.playlistPath] }
+    // Cancella le playlist di cui non c'è più bisogno: "all" tutte (anche quelle rimaste da una sessione precedente), "old" tutte
+    // tranne l'ultima scritta (un'altra riproduzione di Subsonic sta per partire con quella).
+    function removeFiles(which) {
+        var keep = which === "old" && files.length > 0 ? files[files.length - 1] : "";
+        var gone = files.filter(function (f) { return f !== keep; });
+        files = keep === "" ? [] : [keep];
+        // Con "all" ci sono anche i file di una sessione precedente: si cancellano per modello.
+        cleanup.command = which === "all"
+            ? ["sh", "-c", 'rm -f "$1"/vela-subsonic-*.m3u', "sh", root.runtimeDir]
+            : ["rm", "-f", "--"].concat(gone);
+        if (which === "all" || gone.length > 0) cleanup.running = true;
+    }
+    Process { id: cleanup }
 
     Connections {
         target: Player
@@ -135,10 +151,11 @@ Singleton {
             if (Player.kind === "subsonic" && Player.state === "playing")
                 Quickshell.execDetached(["notify-send", "-a", "Vela", "-i", "media-playback-start", "Subsonic", "▶ " + Player.name]);
         }
-        function onExited(kind, code, wanted) {
+        function onExited(kind, code, wanted, next) {
             if (kind !== "subsonic") return;
-            // L'uscita di mpv (fine, Stop o cambio di flusso) chiude con la playlist, salvo che ne sia già stata scritta una nuova.
-            if (!root.pendingPlay && Player.kind !== "subsonic") cleanup.running = true;
+            // L'uscita di mpv (fine, Stop, errore o cambio di flusso) chiude con la sua playlist; se subito dopo parte un'altra
+            // riproduzione di Subsonic si tiene l'ultima scritta.
+            removeFiles(next === "subsonic" ? "old" : "all");
             if (!wanted && code !== 0)
                 Quickshell.execDetached(["notify-send", "-a", "Vela", "-u", "critical", "-i", "dialog-error", "Subsonic", I18n.tr("Errore: impossibile riprodurre") + " " + Player.name]);
         }

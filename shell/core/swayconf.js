@@ -2,7 +2,7 @@
 // Lettura (sola lettura) del config di Sway per mostrare scorciatoie, avvii e regole esistenti
 // e riconoscere i conflitti. Non è un parser completo: vale per il file principale, senza include,
 // e ignora ciò che sta dentro i blocchi { }, tranne le scorciatoie delle modalità (modeBinds).
-// Un commento in coda a una scorciatoia (`bindsym … # testo`) ne diventa la descrizione (desc).
+// Vale anche `bindcode` (tasti indicati per codice, come il tasto Copilot). Un commento in coda a una scorciatoia (`bindsym … # testo`) ne diventa la descrizione (desc).
 .pragma library
 
 function parse(text) {
@@ -17,7 +17,7 @@ function parse(text) {
         var atTop = depth === 0 && opens === 0;
         var m;
         if (depth === 0 && opens === 1 && (m = /^mode\s+(?:--\S+\s+)*"?([^"{]+?)"?\s*\{$/.exec(line))) mode = m[1];
-        if (depth === 1 && mode !== "" && (m = /^bindsym\s+(.+)$/.exec(line))) {
+        if (depth === 1 && mode !== "" && (m = /^bind(?:sym|code)\s+(.+)$/.exec(line))) {
             var mr = m[1].trim();
             while (mr.indexOf("--") === 0) mr = mr.replace(/^--\S+\s*/, "");
             var msp = mr.search(/\s/);
@@ -28,7 +28,7 @@ function parse(text) {
         if (depth === 0) mode = "";
         if (!atTop) return;
         if ((m = /^set\s+(\$\S+)\s+(.+)$/.exec(line))) { vars[m[1]] = m[2]; return; }
-        if ((m = /^bindsym\s+(.+)$/.exec(line))) {
+        if ((m = /^bind(?:sym|code)\s+(.+)$/.exec(line))) {
             var rest = m[1].trim();
             while (rest.indexOf("--") === 0) rest = rest.replace(/^--\S+\s*/, "");   // opzioni: --release, --to-code…
             var sp = rest.search(/\s/);

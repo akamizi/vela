@@ -221,6 +221,8 @@ Singleton {
             return (b.code ? "bindcode " : "bindsym ") + (/^XF86Audio/.test(b.combo) ? "--locked " : "") + b.combo + " " + b.command;
         });
     }
+    // Comando che scioglie il tasto in più (le opzioni, come --locked, devono essere le stesse dell'associazione).
+    function hwUnbind(b) { return (b.code ? "unbindcode " : "unbindsym ") + (/^XF86Audio/.test(b.combo) ? "--locked " : "") + b.combo; }
     Connections { target: HardwareKeys; function onBindingsChanged() { sync.restart(); } }
 
     // Comandi di tastiera, touchpad e sfondo (applicati subito e scritti nel file da includere).
@@ -268,6 +270,7 @@ Singleton {
     // Applica ciò che è cambiato (tastiera, touchpad, sfondo) e riscrive il file da includere.
     property var applied: ({})
     property var appliedBinds: ({})
+    property var appliedHw: ({})    // tasti in più associati a caldo: se escono dall'elenco (conflitto nuovo, tastiera scollegata) si sciolgono
     property string lastConf: ""
     Timer { id: sync; interval: 400; onTriggered: root.syncNow() }
     Connections { target: Config; function onSwayChanged() { sync.restart(); } }
@@ -281,6 +284,10 @@ Singleton {
         Config.sway.keybindings.forEach(function (b) { var c = bindCommand(b); if (c) combos[c.split(" ")[1]] = true; });
         for (var old in appliedBinds) if (!combos[old]) run("unbindsym " + old);
         appliedBinds = combos;
+        var hw = {};
+        hardwareShown.forEach(function (b) { hw[hwUnbind(b)] = true; });
+        for (var oldHw in appliedHw) if (!hw[oldHw]) run(oldHw);
+        appliedHw = hw;
         live.forEach(function (c) { next[c] = true; if (!applied[c]) run(c); });
         applied = next;
         var text = "# Generato da Vela (Impostazioni): non modificare a mano, le modifiche verrebbero perse.\n"
