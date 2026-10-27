@@ -62,6 +62,9 @@ PanelHost {
         list.currentIndex = idx;
         if (idx >= 0) { currentKey = rows[idx].key; list.positionViewAtIndex(idx, ListView.Contain); }
     }
+    // Funzione con nome e non closure: se il pannello viene distrutto prima del callLater,
+    // una closure anonima valuterebbe codice in un contesto non più valido (warning QML).
+    function restoreAtStart() { restoreSelection(); list.positionViewAtBeginning(); }
     onRowsChanged: Qt.callLater(restoreSelection)
 
     onOpenChanged: {
@@ -69,7 +72,7 @@ PanelHost {
             query = "";
             currentKey = "";
             opened();
-            Qt.callLater(function () { restoreSelection(); list.positionViewAtBeginning(); });
+            Qt.callLater(restoreAtStart);
             keys.forceActiveFocus();
         }
     }
