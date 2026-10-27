@@ -1,16 +1,17 @@
 // Tema (default). Tutti i componenti leggono da qui: nessun colore o dimensione nel codice.
-// Palette presa dalla barra attuale (elementary blueberry-dark, stile Omarchy).
+// Palette presa dalla barra attuale (elementary blueberry-dark, stile Omarchy), ritoccata perché ogni colore di testo
+// raggiunga il contrasto WCAG AA (4,5:1) su sfondo, superficie e riga selezionata (D-060).
 {
   "colors": {
     "background": "#1a1a1a",
     "surface": "#1e1e1e",
     "border": "#252525",
     "foreground": "#e4e5e6",
-    "muted": "#7e8087",
-    "dim": "#4a4c52",
-    "accent": "#3689e6",
+    "muted": "#a0a3aa",
+    "dim": "#8b8e96",
+    "accent": "#5ba3f2",
     "warning": "#f5a623",
-    "error": "#c6262e"
+    "error": "#ff6b6b"
   },
   "font": {
     "family": "Inter",
@@ -48,7 +49,7 @@
   "states": {
     "hover": 0.07,
     "cursor": 0.12,
-    "selected": 0.18,
+    "selected": 0.10,
     "border": 0.22
   },
   // Trasparenza dello sfondo della barra (0 = trasparente, 1 = opaco)

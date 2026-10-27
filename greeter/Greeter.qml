@@ -13,9 +13,9 @@ Item {
     property color cBackground: "#1a1a1a"
     property color cSurface: "#1e1e1e"
     property color cForeground: "#e4e5e6"
-    property color cMuted: "#7e8087"
-    property color cAccent: "#3689e6"
-    property color cError: "#c6262e"
+    property color cMuted: "#a0a3aa"
+    property color cAccent: "#5ba3f2"
+    property color cError: "#ff6b6b"
     readonly property color cBorder: Qt.alpha(cForeground, 0.22)
     property string fontFamily: "Inter"
     readonly property int fontSize: 14

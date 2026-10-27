@@ -623,8 +623,8 @@ PanelHost {
 
     readonly property var light: ({
         "colors.background": "#f5f5f5", "colors.surface": "#ffffff", "colors.border": "#dcdcdc",
-        "colors.foreground": "#1f2328", "colors.muted": "#656d76", "colors.dim": "#9aa1a9",
-        "colors.accent": "#0969da", "colors.warning": "#bf8700", "colors.error": "#cf222e"
+        "colors.foreground": "#1f2328", "colors.muted": "#57606a", "colors.dim": "#656d76",
+        "colors.accent": "#0969da", "colors.warning": "#8a5a00", "colors.error": "#cf222e"
     })
 
     function resetList() {
