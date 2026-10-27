@@ -407,7 +407,7 @@ Si apre con un clic sull'icona di rete o sulla VPN nella barra, dal menu (Sistem
 `vela ipc call panel toggle network`. Mostra Wi-Fi (interruttore, reti per segnale), cavo e VPN.
 Invio = connetti/disconnetti (rete nuova protetta: campo password), Canc = dimentica la rete salvata,
 Esc = indietro/chiude, clic fuori = chiude. La password passa direttamente a NetworkManager e non viene
-salvata né registrata. Le reti aziendali (802.1x) vanno configurate con `nm-connection-editor`.
+salvata né registrata. Le reti aziendali (802.1x) vanno configurate con `nm-connection-editor`, apribile dalla riga «Gestione connessioni…» in fondo al pannello. La sezione Wi-Fi si richiude (Invio o clic sull'intestazione) e parte chiusa se si è già collegati.
 
 ## Comandi alla shell in esecuzione
 

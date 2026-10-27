@@ -1,5 +1,7 @@
 // Copyright (C) 2026 Maurizio Cavalletti — Licensed under the EUPL-1.2
 // Pannello rete (D-023): intestazione con interruttore Wi-Fi, reti Wi-Fi, cavo e VPN.
+// La sezione Wi-Fi si richiude (Invio o clic sull'intestazione): parte chiusa se già si è collegati.
+// In fondo, «Gestione connessioni» apre nm-connection-editor.
 // Invio = connetti/disconnetti · Spazio = accendi/spegni il Wi-Fi · Canc = dimentica la rete · Esc = indietro/chiude.
 // Le credenziali non si salvano qui: la password passa a NetworkManager e il campo viene svuotato.
 import QtQuick
@@ -21,19 +23,25 @@ PanelHost {
     property var forgetting: null      // rete in attesa di conferma "dimentica"
     property string note: ""           // avviso locale (es. rete aziendale)
     property string currentKey: ""
+    property bool wifiOpen: true       // elenco delle reti Wi-Fi espanso
+    readonly property string wifiConnected: {
+        var nets = Wifi.networks;
+        for (var i = 0; i < nets.length; i++) if (nets[i].connected) return nets[i].name;
+        return "";
+    }
 
     Timer { id: noteClear; interval: 8000; onTriggered: panel.note = "" }
 
     // --- elenco -------------------------------------------------------------------
     function buildRows() {
         var out = [];
-        out.push({ kind: "header", label: I18n.tr("Wi-Fi"), key: "h-wifi" });
+        out.push({ kind: "wifihead", key: "h-wifi" });
         if (Wifi.available) {
             if (!Wifi.hardwareEnabled) {
                 out.push({ kind: "message", text: I18n.tr("Wi-Fi disattivato dall'hardware (interruttore o rfkill)"), tone: "warn", key: "m-hw" });
             } else if (!Wifi.enabled) {
                 out.push({ kind: "message", text: I18n.tr("Wi-Fi spento: premi Spazio per accenderlo"), tone: "dim", key: "m-off" });
-            } else {
+            } else if (wifiOpen) {
                 var nets = Wifi.networks;
                 nets.forEach(function (e) { out.push({ kind: "wifi", e: e, key: "wifi:" + e.name }); });
                 if (nets.length === 0) out.push({ kind: "message", text: I18n.tr("Ricerca delle reti…"), tone: "dim", key: "m-scan" });
@@ -53,11 +61,12 @@ PanelHost {
             out.push({ kind: "header", label: I18n.tr("VPN"), key: "h-vpn" });
             Vpn.known.forEach(function (n) { out.push({ kind: "vpn", name: n, active: Vpn.isActive(n), key: "vpn:" + n }); });
         }
+        out.push({ kind: "manage", key: "manage" });
         return out;
     }
     readonly property var rows: buildRows()
 
-    function selectable(r) { return r && (r.kind === "wifi" || r.kind === "vpn"); }
+    function selectable(r) { return r && (r.kind === "wifi" || r.kind === "vpn" || r.kind === "wifihead" || r.kind === "manage"); }
     function current() { return rows[list.currentIndex] || null; }
 
     function select(i) {
@@ -87,6 +96,8 @@ PanelHost {
     function activate(r) {
         if (!r) return;
         if (r.kind === "vpn") { Vpn.toggleOne(r.name); return; }
+        if (r.kind === "wifihead") { wifiOpen = !wifiOpen; return; }
+        if (r.kind === "manage") { Quickshell.execDetached(["nm-connection-editor"]); Runtime.closePanel(); return; }
         if (r.kind !== "wifi") return;
         var e = r.e;
         if (e.connecting) return;
@@ -131,6 +142,7 @@ PanelHost {
     onOpenChanged: {
         if (open) {
             prompt = null; forgetting = null; note = ""; currentKey = "";
+            wifiOpen = NetworkStatus.summary.kind !== "wifi";
             Wifi.clearError();
             Wifi.scan(true);
             for (var i = 0; i < rows.length; i++) if (selectable(rows[i])) { select(i); break; }
@@ -271,6 +283,34 @@ PanelHost {
                     text: entry.r.kind === "message" ? entry.r.text : ""
                     color: entry.r.tone === "error" ? Theme.error : entry.r.tone === "warn" ? Theme.warning : Theme.dim
                     elide: Text.ElideRight
+                }
+
+                // intestazione Wi-Fi richiudibile
+                PanelRow {
+                    visible: entry.r.kind === "wifihead"
+                    anchors { fill: parent; leftMargin: Theme.spacing; rightMargin: Theme.spacing }
+                    hasCursor: ListView.isCurrentItem
+                    icon: panel.wifiOpen ? Icons.chevronDown : Icons.chevronRight
+                    iconColor: Theme.muted
+                    title: I18n.tr("Wi-Fi")
+                    titleColor: Theme.dim
+                    bold: true
+                    trailingText: panel.wifiOpen || !Wifi.enabled ? "" : panel.wifiConnected !== "" ? panel.wifiConnected : I18n.tr("%1 reti", Wifi.networks.length)
+                    trailingColor: panel.wifiConnected !== "" ? Theme.accent : Theme.muted
+                    onMoved: panel.select(entry.index)
+                    onClicked: { panel.select(entry.index); panel.activate(entry.r); }
+                }
+
+                // apre nm-connection-editor
+                PanelRow {
+                    visible: entry.r.kind === "manage"
+                    anchors { fill: parent; leftMargin: Theme.spacing; rightMargin: Theme.spacing }
+                    hasCursor: ListView.isCurrentItem
+                    icon: Icons.cog
+                    iconColor: Theme.muted
+                    title: I18n.tr("Gestione connessioni…")
+                    onMoved: panel.select(entry.index)
+                    onClicked: { panel.select(entry.index); panel.activate(entry.r); }
                 }
 
                 // rete Wi-Fi
