@@ -2,7 +2,7 @@
 
 Dalla più recente. Le versioni «Dalla X» riassumono più rilasci.
 
-- Prossima versione: i tasti in più del PC (Copilot compreso) non sovrascrivono più le scorciatoie messe in `~/.config/vela/sway.d/*.conf` (anche `bindcode`): Vela legge quei file (escluso `vela.conf`) per trovare i conflitti; nuova chiave `hardwareOff` in `sway.jsonc` per non associare mai certi tasti; manuale aggiornato.
+- Versione 0.16.7: i tasti in più del PC (Copilot compreso) non sovrascrivono più le scorciatoie messe in `~/.config/vela/sway.d/*.conf` (anche `bindcode`): Vela legge quei file (escluso `vela.conf`) per trovare i conflitti; nuova chiave `hardwareOff` in `sway.jsonc` per non associare mai certi tasti; manuale aggiornato.
 - Versione 0.16.6: corretto un warning QML all'apertura dei pannelli Scorciatoie, Radio e dei pannelli basati su `BrowserPanel` (Musica, Subsonic): il ripristino della selezione usava una closure che poteva girare su un pannello già scaricato (`TypeError: restoreSelection`, «Cannot create delegate»); ora è una funzione nominata.
 - Versione 0.16.5: colori di testo del tema predefinito conformi a **WCAG AA** (contrasto almeno 4,5:1 su sfondo, superficie e riga selezionata): `muted`, `dim`, `accent` ed `error` più chiari e `states.selected` da 0.18 a 0.10; stessi valori nel greeter e nel tema chiaro del selettore. Un tema personalizzato non cambia. Nuovo test `tests/js/contrast.test.mjs` che verifica i contrasti.
 - Versione 0.16.4: pannello **Rete** più comodo con molte reti: la sezione Wi-Fi si richiude (Invio o clic sull'intestazione) e all'apertura parte chiusa se si è già collegati, con il nome della rete a destra, così le VPN restano subito raggiungibili; in fondo la riga «Gestione connessioni…» apre `nm-connection-editor`.
