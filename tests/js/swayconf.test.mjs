@@ -30,4 +30,18 @@ assert.strictEqual(sc.safeList(7), false);
 // File di configurazione realmente caricato da Sway (get_version): la sessione Vela usa `sway -c /usr/share/vela/sway/config`
 assert.strictEqual(sc.loadedConfigPath('{"human_readable":"1.10","loaded_config_file_name":"/usr/share/vela/sway/config"}'), "/usr/share/vela/sway/config");
 for (const bad of ['{"loaded_config_file_name":""}', '{"loaded_config_file_name":"relativo/config"}', '{"loaded_config_file_name":5}', '{}', "non json", "", null]) assert.strictEqual(sc.loadedConfigPath(bad), "", String(bad));
+
+// Bind dei file ~/.config/vela/sway.d/*.conf (testo concatenato, `$mod` definito nel config principale): il tasto in più non va emesso
+const mainVars = sc.parse("set $mod Mod4\n").vars;
+const ud = sc.parse("unbindcode Mod4+Shift+201\nbindcode Mod4+Shift+201 exec foot -e yazi\nbindsym $mod+Shift+f exec x\n").binds;
+assert.strictEqual(sc.findBind(ud, "$mod+Shift+201", mainVars).command, "exec foot -e yazi");   // stessa combo del Copilot di Vela
+assert.strictEqual(sc.findBind(ud, "Mod4+shift+201", {}).command, "exec foot -e yazi");
+assert.strictEqual(sc.findBind(ud, "$mod+Shift+202", mainVars), null);
+assert.strictEqual(sc.findBind([], "$mod+Shift+201", mainVars), null);
+// hardwareOff: combinazioni da non associare
+assert.strictEqual(sc.inList(["$mod+Shift+201", "XF86Favorites"], "Mod4+Shift+201", mainVars), true);
+assert.strictEqual(sc.inList(["xf86favorites"], "XF86Favorites", {}), true);
+assert.strictEqual(sc.inList(["XF86Favorites"], "XF86AudioPlay", {}), false);
+assert.strictEqual(sc.inList(undefined, "XF86AudioPlay", {}), false);
+assert.strictEqual(sc.inList([5, null], "XF86AudioPlay", {}), false);
 console.log("ok swayconf");

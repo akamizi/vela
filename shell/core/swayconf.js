@@ -60,6 +60,21 @@ function normalize(combo, vars) {
     return mods.concat(keys).join("+");
 }
 
+// Primo bind di `binds` ({combo, command}) con la stessa combinazione di `combo` (anche bindcode: «Mod4+Shift+201»), o null.
+function findBind(binds, combo, vars) {
+    var n = normalize(combo, vars);
+    for (var i = 0; i < binds.length; i++) if (normalize(binds[i].combo, vars) === n) return binds[i];
+    return null;
+}
+
+// `combo` compare in `list` (elenco di combinazioni, es. sway.hardwareOff)?
+function inList(list, combo, vars) {
+    if (!Array.isArray(list)) return false;
+    var n = normalize(combo, vars);
+    for (var i = 0; i < list.length; i++) if (typeof list[i] === "string" && normalize(list[i], vars) === n) return true;
+    return false;
+}
+
 // Valori che finiscono in un comando di Sway: niente virgola e «;» (separano i comandi), «#» (commento), virgolette, $, a capo.
 function safe(v) { return typeof v === "string" && /^[A-Za-z0-9_:.()+\-\/ @]*$/.test(v); }
 

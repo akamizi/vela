@@ -141,7 +141,7 @@ Singleton {
         swayCfg.reload();
     }
     function refreshInputs() { if (active && !daemonInputs && !inProc.running) inProc.running = true; }
-    Component.onCompleted: refresh()
+    Component.onCompleted: { refresh(); refreshUserD(); }
 
     function setTouchpad(on) {
         if (!active || !hasTouchpad) return;
@@ -222,8 +222,12 @@ Singleton {
     // Tasti in più del PC (HardwareKeys), senza `$mod` (nel config della sessione Vela la variabile non è nota a swaymsg) e
     // solo se la combinazione non è già assegnata dall'utente (config di Sway o scorciatoie di Vela): la riga dell'utente vince.
     function hwCombo(b) { return b.combo.replace(/\$mod/g, "Mod4"); }
+    // `hardwareOff` (sway.jsonc): combinazioni da non associare mai, Copilot compreso.
+    function hwDisabled(combo) {
+        return SwayConf.inList(Config.sway.hardwareOff, combo, userConfig.vars);
+    }
     readonly property var hardwareShown: HardwareKeys.bindings.filter(function (b) {
-        return conflictFor(hwCombo(b), "") === null;
+        return !hwDisabled(hwCombo(b)) && conflictFor(hwCombo(b), "") === null;
     }).map(function (b) { return { combo: hwCombo(b), command: b.command, description: b.description, code: b.code === true }; })
     function hardwareCommands() {
         return hardwareShown.map(function (b) {
@@ -288,6 +292,8 @@ Singleton {
     function syncNow() {
         if (labwc) { syncLabwc(); return; }
         if (!active) return;
+        refreshUserD();     // se i file dell'utente sono cambiati, userDText cambia e la sincronizzazione riparte
+        if (!userDRead) return;
         var live = inputWallpaperCommands(), next = {};
         // Una scorciatoia di Vela tolta torna libera subito (quella originale del config torna al prossimo reload).
         var combos = {};
@@ -532,6 +538,20 @@ Singleton {
     // Scorciatoie, avvii e regole del config di Sway (sola lettura): per elencarli e trovare i conflitti.
     readonly property var userConfig: SwayConf.parse(cfgText)
 
+    // Scorciatoie dei file dell'utente in ~/.config/vela/sway.d/*.conf (Sway li include, quindi valgono come quelle del config),
+    // escluso vela.conf, che è generato da Vela stessa: altrimenti i suoi bind sarebbero conflitti e Vela li toglierebbe da sola.
+    property string userDText: ""
+    readonly property var userDBinds: SwayConf.parse(userDText).binds
+    function refreshUserD() { if (!userDProc.running) userDProc.running = true; }
+    property bool userDRead: false      // finché non l'ha letta, syncNow aspetta: i tasti in più non vanno associati prima di sapere cosa ha messo l'utente
+    onUserDTextChanged: sync.restart()
+    Process {
+        id: userDProc
+        command: ["sh", "-c", 'for f in "$1"/*.conf; do [ -f "$f" ] && [ "${f##*/}" != vela.conf ] && { cat "$f"; echo; }; done; exit 0', "sh", root.confDir]
+        stdout: StdioCollector { onStreamFinished: root.userDText = text }
+        onExited: { if (!root.userDRead) { root.userDRead = true; sync.restart(); } }
+    }
+
     // Se `combo` (nome di Vela o di Sway) è già assegnata: {source: "sway"|"vela", command} oppure null.
     function conflictFor(combo, ignoreVela) {
         var n = SwayConf.normalize(combo, userConfig.vars);
@@ -542,6 +562,8 @@ Singleton {
         for (var j = 0; j < userConfig.binds.length; j++)
             if (SwayConf.normalize(userConfig.binds[j].combo, userConfig.vars) === n)
                 return { source: "sway", command: userConfig.binds[j].command };
+        var ub = SwayConf.findBind(userDBinds, combo, userConfig.vars);
+        if (ub) return { source: "sway", command: ub.command };
         return null;
     }
     Process { id: backup; onExited: code => { if (code === 0) root.writeInclude(); else root.lastError = I18n.tr("copia di sicurezza non riuscita: config non modificato"); } }

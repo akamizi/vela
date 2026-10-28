@@ -23,6 +23,9 @@
   // Scorciatoie di Vela: [{ "combo": "$mod+Shift+e", "command": "exec foot" }]. Stessa combinazione di una del
   // config di Sway = la sostituisce; "command": "" la disattiva.
   "keybindings": [],
+  // Tasti in più del PC da non associare mai (Copilot compreso): ["$mod+Shift+201", "XF86Favorites"]. Una combinazione già
+  // assegnata in ~/.config/vela/sway.d/*.conf o nel config di Sway è comunque rispettata.
+  "hardwareOff": [],
   // Programmi da avviare con Sway (richiede l'include nel config di Sway): ["nm-applet --indicator"]
   "autostart": [],
   // Regole per le finestre: [{ "criteria": "[app_id=\"foot\"]", "command": "floating enable" }]

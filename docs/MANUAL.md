@@ -369,8 +369,11 @@ si accende e il clic ferma. Se Vela si chiude durante la registrazione, il file 
 
 Su Sway Vela legge le capacità dei dispositivi di input (`/proc/bus/input/devices`, senza privilegi) e associa solo i tasti che esistono, scrivendoli in
 `~/.config/vela/sway.d/vela.conf`: `XF86AudioPlay/Next/Prev` (brano), `XF86Favorites` (gestore di file), il tasto «ritaglio» del ThinkPad (area; con Win registra
-un'area) e il tasto Copilot (`Win+Maiusc+F23`, keycode 201, sempre associato: apre il gestore di file). Una combinazione già assegnata nel config di Sway o nelle
-scorciatoie di Vela vince. Compaiono nel pannello Scorciatoie. Per le prove: `VELA_INPUT_DEVICES=<file>` al posto di `/proc/bus/input/devices`.
+un'area) e il tasto Copilot (`Win+Maiusc+F23`, keycode 201, sempre associato: apre il gestore di file). Una combinazione già assegnata nel config di Sway, nelle
+scorciatoie di Vela o in un tuo `~/.config/vela/sway.d/*.conf` (anche `bindcode`, es. `bindcode Mod4+Shift+201 exec foot -e yazi`) vince: Vela non la tocca.
+Per non associare mai un tasto in più (Copilot compreso) elencalo in `sway.jsonc`: `"hardwareOff": ["$mod+Shift+201", "XF86Favorites"]`.
+Nei tuoi file `sway.d` ogni scorciatoia già presente nel config di sistema va preceduta da `unbindsym`/`unbindcode` della stessa combinazione, altrimenti Sway
+mostra l'avviso «Overwriting binding». Compaiono nel pannello Scorciatoie. Per le prove: `VELA_INPUT_DEVICES=<file>` al posto di `/proc/bus/input/devices`.
 Su labwc gli stessi tasti sono fissi in `rc.xml` (nessun rilevamento) e il tasto Copilot non c'è.
 
 ## Pannello delle scorciatoie
