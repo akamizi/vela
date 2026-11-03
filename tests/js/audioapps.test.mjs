@@ -34,4 +34,11 @@ assert.ok(v[0] <= 1 && v[1] <= 1);
 assert.deepStrictEqual(plain(a.scaled([0, 0], 0.5, 1)), [0.5, 0.5]);   // da zero: tutti uguali
 assert.deepStrictEqual(plain(a.scaled([0.5, 0.5], -1, 1)), [0, 0]);    // mai sotto zero
 assert.deepStrictEqual(plain(a.scaled([], 0.5, 1)), []);
+// Nomi di programma ostili o strani: nessun problema con le chiavi di Object.prototype
+g = plain(a.group(["constructor", "__proto__", "toString", "hasOwnProperty"].map((b, i) => ({ id: i, binary: b, volumes: [0.5], muted: false }))));
+assert.deepStrictEqual(g.map(x => x.name).sort(), ["__proto__", "constructor", "hasOwnProperty", "toString"]);
+assert.ok(g.every(x => x.ids.length === 1 && x.volume === 0.5));
+g = plain(a.group([{ id: 1, binary: "constructor", volumes: [1], muted: false }, { id: 2, binary: "constructor", volumes: [1], muted: false }]));
+assert.strictEqual(g.length, 1);
+assert.deepStrictEqual(g[0].ids, [1, 2]);
 console.log("audioapps: ok");

@@ -17,7 +17,8 @@ function mean(vols) {
 
 // Raggruppa i flussi: una riga per app, con il volume più alto del gruppo, muta solo se tutti i flussi lo sono. Ordine alfabetico.
 function group(streams) {
-    var by = {}, order = [];
+    // Mappa senza prototipo: la chiave la dichiara l'app (`constructor`, `__proto__`, `toString` non devono trovare nulla di ereditato)
+    var by = Object.create(null), order = [];
     streams.forEach(function (s) {
         var k = keyOf(s);
         if (!by[k]) { by[k] = { key: k, name: s.appName || s.binary || s.nodeName || k, streams: [] }; order.push(k); }
