@@ -20,6 +20,7 @@ ShellRoot {
     // I servizi sono singleton creati al primo uso: l'inattività deve esistere fin dall'avvio.
     readonly property bool idleManaged: Idle.enabled
     readonly property bool daemonManaged: Daemon.enabled    // il demone dati (D-039) parte con Vela
+    readonly property bool colorSchemeManaged: ColorScheme.enabled    // chiaro/scuro verso le app GTK e i browser (D-063)
 
     Loader {
         active: Config.shell.bar.enabled

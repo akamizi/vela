@@ -83,6 +83,15 @@ Quickshell né al resto della sessione. Serve Vela in esecuzione (altrimenti usa
 Palette e bordi seguono il tema (bordi come nei pannelli, non il colore `border`). Le dimensioni delle icone sono del programma (PCManFM-Qt: Preferenze › Visualizzazione). Limiti: le icone sono a colori, non i glifi di
 Vela; il QSS non cambia la struttura dell'interfaccia.
 
+## Chiaro/scuro per le app GTK e i browser
+
+Vela imposta `org.gnome.desktop.interface color-scheme` (`prefer-dark` o `prefer-light`) in accordo con il suo tema: scuro se lo
+sfondo (`colors.background`) è più scuro del testo (`colors.foreground`). Firefox, Chromium e le app GTK4/libadwaita lo leggono dal
+portale (`org.freedesktop.appearance`) e passano al modo giusto, senza altre impostazioni. Succede all'avvio e a ogni cambio di
+tema, e Vela scrive solo se il valore è diverso. Non cambia il tema GTK né quello delle icone. Serve `gsettings` (pacchetto
+`glib`) e un portale che dia le impostazioni (`xdg-desktop-portal-gtk`); senza `gsettings` non fa nulla. Per spegnerlo, in
+`shell.jsonc`: `"colorScheme": { "sync": false }`.
+
 ## Sessione Vela
 
 Il pacchetto installa una voce **«Vela»** per il login manager (`/usr/share/wayland-sessions/vela.desktop`, per greetd/tuigreet, ly, sddm...): avvia

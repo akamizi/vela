@@ -137,6 +137,8 @@
   // limitHelper: helper di sistema per il limite di carica (compare solo sui portatili compatibili).
   "battery": { "warning": 20, "critical": 10, "limitHelper": "/usr/libexec/vela/battery-limit" },
   "audio": { "step": 0.02, "maxVolume": 1.0 },
+  // Chiaro/scuro per le app GTK, Firefox e Chromium (D-063): `sync` imposta `color-scheme` di GNOME secondo il tema di Vela
+  "colorScheme": { "sync": true },
   // Aggiornamenti disponibili (elemento "Updates", visibile solo se ce ne sono). Il controllo legge l'indice locale di xbps:
   // si aggiorna dopo una sincronizzazione (`xbps-install -S`, per esempio da un'attività periodica di root).
   // `command` si lancia in un terminale al clic; `interval` in secondi (minimo 60).
