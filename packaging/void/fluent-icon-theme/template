@@ -1,0 +1,29 @@
+# Template file for 'fluent-icon-theme' (D-061): tema icone consigliato da Vela (default di `qt.iconTheme`).
+# Per void-packages: copiare in srcpkgs/fluent-icon-theme/template. Non fa parte di Vela e `vela` non ne dipende: lo porta `vela-recommended`.
+# Il tema è di terzi (vinceliuice/Fluent-icon-theme, GPL-3.0, derivato da Numix-circle, Papirus e Paper: vedi AUTHORS): qui si
+# compila dai sorgenti originali e si installano COPYING e AUTHORS, senza incorporare nulla nel pacchetto `vela`.
+# Il tag upstream è una data (2026-07-27): la versione xbps è la stessa data senza trattini (20260727).
+pkgname=fluent-icon-theme
+version=20260727
+revision=1
+_tag="${version:0:4}-${version:4:2}-${version:6:2}"
+wrksrc="Fluent-icon-theme-${_tag}"
+depends="hicolor-icon-theme"
+short_desc="Fluent icon theme (grey variants: Fluent-grey, -dark, -light)"
+maintainer="Maurizio Cavalletti <maurizio@akabit.it>"
+license="GPL-3.0-only, CC-BY-SA-4.0"
+homepage="https://github.com/vinceliuice/Fluent-icon-theme"
+distfiles="https://github.com/vinceliuice/Fluent-icon-theme/archive/refs/tags/${_tag}.tar.gz"
+checksum=24a8aca29a5b652a0e60ff8e5f12b86fe4b9c4c969565fad7c3fa7c1742b3631
+
+# Solo la variante grigia (quella che usa Vela): le cartelle colorate occupano molto e non servono. Per aggiungerne altre
+# basta elencarle qui (standard green grey orange pink purple red yellow teal).
+_variants="grey"
+
+do_install() {
+	vmkdir usr/share/icons
+	# install.sh vuole una destinazione esplicita: senza -d usa la home di chi compila.
+	bash install.sh -d "${DESTDIR}/usr/share/icons" ${_variants}
+	vdoc AUTHORS
+	vlicense COPYING
+}
