@@ -193,7 +193,8 @@
   // org.freedesktop.Notifications: attivarlo solo dopo aver fermato dunst/mako.
   // enabled: notifiche di Vela sempre accese (un altro server, come dunst, va fermato).
   // inVelaSession: accese comunque nella sessione «Vela», dove non c'è altro server; false per tenere dunst anche lì.
-  "notifications": { "enabled": false, "inVelaSession": true, "timeout": 6000, "maxVisible": 5 },
+  // fullscreenDnd: con una finestra a schermo intero le notifiche normali restano in coda (al massimo heldMax) e compaiono all'uscita; le critiche passano
+  "notifications": { "enabled": false, "inVelaSession": true, "timeout": 6000, "maxVisible": 5, "fullscreenDnd": true, "heldMax": 5 },
   "toggles": {
     // secondi tra un controllo e l'altro degli stati esterni (luce notturna, non disturbare, registrazione)
     "pollInterval": 5,

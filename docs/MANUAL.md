@@ -285,6 +285,10 @@ una scheda sola: titolo e testo dell'ultima, il contatore (`×3`) e i titoli del
 contatore. Il clic chiude tutto il gruppo, il passaggio del mouse ferma la scadenza e una nuova notifica del gruppo la fa ripartire.
 Un timeout esplicito dell'app (per esempio `notify-send -t 3000`) è rispettato.
 "Non disturbare" (`vela ipc call toggles dnd` o la voce nel menu) scarta quelle non critiche.
+**A schermo intero** (`notifications.fullscreenDnd`, acceso di default) le notifiche non critiche non compaiono mentre la finestra in primo
+piano è a schermo intero (un film, un gioco, una presentazione): restano **in coda**, al massimo `notifications.heldMax` (5; se arrivano di
+più le più vecchie si chiudono), e compaiono quando si esce dallo schermo intero. Le critiche passano sempre. Non vale per una notifica che
+un'app sostituisce mentre si è a schermo intero (si aggiorna comunque). Con `fullscreenDnd: false` tutto compare come prima.
 
 ## Lingua
 
