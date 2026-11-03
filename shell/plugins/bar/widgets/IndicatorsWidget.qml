@@ -6,10 +6,10 @@ import "../../../core"
 import "../../../core/icons.js" as Icons
 import "../../../services"
 import "../../../ui"
-// Indicatori raggruppati (come in Omarchy): un solo elemento con i simboli dei modi accesi (non disturbare, luce
+// Indicatori raggruppati (come in Omarchy): un solo elemento con i simboli dei modi accesi (microfono in uso, non disturbare, luce
 // notturna, resta sveglio, registrazione). Un clic su un simbolo lo accende o lo spegne. Con la barra sotto il mouse
 // compaiono anche quelli spenti (`bar.indicators.peek`), così si possono accendere da qui; `alwaysShow` li tiene sempre.
-// Quali indicatori e in che ordine: `bar.indicators.items` (Recording, Dnd, NightLight, Awake).
+// Quali indicatori e in che ordine: `bar.indicators.items` (MicUse, Recording, Dnd, NightLight, Awake).
 // Gli elementi singoli (Dnd, NightLight, Awake, Recording) restano disponibili e si possono usare al posto di questo.
 BarItem {
     id: root
@@ -22,6 +22,9 @@ BarItem {
     // Stato di ogni indicatore: `on` acceso, `available` se si può accendere da qui, icona, colore e testi.
     function info(name) {
         switch (name) {
+        case "MicUse":
+            return { on: MicUse.active, available: false, icon: Icons.mic, color: Theme.warning,
+                     tip: I18n.tr("Microfono in uso") + ": " + MicUse.apps.join(", ") };
         case "Recording":
             return { on: Toggles.recording, available: false, icon: Icons.recording, color: Theme.error,
                      tip: I18n.tr("Registrazione in corso") };
