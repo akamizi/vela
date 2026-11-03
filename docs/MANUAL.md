@@ -275,6 +275,14 @@ e processo con `pgrep`, perché `sv status` è riservato a root). Spazio avvia/f
 (`services.terminal`, di default `foot -e`) con `doas` (o `sudo`), che **chiede la password ogni volta**; Vela non la vede e non installa regole senza password.
 Da script: `vela ipc call services status|run <azione> <servizio>`. Compare solo se esiste `/var/service`.
 
+## Pannello Audio
+
+Il pannello (clic sull'icona del volume, oppure `vela ipc call panel toggle audio`) ha quattro sezioni, **richiudibili** (Invio o clic sull'intestazione, ←/→ con il
+cursore sull'intestazione; chiuse mostrano il numero di voci; alla riapertura è tutto aperto): **Uscite** e **Ingressi** (volume, muto e dispositivo predefinito),
+**Applicazioni** (una riga per programma che sta riproducendo, con volume e muto) e **Registrazione** (solo se qualcuno sta registrando). I flussi dello stesso programma
+(per esempio le schede di un browser) formano una riga sola: il volume cambia su tutti, conservando il bilanciamento tra i canali. Il massimo per le applicazioni è 100 %;
+un valore più alto messo da altri si mostra a fondo corsa e non si tocca finché non si muove il cursore. ←/→ cambiano il volume, M il muto, Spazio il muto dell'uscita predefinita.
+
 ## OSD e notifiche
 
 L'OSD di volume e luminosità (`osd.enabled`) compare a ogni cambio e sostituisce `wob`. Il server di

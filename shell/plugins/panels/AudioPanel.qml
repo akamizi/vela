@@ -1,5 +1,6 @@
 // Copyright (C) 2026 Maurizio Cavalletti — Licensed under the EUPL-1.2
 // Pannello audio (D-023): intestazione con l'uscita predefinita e il muto, uscite e ingressi con volume per dispositivo.
+// Le quattro sezioni (Uscite, Ingressi, Applicazioni, Registrazione) si richiudono: Invio o clic sull'intestazione, ←/→ sull'intestazione.
 // Invio = rendi predefinito · ←/→ = volume · M = muto · Spazio = muto dell'uscita predefinita · Esc = chiude.
 import QtQuick
 import Quickshell
@@ -19,21 +20,49 @@ PanelHost {
     property string currentKey: ""
     readonly property real step: Config.shell.audio.step * 2.5   // passo del pannello: 5% col valore di default
 
+    // Sezioni richiuse (per chiave dell'intestazione): vale finché il pannello è aperto, alla riapertura è tutto aperto.
+    property var folded: ({})
+    function isOpen(key) { return folded[key] !== true; }
+    function setOpen(key, v) {
+        var f = {};
+        for (var k in folded) f[k] = folded[k];
+        f[key] = !v;
+        folded = f;
+    }
+
     // --- elenco -------------------------------------------------------------------
     function buildRows() {
         var out = [];
-        out.push({ kind: "header", label: I18n.tr("Uscite"), key: "h-out" });
-        AudioDevices.sinks.forEach(function (d) { out.push({ kind: "device", d: d, sink: true, key: "dev:" + d.id }); });
-        if (AudioDevices.sinks.length === 0) out.push({ kind: "message", text: I18n.tr("Nessuna uscita audio"), key: "m-out" });
-        out.push({ kind: "header", label: I18n.tr("Ingressi"), key: "h-in" });
-        AudioDevices.sources.forEach(function (d) { out.push({ kind: "device", d: d, sink: false, key: "dev:" + d.id }); });
-        if (AudioDevices.sources.length === 0) out.push({ kind: "message", text: I18n.tr("Nessun ingresso audio"), key: "m-in" });
+        function head(key, label, count) { out.push({ kind: "head", key: key, label: label, count: count }); }
+        head("h-out", I18n.tr("Uscite"), AudioDevices.sinks.length);
+        if (isOpen("h-out")) {
+            AudioDevices.sinks.forEach(function (d) { out.push({ kind: "device", d: d, sink: true, key: "dev:" + d.id }); });
+            if (AudioDevices.sinks.length === 0) out.push({ kind: "message", text: I18n.tr("Nessuna uscita audio"), key: "m-out" });
+        }
+        head("h-in", I18n.tr("Ingressi"), AudioDevices.sources.length);
+        if (isOpen("h-in")) {
+            AudioDevices.sources.forEach(function (d) { out.push({ kind: "device", d: d, sink: false, key: "dev:" + d.id }); });
+            if (AudioDevices.sources.length === 0) out.push({ kind: "message", text: I18n.tr("Nessun ingresso audio"), key: "m-in" });
+        }
+        head("h-apps", I18n.tr("Applicazioni"), AudioDevices.playbackApps.length);
+        if (isOpen("h-apps")) {
+            AudioDevices.playbackApps.forEach(function (g) { out.push({ kind: "app", g: g, rec: false, key: "app:" + g.key }); });
+            if (AudioDevices.playbackApps.length === 0) out.push({ kind: "message", text: I18n.tr("Nessuna applicazione sta riproducendo"), key: "m-apps" });
+        }
+        // La registrazione compare solo se c'è qualcuno che registra
+        if (AudioDevices.recordingApps.length > 0) {
+            head("h-rec", I18n.tr("Registrazione"), AudioDevices.recordingApps.length);
+            if (isOpen("h-rec"))
+                AudioDevices.recordingApps.forEach(function (g) { out.push({ kind: "app", g: g, rec: true, key: "rec:" + g.key }); });
+        }
         return out;
     }
     readonly property var rows: buildRows()
 
-    function selectable(r) { return r && r.kind === "device"; }
-    function current() { var r = rows[list.currentIndex]; return r && r.kind === "device" ? r.d : null; }
+    function selectable(r) { return r && (r.kind === "device" || r.kind === "app" || r.kind === "head"); }
+    function currentRow() { return rows[list.currentIndex] || null; }
+    function current() { var r = currentRow(); return r && r.kind === "device" ? r.d : null; }
+    function currentApp() { var r = currentRow(); return r && r.kind === "app" ? r.g : null; }
 
     function select(i) {
         list.currentIndex = i;
@@ -68,7 +97,7 @@ PanelHost {
     // --- aspetto ------------------------------------------------------------------------
     property real listHeight: {
         var h = 0;
-        for (var i = 0; i < Math.min(rows.length, 60); i++) h += rows[i].kind === "header" ? 28 : Theme.rowHeight;
+        for (var i = 0; i < Math.min(rows.length, 60); i++) h += Theme.rowHeight;
         return Math.min(h + Theme.spacing, maxListHeight);
     }
     contentHeight: hero.implicitHeight + 1 + listHeight + footerHeight
@@ -80,7 +109,8 @@ PanelHost {
 
         Keys.onPressed: event => {
             var ctrl = event.modifiers & Qt.ControlModifier;
-            var d = panel.current();
+            var d = panel.current(), ap = panel.currentApp(), hd = panel.currentRow();
+            if (hd && hd.kind !== "head") hd = null;
             if (event.key === Qt.Key_Escape) {
                 Runtime.closePanel();
             } else if (event.key === Qt.Key_Down || (ctrl && (event.key === Qt.Key_J || event.key === Qt.Key_N))) {
@@ -91,12 +121,18 @@ PanelHost {
                 Audio.toggleMute();
             } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
                 if (d) AudioDevices.makeDefault(d);
+                else if (hd) panel.setOpen(hd.key, !panel.isOpen(hd.key));
             } else if (event.key === Qt.Key_Right || event.key === Qt.Key_L) {
                 if (d) AudioDevices.changeVolume(d, panel.step);
+                else if (ap) AudioDevices.changeAppVolume(ap, panel.step);
+                else if (hd) panel.setOpen(hd.key, true);
             } else if (event.key === Qt.Key_Left || event.key === Qt.Key_H) {
                 if (d) AudioDevices.changeVolume(d, -panel.step);
+                else if (ap) AudioDevices.changeAppVolume(ap, -panel.step);
+                else if (hd) panel.setOpen(hd.key, false);
             } else if (event.key === Qt.Key_M) {
                 if (d) AudioDevices.toggleMute(d);
+                else if (ap) AudioDevices.toggleAppMute(ap);
             } else {
                 return;
             }
@@ -139,9 +175,47 @@ PanelHost {
                 // Durante il ricalcolo dell'elenco il delegato può restare senza dati: tutto passa da qui.
                 readonly property var dv: modelData && modelData.kind === "device" ? modelData.d : null
                 width: ListView.view.width
-                height: r.kind === "header" ? 28 : Theme.rowHeight
+                readonly property var ag: modelData && modelData.kind === "app" ? modelData.g : null
+                height: Theme.rowHeight
 
-                PanelSectionHeader { visible: entry.r.kind === "header"; text: entry.r.kind === "header" ? entry.r.label : "" }
+                // intestazione di sezione richiudibile
+                PanelRow {
+                    visible: entry.r.kind === "head"
+                    anchors { fill: parent; leftMargin: Theme.spacing; rightMargin: Theme.spacing }
+                    hasCursor: ListView.isCurrentItem
+                    icon: entry.r.kind === "head" && panel.isOpen(entry.r.key) ? Icons.chevronDown : Icons.chevronRight
+                    iconColor: Theme.muted
+                    title: entry.r.kind === "head" ? entry.r.label : ""
+                    titleColor: Theme.dim
+                    bold: true
+                    trailingText: entry.r.kind === "head" && !panel.isOpen(entry.r.key) ? String(entry.r.count) : ""
+                    trailingColor: Theme.muted
+                    onMoved: panel.select(entry.index)
+                    onClicked: { panel.select(entry.index); if (entry.r.kind === "head") panel.setOpen(entry.r.key, !panel.isOpen(entry.r.key)); }
+                }
+
+                // una riga per applicazione: volume e muto di tutti i suoi flussi
+                PanelRow {
+                    visible: entry.r.kind === "app"
+                    anchors { fill: parent; leftMargin: Theme.spacing; rightMargin: Theme.spacing }
+                    hasCursor: ListView.isCurrentItem
+                    icon: entry.ag === null ? "" : entry.r.rec ? (entry.ag.muted ? Icons.micOff : Icons.mic)
+                        : (entry.ag.muted ? Icons.volumeMuted : Icons.pick(Icons.volume, entry.ag.volume))
+                    iconColor: entry.ag !== null && !entry.ag.muted ? Theme.accent : Theme.muted
+                    title: entry.ag ? entry.ag.name : ""
+                    trailingText: entry.ag ? Math.round(Math.min(1, entry.ag.volume) * 100) + "%" : ""
+                    trailing: Component {
+                        PanelSlider {
+                            implicitWidth: 100
+                            value: entry.ag ? Math.min(1, entry.ag.volume) : 0
+                            maxValue: 1
+                            muted: entry.ag ? entry.ag.muted : false
+                            onMoved: v => { if (entry.ag) AudioDevices.setAppVolume(entry.ag, v); }
+                        }
+                    }
+                    onMoved: panel.select(entry.index)
+                    onClicked: panel.select(entry.index)
+                }
 
                 BarText {
                     visible: entry.r.kind === "message"
@@ -186,7 +260,7 @@ PanelHost {
                 elide: Text.ElideRight
                 font.pixelSize: Theme.fontSize - 2
                 color: Theme.dim
-                text: I18n.tr("Invio predefinito · ←/→ volume · M muto · Spazio muto uscita")
+                text: I18n.tr("Invio predefinito/apri-chiudi · ←/→ volume · M muto · Spazio muto uscita")
             }
         }
     }
