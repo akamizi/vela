@@ -19,10 +19,13 @@ assert.notStrictEqual(run([path.join(dir, "non-esiste")]), 0);
 // 3. un blocco dello stesso utente è già attivo: non se ne lancia un altro e si può sospendere
 const name = "velalock" + process.pid;
 const fake = path.join(dir, name);
-fs.symlinkSync(fs.realpathSync("/bin/sleep"), fake);
-const bg = spawn(fake, ["30"], { stdio: "ignore" });
+// Un processo che resta in vita con un nome noto: uno script di shell, il cui nome di processo è quello dello script (con un
+// binario copiato o rinominato non è affidabile: `sleep` in alcune distribuzioni è un binario unico che non parte con un altro
+// nome, e node cambia il proprio nome). Senza argomenti resta in vita; con un argomento esce subito con errore.
+fs.writeFileSync(fake, '#!/bin/sh\n[ -n "$1" ] && exit 1\nwhile :; do sleep 1; done\n', { mode: 0o755 });
+const bg = spawn(fake, [], { stdio: "ignore" });
 await new Promise(r => setTimeout(r, 300));
-try { assert.strictEqual(run([fake, "--non-valida"]), 0); }   // se fosse lanciato, sleep fallirebbe
+try { assert.strictEqual(run([fake, "--non-valida"]), 0); }   // se fosse lanciato, lo script uscirebbe con errore
 finally { bg.kill(); }
 // 4. con il blocco ormai terminato, lo stesso comando viene lanciato davvero (e qui fallisce)
 await new Promise(r => setTimeout(r, 300));

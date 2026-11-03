@@ -34,4 +34,5 @@ jobs:
           min-confidence: medium
           version: v1.32.0
           advanced-security: false
+          config: .github/zizmor.yml
           annotations: true

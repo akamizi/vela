@@ -1,0 +1,8 @@
+# Configurazione di zizmor (D-066).
+rules:
+  unpinned-images:
+    ignore:
+      # Scelta voluta: l'immagine Void resta `latest`. Void è rolling e il lavoro comincia con un aggiornamento completo
+      # (`xbps-install -Suy`), quindi un'immagine fissata per digest invecchierebbe senza che nessuno la aggiorni
+      # (Dependabot non aggiorna i `container:` dei workflow). Se la build si rompe per un'immagine nuova, si fissa il digest.
+      - xbps-repo.yml
