@@ -4,7 +4,7 @@
 # fluent-icon-theme è il tema icone predefinito (D-061, sta in packaging/void/fluent-icon-theme); papirus-icon-theme resta come ripiego.
 # Le funzioni senza il programma corrispondente spariscono da sole (vedi docs/MANUAL.md): niente di questo è obbligatorio.
 pkgname=vela-recommended
-version=0.16.9
+version=0.16.10
 revision=1
 build_style=meta
 depends="vela>=${version}
