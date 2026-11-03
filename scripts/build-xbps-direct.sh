@@ -60,3 +60,6 @@ cd "$out"
 xbps-create -A noarch -n "vela-greeter-${gver}_1" -s "$gdesc" -D "$(versioned "$gdeps")" -l EUPL-1.2 \
     -H https://github.com/akamizi/vela -m "Maurizio Cavalletti <maurizio@akabit.it>" "$gstage"
 ls -l "$out"/vela-greeter-*.xbps
+
+# Tema icone Fluent (D-061): pacchetto di terzi separato, compilato dai sorgenti originali (scripts/build-xbps-fluent.sh)
+sh "$root/scripts/build-xbps-fluent.sh" "$out"

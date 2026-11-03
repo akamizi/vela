@@ -25,7 +25,7 @@ jobs:
         run: |
           xbps-install -Suy xbps
           xbps-install -uy
-          xbps-install -y git curl openssl base-devel cargo
+          xbps-install -y git curl openssl base-devel cargo bash
 
       # Con l'avvio a mano si costruisce il tag v<versione>, non il ramo main
       - uses: actions/checkout@v4

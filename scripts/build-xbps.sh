@@ -43,5 +43,10 @@ install -m644 "$root/packaging/void/vela/INSTALL.msg" srcpkgs/vela/INSTALL.msg
 ./xbps-src binary-bootstrap
 ./xbps-src -A x86_64 pkg vela
 
-cp -v hostdir/binpkgs/vela-*.xbps "$out"/
+# Tema icone Fluent (D-061): pacchetto di terzi, template usato com'è (versione e checksum sono già quelli upstream)
+mkdir -p srcpkgs/fluent-icon-theme
+cp "$root/packaging/void/fluent-icon-theme/template" srcpkgs/fluent-icon-theme/template
+./xbps-src -A x86_64 pkg fluent-icon-theme
+
+cp -v hostdir/binpkgs/vela-*.xbps hostdir/binpkgs/fluent-icon-theme-*.xbps "$out"/
 echo "pacchetti in $out"
