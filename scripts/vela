@@ -104,4 +104,21 @@ if command -v pipewire >/dev/null 2>&1; then
     n=0
     while [ ! -S "$pwsock" ] && [ "$n" -lt "${VELA_PIPEWIRE_WAIT:-50}" ]; do sleep 0.1; n=$((n + 1)); done
 fi
+# Icone di launcher e notifiche: Quickshell non legge il tema di Vela, ma QS_ICON_THEME. Si usa lo stesso `qt.iconTheme` di theme.jsonc
+# che vale per le app Qt lanciate da Vela (utente > default), così le icone sono le stesse ovunque. Una QS_ICON_THEME già impostata vince;
+# un tema non installato ripiega su Papirus-Dark (come `vela theme qt`), se c'è.
+if [ -z "${QS_ICON_THEME:-}" ]; then
+    for f in "${XDG_CONFIG_HOME:-$HOME/.config}/vela/theme.jsonc" "$root/config/defaults/theme.jsonc"; do
+        [ -r "$f" ] || continue
+        t=$(sed -n 's/^[[:space:]]*"iconTheme"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$f" | head -n 1)
+        [ -n "$t" ] && break
+    done
+    if [ -n "${t:-}" ]; then
+        for want in "$t" Papirus-Dark; do
+            for d in "${XDG_DATA_HOME:-$HOME/.local/share}/icons" "$HOME/.icons" /usr/share/icons; do
+                [ -d "$d/$want" ] && { QS_ICON_THEME=$want; export QS_ICON_THEME; break 2; }
+            done
+        done
+    fi
+fi
 exec quickshell -p "$root/shell" "$@"
