@@ -1,0 +1,25 @@
+# Esegue i test del progetto (`make test`: librerie JS della shell, script di avvio, demone e helper in Rust) a ogni push su main
+# e a ogni pull request. Prima i test giravano solo a mano.
+name: test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+
+      - name: Test
+        run: make test

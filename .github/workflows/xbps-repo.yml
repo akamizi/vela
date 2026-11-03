@@ -12,12 +12,14 @@ on:
         description: "Versione da costruire (tag v<versione> esistente); vuoto = file VERSION"
         required: false
 
-permissions:
-  contents: write
+permissions: {}
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    # Serve scrivere solo per spingere il ramo gh-pages
+    permissions:
+      contents: write
     container:
       image: ghcr.io/void-linux/void-glibc-full:latest
     steps:
@@ -28,8 +30,9 @@ jobs:
           xbps-install -y git curl openssl base-devel cargo bash
 
       # Con l'avvio a mano si costruisce il tag v<versione>, non il ramo main
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
+          persist-credentials: false
           ref: ${{ github.event.inputs.version && format('v{0}', github.event.inputs.version) || github.ref }}
 
       # xbps-src non funziona qui (niente user namespace nel container dei runner): si impacchetta con xbps-create
@@ -47,9 +50,12 @@ jobs:
           touch site/.nojekyll
 
       - name: Pubblica su gh-pages
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
         run: |
           cd site
           git init -q -b gh-pages
           git config user.name "github-actions"; git config user.email "actions@users.noreply.github.com"
           git add -A; git commit -qm "Repository xbps ${GITHUB_REF_NAME:-manuale}"
-          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" gh-pages
+          git push -f "https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git" gh-pages

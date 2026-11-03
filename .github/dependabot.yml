@@ -1,0 +1,23 @@
+# Aggiornamenti delle azioni GitHub usate dai workflow (D-066). Le azioni sono fissate per hash: Dependabot propone l'hash nuovo
+# con il commento della versione. Il demone e l'helper in Rust non hanno dipendenze esterne, quindi niente `cargo`.
+version: 2
+
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "05:30"
+      timezone: Europe/Rome
+    open-pull-requests-limit: 5
+    # Una versione appena uscita aspetta 7 giorni prima di essere proposta
+    cooldown:
+      default-days: 7
+    groups:
+      github-actions-minor-patch:
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch

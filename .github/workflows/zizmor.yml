@@ -1,0 +1,37 @@
+# Controlla i workflow di GitHub Actions con zizmor (D-066): iniezioni di codice, permessi eccessivi, azioni non fissate.
+# Parte a ogni modifica di .github/ e una volta a settimana; i risultati compaiono come annotazioni nell'esecuzione.
+name: zizmor
+
+on:
+  push:
+    branches: [main]
+    paths: [".github/**"]
+  pull_request:
+    paths: [".github/**"]
+  schedule:
+    - cron: "41 4 * * 4"
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  zizmor:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+
+      - name: Controllo dei workflow
+        uses: zizmorcore/zizmor-action@45d7276c9ca790aabd705e31ca99c6185c3e76dd # v0.8.1
+        with:
+          inputs: .github/
+          persona: regular
+          min-severity: medium
+          min-confidence: medium
+          version: v1.32.0
+          advanced-security: false
+          annotations: true
